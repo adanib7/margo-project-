@@ -4,7 +4,20 @@ require_once 'includes/config.php';
 require_once 'includes/check_auth.php';
 require_once 'includes/auth.php';
 require_once 'includes/header.php';
+
+// Mostrar errores que vengan de google_auth.php
+if (isset($_GET['error'])) {
+    if ($_GET['error'] === 'google') {
+        $mensaje = 'No se pudo iniciar sesión con Google.';
+        $tipo = 'error';
+    }
+    if ($_GET['error'] === 'token') {
+        $mensaje = 'Token de Google inválido.';
+        $tipo = 'error';
+    }
+}
 ?>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <link rel="stylesheet" href="assets/css/login.css" />
 
 <div class="card">
@@ -57,6 +70,26 @@ require_once 'includes/header.php';
       <button type="submit">Registrarse</button>
     </form>
   <?php endif; ?>
+
+  <!-- Separador y botón de Google -->
+  <div class="separador">
+    <span>o</span>
+  </div>
+
+  <div id="g_id_onload"
+       data-client_id="<?= GOOGLE_CLIENT_ID ?>"
+       data-login_uri="<?= (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') ?>/includes/google_auth.php"
+       data-auto_prompt="false">
+  </div>
+  <div class="g_id_signin"
+       data-type="standard"
+       data-size="large"
+       data-theme="outline"
+       data-text="continue_with"
+       data-shape="rectangular"
+       data-logo_alignment="center"
+       data-width="280">
+  </div>
 
   <?php if ($mensaje !== ''): ?>
     <div class="mensaje <?= $tipo === 'success' ? 'success' : '' ?>">

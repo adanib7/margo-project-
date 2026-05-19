@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'regis
     } elseif (($err = validarPassword($pass1)) !== '') {
         $mensaje = $err;
     } else {
-        $stmt = $conn->prepare("SELECT id FROM usuarios WHERE usuario = ? OR email = ?");
+        $stmt = $conn->prepare("SELECT id FROM usuarios WHERE nombre = ? OR email = ?");
         $stmt->bind_param("ss", $usuario, $email);
         $stmt->execute();
         $existe = $stmt->get_result()->num_rows > 0;
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'regis
             $mensaje = "Ese usuario o email ya está registrado.";
         } else {
             $hash = password_hash($pass1, PASSWORD_BCRYPT);
-            $stmt = $conn->prepare("INSERT INTO usuarios (usuario, email, contraseña) VALUES (?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)");
             $stmt->bind_param("sss", $usuario, $email, $hash);
             $stmt->execute();
             $stmt->close();
@@ -68,15 +68,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'login
     } elseif (($err = validarPassword($pass1)) !== '') {
         $mensaje = $err;
     } else {
-        $stmt = $conn->prepare("SELECT contraseña, rol FROM usuarios WHERE usuario = ?");
+        $stmt = $conn->prepare("SELECT password FROM usuarios WHERE nombre = ?");
         $stmt->bind_param("s", $usuario);
         $stmt->execute();
         $row  = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
-        if ($row && password_verify($pass1, $row['contraseña'])) {
+        if ($row && password_verify($pass1, $row['password'])) {
             $_SESSION['usuario_logueado'] = $usuario;
-            $_SESSION['rol']              = $row['rol'];
             redirectToDashboard();
         } else {
             $mensaje = "Usuario o contraseña incorrectos.";
