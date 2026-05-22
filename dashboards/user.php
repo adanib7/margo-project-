@@ -3,58 +3,43 @@ session_start();
 require_once '../includes/config.php';
 require_once '../includes/check_auth.php';
 requireLogin();
+$pageTitle = 'Dashboard de Usuario';
+$pageCSS = BASE_URL . '/assets/css/dashboard.css';
+$showDashboardBottomNav = true;
 require_once '../includes/header.php';
 ?>
-<link rel="stylesheet" href="../assets/css/dashboard.css" />
 <?php require_once '../includes/nav.php'; ?>
 
-<main class="dashboard-main role-usuario">
-  <div class="dashboard-header">
-    <h1>Mi Dashboard</h1>
-    <p>Bienvenido, <strong><?= htmlspecialchars($_SESSION['usuario_logueado'], ENT_QUOTES, 'UTF-8') ?></strong>. Desde aquí podés gestionar tu cuenta.</p>
-  </div>
+<main class="contenido-principal">
+  <header class="seccion-encabezado">
+    <div>
+      <h1 class="titulo-pagina">¡Bienvenido, <?= htmlspecialchars($_SESSION['usuario_logueado'], ENT_QUOTES, 'UTF-8') ?>!</h1>
+      <p class="subtitulo-pagina">Gestiona tus reservas y tu información de cuenta.</p>
+    </div>
+  </header>
 
-  <div class="stats-row">
-    <div class="stat-card role-usuario">
-      <div class="stat-value">0</div>
-      <div class="stat-label">Actividades</div>
-    </div>
-    <div class="stat-card role-usuario">
-      <div class="stat-value">0</div>
-      <div class="stat-label">Mensajes</div>
-    </div>
-    <div class="stat-card role-usuario">
-      <div class="stat-value">0</div>
-      <div class="stat-label">Notificaciones</div>
-    </div>
-  </div>
+  <div class="grilla-tarjetas">
+    <a class="tarjeta" href="#">
+      <div class="tarjeta-overlay"></div>
+      <div class="tarjeta-cabecera">
+        <div class="icono icono-primary">
+         <span class="material-symbols-outlined">event</span>
+        </div>
+        <h2>Mis Reservas</h2>
+      </div>
+      <p class="tarjeta-texto">Revisa tus reservas.</p>
+    </a>
 
-  <p class="section-title">Accesos rápidos</p>
-  <div class="cards-grid">
-    <div class="card role-usuario">
-      <div class="card-icon">👤</div>
-      <h3>Mi Perfil</h3>
-      <p>Actualizá tu información personal, foto y contraseña.</p>
-      <a href="#" class="card-link">Ver perfil →</a>
-    </div>
-    <div class="card role-usuario">
-      <div class="card-icon">📋</div>
-      <h3>Mis Actividades</h3>
-      <p>Revisá el historial de tus actividades recientes en el sistema.</p>
-      <a href="#" class="card-link">Ver actividades →</a>
-    </div>
-    <div class="card role-usuario">
-      <div class="card-icon">🔔</div>
-      <h3>Notificaciones</h3>
-      <p>No tenés notificaciones nuevas por el momento.</p>
-      <a href="#" class="card-link">Ver todas →</a>
-    </div>
-    <div class="card role-usuario">
-      <div class="card-icon">🔒</div>
-      <h3>Seguridad</h3>
-      <p>Cambiá tu contraseña y revisá los accesos a tu cuenta.</p>
-      <a href="#" class="card-link">Configurar →</a>
-    </div>
+    <a class="tarjeta" href="#">
+      <div class="tarjeta-overlay"></div>
+      <div class="tarjeta-cabecera">
+        <div class="icono">
+          <span class="material-symbols-outlined">person</span>
+        </div>
+        <h2>Mi Perfil</h2>
+      </div>
+      <p class="tarjeta-texto">Actualiza tus datos y revisa tu información de cuenta.</p>
+    </a>
   </div>
 </main>
 

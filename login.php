@@ -3,6 +3,7 @@ session_start();
 require_once 'includes/config.php';
 require_once 'includes/check_auth.php';
 require_once 'includes/auth.php';
+$pageCSS = 'assets/css/login.css';
 require_once 'includes/header.php';
 
 // Mostrar errores que vengan de google_auth.php
@@ -18,16 +19,14 @@ if (isset($_GET['error'])) {
 }
 ?>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<link rel="stylesheet" href="assets/css/login.css" />
 
 <div class="card">
   <div class="tabs">
-    <a href="?modo=login"    class="<?= $modo === 'login'    ? 'activo' : '' ?>">Iniciar sesión</a>
-    <a href="?modo=registro" class="<?= $modo === 'registro' ? 'activo' : '' ?>">Registrarse</a>
+    <a href="?modo=login"    class="<?= $modo === 'login'    ? 'activo' : '' ?>" id="tab-login">Iniciar sesión</a>
+    <a href="?modo=registro" class="<?= $modo === 'registro' ? 'activo' : '' ?>" id="tab-registro">Registrarse</a>
   </div>
 
   <?php if ($modo === 'login'): ?>
-    <h2>Iniciar sesión</h2>
     <form method="post" action="?modo=login">
       <input type="hidden" name="accion" value="login" />
 
@@ -44,7 +43,6 @@ if (isset($_GET['error'])) {
     </form>
 
   <?php else: ?>
-    <h2>Crear cuenta</h2>
     <form method="post" action="?modo=registro">
       <input type="hidden" name="accion" value="registro" />
 
@@ -73,7 +71,7 @@ if (isset($_GET['error'])) {
 
   <!-- Separador y botón de Google -->
   <div class="separador">
-    <span>o</span>
+    <span>o</span> 
   </div>
 
   <div id="g_id_onload"
@@ -88,7 +86,7 @@ if (isset($_GET['error'])) {
        data-text="continue_with"
        data-shape="rectangular"
        data-logo_alignment="center"
-       data-width="280">
+       data-width="300">
   </div>
 
   <?php if ($mensaje !== ''): ?>
@@ -97,5 +95,3 @@ if (isset($_GET['error'])) {
     </div>
   <?php endif; ?>
 </div>
-
-<?php require_once 'includes/footer.php'; ?>

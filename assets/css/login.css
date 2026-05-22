@@ -42,6 +42,22 @@ body {
 
 h2 { font-size: 1.5rem; margin-bottom: 20px; color: #111827; }
 
+.separador {
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 24px 0;
+  color: #9ca3af;
+  font-size: .85rem;
+}
+.separador::before,
+.separador::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
 label {
   display: block;
   font-size: .85rem;
@@ -115,3 +131,11 @@ button[type="submit"]:hover { background: #032e12; }
   transition: background .2s;
 }
 .btn-logout:hover { background: #dc2626; }
+
+.g_id_signin {
+  display: flex;
+  justify-content: center;
+}
+
+
+

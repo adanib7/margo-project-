@@ -30,7 +30,7 @@ $email     = $datos['email'];
 $nombre    = $datos['name'];
 $foto      = $datos['picture'] ?? null;
 
-$stmt = $conn->prepare("SELECT id, nombre, google_id FROM usuarios WHERE google_id = ? OR email = ? LIMIT 1");
+$stmt = $conn->prepare("SELECT id, nombre, google_id, rol FROM usuarios WHERE google_id = ? OR email = ? LIMIT 1");
 $stmt->bind_param("ss", $google_id, $email);
 $stmt->execute();
 $resultado = $stmt->get_result();
@@ -38,6 +38,7 @@ $resultado = $stmt->get_result();
 if ($resultado->num_rows > 0) {
     $user   = $resultado->fetch_assoc();
     $nombre = $user['nombre'];
+    $_SESSION['rol'] = $user['rol'] ?? 'usuario';
 
     // Vincular google_id si el usuario existía solo por email
     if (empty($user['google_id'])) {
@@ -61,10 +62,11 @@ if ($resultado->num_rows > 0) {
     }
     $check->close();
 
-    $ins = $conn->prepare("INSERT INTO usuarios (google_id, nombre, email, foto) VALUES (?, ?, ?, ?)");
+    $ins = $conn->prepare("INSERT INTO usuarios (google_id, nombre, email, foto, rol) VALUES (?, ?, ?, ?, 'usuario')");
     $ins->bind_param("ssss", $google_id, $nombre, $email, $foto);
     $ins->execute();
     $ins->close();
+    $_SESSION['rol'] = 'usuario';
 }
 
 $_SESSION['usuario_logueado'] = $nombre;

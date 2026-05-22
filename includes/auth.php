@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'regis
             $mensaje = "Ese usuario o email ya está registrado.";
         } else {
             $hash = password_hash($pass1, PASSWORD_BCRYPT);
-            $stmt = $conn->prepare("INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, 'usuario')");
             $stmt->bind_param("sss", $usuario, $email, $hash);
             $stmt->execute();
             $stmt->close();
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'login
     } elseif (($err = validarPassword($pass1)) !== '') {
         $mensaje = $err;
     } else {
-        $stmt = $conn->prepare("SELECT password FROM usuarios WHERE nombre = ?");
+        $stmt = $conn->prepare("SELECT password, rol FROM usuarios WHERE nombre = ?");
         $stmt->bind_param("s", $usuario);
         $stmt->execute();
         $row  = $stmt->get_result()->fetch_assoc();
@@ -76,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'login
 
         if ($row && password_verify($pass1, $row['password'])) {
             $_SESSION['usuario_logueado'] = $usuario;
+            $_SESSION['rol'] = $row['rol'] ?? 'usuario';
             redirectToDashboard();
         } else {
             $mensaje = "Usuario o contraseña incorrectos.";
