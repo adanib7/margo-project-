@@ -71,4 +71,12 @@ if ($resultado->num_rows > 0) {
 
 $_SESSION['usuario_logueado'] = $nombre;
 
+// Guardar ID en sesión para gestión de usuarios
+$stmt_id = $conn->prepare("SELECT id FROM usuarios WHERE nombre = ? LIMIT 1");
+$stmt_id->bind_param("s", $nombre);
+$stmt_id->execute();
+$row_id = $stmt_id->get_result()->fetch_assoc();
+$stmt_id->close();
+$_SESSION['usuario_id'] = $row_id['id'] ?? null;
+
 redirectToDashboard();

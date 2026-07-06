@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'login
     } elseif (($err = validarPassword($pass1)) !== '') {
         $mensaje = $err;
     } else {
-        $stmt = $conn->prepare("SELECT password, rol FROM usuarios WHERE nombre = ?");
+        $stmt = $conn->prepare("SELECT id, password, rol FROM usuarios WHERE nombre = ?");
         $stmt->bind_param("s", $usuario);
         $stmt->execute();
         $row  = $stmt->get_result()->fetch_assoc();
@@ -76,7 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'login
 
         if ($row && password_verify($pass1, $row['password'])) {
             $_SESSION['usuario_logueado'] = $usuario;
-            $_SESSION['rol'] = $row['rol'] ?? 'usuario';
+            $_SESSION['rol']              = $row['rol'] ?? 'usuario';
+            $_SESSION['usuario_id']       = $row['id'];
             redirectToDashboard();
         } else {
             $mensaje = "Usuario o contraseña incorrectos.";
