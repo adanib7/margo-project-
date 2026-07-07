@@ -4,7 +4,7 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/check_auth.php';
 
 if (!isset($_POST['credential'])) {
-    header("Location: " . BASE_URL . "/login.php?error=google");
+    header("Location: " . BASE_URL . "/index.php?error=google");
     exit;
 }
 
@@ -14,14 +14,14 @@ $url      = "https://oauth2.googleapis.com/tokeninfo?id_token=" . urlencode($id_
 $response = @file_get_contents($url);
 
 if ($response === false) {
-    header("Location: " . BASE_URL . "/login.php?error=google");
+    header("Location: " . BASE_URL . "/index.php?error=google");
     exit;
 }
 
 $datos = json_decode($response, true);
 
 if (!isset($datos['sub']) || $datos['aud'] !== GOOGLE_CLIENT_ID) {
-    header("Location: " . BASE_URL . "/login.php?error=token");
+    header("Location: " . BASE_URL . "/index.php?error=token");
     exit;
 }
 
