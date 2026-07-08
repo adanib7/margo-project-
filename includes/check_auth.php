@@ -1,7 +1,7 @@
 <?php
 function requireLogin(): void {
     if (!isset($_SESSION['usuario_logueado'])) {
-        header('Location: ' . BASE_URL . '/index.php');
+        header('Location: ' . buildUrl('/index.php'));
         exit;
     }
 }
@@ -15,11 +15,11 @@ function requireRole(string ...$roles): void {
 
 function redirectToDashboard(): void {
     $map = [
-        'superadmin' => BASE_URL . '/dashboards/superadmin.php',
-        'admin'      => BASE_URL . '/dashboards/admin.php',
-        'usuario'    => BASE_URL . '/dashboards/user.php',
+        'superadmin' => buildUrl('/dashboards/superadmin.php'),
+        'admin'      => buildUrl('/dashboards/admin.php'),
+        'usuario'    => buildUrl('/dashboards/user.php'),
     ];
     $rol = $_SESSION['rol'] ?? 'usuario';
-    header('Location: ' . ($map[$rol] ?? BASE_URL . '/dashboards/user.php'));
+    header('Location: ' . ($map[$rol] ?? buildUrl('/dashboards/user.php')));
     exit;
 }

@@ -19,6 +19,16 @@ if (empty($basePath) || $basePath === '.') {
 define('BASE_URL', $basePath);
 define('GOOGLE_CLIENT_ID', '191789640459-kt1mfd30prke6f6i97ttvm4tg58b57ka.apps.googleusercontent.com');
 
+// Función auxiliar para construir URLs seguras
+function buildUrl(string $path): string {
+    $base = BASE_URL;
+    // Asegurar que el path comience con /
+    if (!str_starts_with($path, '/')) {
+        $path = '/' . $path;
+    }
+    return $base . $path;
+}
+
 $conn = null;
 $dbErrorMessage = '';
 

@@ -15,7 +15,7 @@ require_once '../includes/header.php';
   <!-- ── Encabezado ── -->
   <header class="seccion-encabezado">
     <div>
-      <a href="<?= BASE_URL ?>/dashboards/superadmin.php" class="enlace-volver">
+      <a href="<?= buildUrl('/dashboards/superadmin.php') ?>" class="enlace-volver">
         <span class="material-symbols-outlined">arrow_back</span>
         Panel principal
       </a>

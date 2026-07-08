@@ -21,7 +21,7 @@ require_once '../includes/header.php';
     <!-- El highlight es un único elemento que se desliza entre tarjetas (efecto Aceternity) -->
     <span class="tarjeta-highlight" id="tarjetaHighlight" aria-hidden="true"></span>
 
-    <a class="tarjeta" href="<?= BASE_URL ?>/dashboards/gestion-usuarios.php">
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/gestion-usuarios.php') ?>">
       <div class="tarjeta-cabecera">
         <div class="icono icono-primary">
           <span class="material-symbols-outlined">people</span>

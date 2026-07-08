@@ -4,7 +4,7 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/check_auth.php';
 
 if (!isset($_POST['credential'])) {
-    header("Location: " . BASE_URL . "/index.php?error=google");
+    header("Location: " . buildUrl('/index.php?error=google'));
     exit;
 }
 
@@ -14,14 +14,14 @@ $url      = "https://oauth2.googleapis.com/tokeninfo?id_token=" . urlencode($id_
 $response = @file_get_contents($url);
 
 if ($response === false) {
-    header("Location: " . BASE_URL . "/index.php?error=google");
+    header("Location: " . buildUrl('/index.php?error=google'));
     exit;
 }
 
 $datos = json_decode($response, true);
 
 if (!isset($datos['sub']) || $datos['aud'] !== GOOGLE_CLIENT_ID) {
-    header("Location: " . BASE_URL . "/index.php?error=token");
+    header("Location: " . buildUrl('/index.php?error=token'));
     exit;
 }
 
@@ -32,13 +32,13 @@ $foto      = $datos['picture'] ?? null;
 
 // Si $conn es null, no podemos procesar
 if ($conn === null) {
-    header("Location: " . BASE_URL . "/index.php?error=database");
+    header("Location: " . buildUrl('/index.php?error=database'));
     exit;
 }
 
 $stmt = $conn->prepare("SELECT id, nombre, google_id, rol FROM usuarios WHERE google_id = ? OR email = ? LIMIT 1");
 if (!$stmt) {
-    header("Location: " . BASE_URL . "/index.php?error=database");
+    header("Location: " . buildUrl('/index.php?error=database'));
     exit;
 }
 $stmt->bind_param("ss", $google_id, $email);
