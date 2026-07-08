@@ -21,66 +21,70 @@ if (isset($_SESSION['usuario_logueado'])) {
     redirectToDashboard();
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'registro') {
-    $usuario = trim($_POST['usuario']  ?? '');
-    $email   = trim($_POST['email']    ?? '');
-    $pass1   = $_POST['contraseña']    ?? '';
-    $pass2   = $_POST['confirmar']     ?? '';
-    $modo    = 'registro';
+if ($conn === null) {
+    $mensaje = $dbErrorMessage ?? 'No se pudo conectar con la base de datos. Verifica que MySQL esté activo.';
+} else {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'registro') {
+        $usuario = trim($_POST['usuario']  ?? '');
+        $email   = trim($_POST['email']    ?? '');
+        $pass1   = $_POST['contraseña']    ?? '';
+        $pass2   = $_POST['confirmar']     ?? '';
+        $modo    = 'registro';
 
-    if ($usuario === '' || $email === '' || $pass1 === '') {
-        $mensaje = "Todos los campos son obligatorios.";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $mensaje = "El email no es válido.";
-    } elseif ($pass1 !== $pass2) {
-        $mensaje = "Las contraseñas no coinciden.";
-    } elseif (($err = validarPassword($pass1)) !== '') {
-        $mensaje = $err;
-    } else {
-        $stmt = $conn->prepare("SELECT id FROM usuarios WHERE nombre = ? OR email = ?");
-        $stmt->bind_param("ss", $usuario, $email);
-        $stmt->execute();
-        $existe = $stmt->get_result()->num_rows > 0;
-        $stmt->close();
-
-        if ($existe) {
-            $mensaje = "Ese usuario o email ya está registrado.";
+        if ($usuario === '' || $email === '' || $pass1 === '') {
+            $mensaje = "Todos los campos son obligatorios.";
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $mensaje = "El email no es válido.";
+        } elseif ($pass1 !== $pass2) {
+            $mensaje = "Las contraseñas no coinciden.";
+        } elseif (($err = validarPassword($pass1)) !== '') {
+            $mensaje = $err;
         } else {
-            $hash = password_hash($pass1, PASSWORD_BCRYPT);
-            $stmt = $conn->prepare("INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, 'usuario')");
-            $stmt->bind_param("sss", $usuario, $email, $hash);
+            $stmt = $conn->prepare("SELECT id FROM usuarios WHERE nombre = ? OR email = ?");
+            $stmt->bind_param("ss", $usuario, $email);
             $stmt->execute();
+            $existe = $stmt->get_result()->num_rows > 0;
             $stmt->close();
-            $mensaje = "¡Registro exitoso! Ya podés iniciar sesión.";
-            $tipo    = "success";
-            $modo    = 'login';
+
+            if ($existe) {
+                $mensaje = "Ese usuario o email ya está registrado.";
+            } else {
+                $hash = password_hash($pass1, PASSWORD_BCRYPT);
+                $stmt = $conn->prepare("INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, 'usuario')");
+                $stmt->bind_param("sss", $usuario, $email, $hash);
+                $stmt->execute();
+                $stmt->close();
+                $mensaje = "¡Registro exitoso! Ya podés iniciar sesión.";
+                $tipo    = "success";
+                $modo    = 'login';
+            }
         }
     }
-}
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'login') {
-    $usuario = trim($_POST['usuario'] ?? '');
-    $pass1   = $_POST['contraseña']   ?? '';
-    $modo    = 'login';
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'login') {
+        $usuario = trim($_POST['usuario'] ?? '');
+        $pass1   = $_POST['contraseña']   ?? '';
+        $modo    = 'login';
 
-    if ($usuario === '' || $pass1 === '') {
-        $mensaje = "Completá todos los campos.";
-    } elseif (($err = validarPassword($pass1)) !== '') {
-        $mensaje = $err;
-    } else {
-        $stmt = $conn->prepare("SELECT id, password, rol FROM usuarios WHERE nombre = ?");
-        $stmt->bind_param("s", $usuario);
-        $stmt->execute();
-        $row  = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-
-        if ($row && password_verify($pass1, $row['password'])) {
-            $_SESSION['usuario_logueado'] = $usuario;
-            $_SESSION['rol']              = $row['rol'] ?? 'usuario';
-            $_SESSION['usuario_id']       = $row['id'];
-            redirectToDashboard();
+        if ($usuario === '' || $pass1 === '') {
+            $mensaje = "Completá todos los campos.";
+        } elseif (($err = validarPassword($pass1)) !== '') {
+            $mensaje = $err;
         } else {
-            $mensaje = "Usuario o contraseña incorrectos.";
+            $stmt = $conn->prepare("SELECT id, password, rol FROM usuarios WHERE nombre = ?");
+            $stmt->bind_param("s", $usuario);
+            $stmt->execute();
+            $row  = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if ($row && password_verify($pass1, $row['password'])) {
+                $_SESSION['usuario_logueado'] = $usuario;
+                $_SESSION['rol']              = $row['rol'] ?? 'usuario';
+                $_SESSION['usuario_id']       = $row['id'];
+                redirectToDashboard();
+            } else {
+                $mensaje = "Usuario o contraseña incorrectos.";
+            }
         }
     }
 }
