@@ -10,7 +10,7 @@ $conn = null;
 $dbErrorMessage = '';
 
 try {
-    $conn = new mysqli("ftpupload.net", "if0_41994986", "hrXr99gspmS", "if0_41994986_margoproject");
+    $conn = new mysqli("sql213.infinityfree.com", "if0_41994986", "hrXr99gspmS", "if0_41994986_margoproject");
     if ($conn->connect_error) {
         throw new RuntimeException($conn->connect_error);
     }
