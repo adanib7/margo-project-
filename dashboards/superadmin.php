@@ -4,7 +4,7 @@ require_once '../includes/config.php';
 require_once '../includes/check_auth.php';
 requireRole('superadmin');
 $pageTitle = 'Panel Super Administrador';
-$pageCSS = BASE_URL . '/assets/css/dashboard.css';
+$pageCSS = '../assets/css/dashboard.css';
 $showDashboardBottomNav = true;
 require_once '../includes/header.php';
 ?>

@@ -30,7 +30,17 @@ $email     = $datos['email'];
 $nombre    = $datos['name'];
 $foto      = $datos['picture'] ?? null;
 
+// Si $conn es null, no podemos procesar
+if ($conn === null) {
+    header("Location: " . BASE_URL . "/index.php?error=database");
+    exit;
+}
+
 $stmt = $conn->prepare("SELECT id, nombre, google_id, rol FROM usuarios WHERE google_id = ? OR email = ? LIMIT 1");
+if (!$stmt) {
+    header("Location: " . BASE_URL . "/index.php?error=database");
+    exit;
+}
 $stmt->bind_param("ss", $google_id, $email);
 $stmt->execute();
 $resultado = $stmt->get_result();

@@ -1,8 +1,21 @@
 <?php
-$basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
-if ($basePath === '') {
+// Detectar BASE_URL de forma simple y confiable
+$scriptPath = $_SERVER['SCRIPT_NAME'];
+$scriptDir = dirname($scriptPath);
+
+// Eliminar caracteres de ruta no deseados y normalizar
+$basePath = rtrim($scriptDir, '/');
+
+// Si la ruta termina en /includes o /dashboards, subir un nivel
+if (preg_match('/(\/includes|\/dashboards)$/', $basePath)) {
+    $basePath = dirname($basePath);
+}
+
+// Si está vacío después de todo, es raíz
+if (empty($basePath) || $basePath === '.') {
     $basePath = '';
 }
+
 define('BASE_URL', $basePath);
 define('GOOGLE_CLIENT_ID', '191789640459-kt1mfd30prke6f6i97ttvm4tg58b57ka.apps.googleusercontent.com');
 
