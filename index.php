@@ -58,7 +58,7 @@ if (isset($_GET['error'])) {
         <input type="checkbox" id="remember" />
         <label for="remember">Recordarme </label>
       </div>
-      <span class="span">No recuerdas tu contraseña?</span>
+      <span class="span">¿Olvidaste tu contraseña?</span>
     </div>
 
     <button type="submit" class="button-submit">Entrar</button>
