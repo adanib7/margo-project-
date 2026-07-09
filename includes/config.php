@@ -20,13 +20,23 @@ define('BASE_URL', $basePath);
 define('GOOGLE_CLIENT_ID', '191789640459-kt1mfd30prke6f6i97ttvm4tg58b57ka.apps.googleusercontent.com');
 
 // Función auxiliar para construir URLs seguras
-function buildUrl(string $path): string {
+function buildUrl(string $path, bool $absolute = false): string {
     $base = BASE_URL;
     // Asegurar que el path comience con /
     if (!str_starts_with($path, '/')) {
         $path = '/' . $path;
     }
-    return $base . $path;
+    
+    $url = $base . $path;
+    
+    // Si se necesita URL absoluta (para redirects), agregar protocolo y host
+    if ($absolute) {
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $url = $protocol . $host . $url;
+    }
+    
+    return $url;
 }
 
 $conn = null;
