@@ -20,7 +20,17 @@ if (!empty($_GET['fecha']) && !empty($_GET['hora'])) {
 }
 
 foreach ($mesas as &$m) {
-    $m['ocupada'] = in_array($m['id'], $ocupadas);
+    // MySQL devuelve los números como texto y eso rompe a Konva,
+    // así que los casteamos antes de mandar el JSON.
+    $m['id']        = (int)$m['id'];
+    $m['numero']    = (int)$m['numero'];
+    $m['capacidad'] = (int)$m['capacidad'];
+    $m['pos_x']     = (float)$m['pos_x'];
+    $m['pos_y']     = (float)$m['pos_y'];
+    $m['ancho']     = (float)$m['ancho'];
+    $m['alto']      = (float)$m['alto'];
+    $m['rotacion']  = (float)$m['rotacion'];
+    $m['ocupada']   = in_array($m['id'], $ocupadas);
 }
 
 echo json_encode($mesas);

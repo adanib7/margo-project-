@@ -164,35 +164,41 @@ const eliminadas = []; // ids que hay que borrar de la base al guardar
 
 // ---- crear una mesa en el canvas ----
 function crearMesa(datos) {
+  // por las dudas convertimos todo a número (si viene como texto de la base,
+  // Konva no puede calcular las posiciones y las mesas quedan trancadas)
+  const ancho = parseFloat(datos.ancho) || 70;
+  const alto  = parseFloat(datos.alto) || 70;
+
   const grupo = new Konva.Group({
-    x: datos.pos_x, y: datos.pos_y,
-    rotation: datos.rotacion || 0,
+    x: parseFloat(datos.pos_x) || 100,
+    y: parseFloat(datos.pos_y) || 100,
+    rotation: parseFloat(datos.rotacion) || 0,
     draggable: true
   });
   grupo.setAttrs({
     mesaId: datos.id || null,
-    numero: datos.numero,
-    capacidad: datos.capacidad,
+    numero: parseInt(datos.numero) || 1,
+    capacidad: parseInt(datos.capacidad) || 4,
     forma: datos.forma
   });
 
   let figura;
   if (datos.forma === 'redonda') {
     figura = new Konva.Circle({
-      radius: datos.ancho / 2,
+      radius: ancho / 2,
       fill: VERDE, stroke: AMBAR, strokeWidth: 3
     });
   } else {
     figura = new Konva.Rect({
-      width: datos.ancho, height: datos.alto,
-      offsetX: datos.ancho / 2, offsetY: datos.alto / 2,
+      width: ancho, height: alto,
+      offsetX: ancho / 2, offsetY: alto / 2,
       cornerRadius: 8,
       fill: VERDE, stroke: AMBAR, strokeWidth: 3
     });
   }
 
   const texto = new Konva.Text({
-    text: String(datos.numero),
+    text: String(grupo.getAttr('numero')),
     fontSize: 20, fontStyle: 'bold',
     fontFamily: 'Georgia', fill: CREMA,
     listening: false
