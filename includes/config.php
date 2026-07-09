@@ -31,9 +31,19 @@ function buildUrl(string $path, bool $absolute = false): string {
     
     // Si se necesita URL absoluta (para redirects), agregar protocolo y host
     if ($absolute) {
+        // Detectar protocolo (HTTPS o HTTP)
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $url = $protocol . $host . $url;
+        
+        // Obtener host de forma segura
+        $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
+        
+        // Validar que no sea un string vacío o inválido
+        if (empty($host)) {
+            $host = 'localhost';
+        }
+        
+        // Construir URL absoluta completa
+        $url = $protocol . rtrim($host, '/') . $url;
     }
     
     return $url;
