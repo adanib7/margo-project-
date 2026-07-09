@@ -129,7 +129,7 @@ if (isset($_GET['error'])) {
 
   <div id="g_id_onload"
        data-client_id="<?= GOOGLE_CLIENT_ID ?>"
-       data-login_uri="<?= (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') ?>/includes/google_auth.php"
+       data-login_uri="<?= buildUrl('/includes/google_auth.php', true) ?>"
        data-auto_prompt="false">
   </div>
   <div class="g_id_signin"

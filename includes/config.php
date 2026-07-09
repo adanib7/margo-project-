@@ -1,18 +1,19 @@
 <?php
 // Detectar BASE_URL de forma simple y confiable
 $scriptPath = $_SERVER['SCRIPT_NAME'];
-$scriptDir = dirname($scriptPath);
+// str_replace normaliza el separador '\' que dirname() devuelve en Windows (dev local)
+$scriptDir = str_replace('\\', '/', dirname($scriptPath));
 
 // Eliminar caracteres de ruta no deseados y normalizar
 $basePath = rtrim($scriptDir, '/');
 
-// Si la ruta termina en /includes o /dashboards, subir un nivel
-if (preg_match('/(\/includes|\/dashboards)$/', $basePath)) {
-    $basePath = dirname($basePath);
+// Si la ruta termina en /includes, /dashboards o /api, subir un nivel
+if (preg_match('/(\/includes|\/dashboards|\/api)$/', $basePath)) {
+    $basePath = str_replace('\\', '/', dirname($basePath));
 }
 
-// Si está vacío después de todo, es raíz
-if (empty($basePath) || $basePath === '.') {
+// Si está vacío o es la raíz ("/", ".") después de todo, es raíz
+if (empty($basePath) || $basePath === '.' || $basePath === '/') {
     $basePath = '';
 }
 
@@ -21,12 +22,10 @@ define('GOOGLE_CLIENT_ID', '191789640459-kt1mfd30prke6f6i97ttvm4tg58b57ka.apps.g
 
 // Función auxiliar para construir URLs seguras
 function buildUrl(string $path, bool $absolute = false): string {
-    $base = BASE_URL;
-    // Asegurar que el path comience con /
-    if (!str_starts_with($path, '/')) {
-        $path = '/' . $path;
-    }
-    
+    $base = rtrim(BASE_URL, '/');
+    // Asegurar que el path comience con / y no tenga barras duplicadas
+    $path = '/' . ltrim($path, '/');
+
     $url = $base . $path;
     
     // Si se necesita URL absoluta (para redirects), agregar protocolo y host
