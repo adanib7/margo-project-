@@ -59,7 +59,10 @@
       "Bash(nslookup -type=A sql213.infinityfree.com 8.8.8.8)",
       "Bash(nslookup -type=CNAME sql213.infinityfree.com 8.8.8.8)",
       "Bash(nslookup -type=AAAA sql213.infinityfree.com 8.8.8.8)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(gh run *)",
+      "Bash(curl -s \"https://api.github.com/repos/adanib7/margo-project-/actions/runs?per_page=5\")",
+      "Bash(grep -o '\"status\":\"[^\"]*\"\\\\|\"conclusion\":[^,]*\\\\|\"created_at\":\"[^\"]*\"\\\\|\"head_commit\":{\"id\":\"[^\"]*\"')"
     ]
   }
 }
