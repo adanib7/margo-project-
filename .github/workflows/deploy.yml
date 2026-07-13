@@ -1,4 +1,4 @@
-name: 🚀 Deploy a InfinityFree
+name: Deploy a InfinityFree
 on:
   push:
     branches:
