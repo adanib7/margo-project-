@@ -270,6 +270,53 @@ body {
   line-height: 1.7;
 }
 
+/* ===== FEATURED CARD (Reservar Mesa) ===== */
+.tarjeta-destacada {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, #264220 0%, #3d5a35 100%);
+  border-color: transparent;
+  padding: 2.5rem;
+}
+
+.tarjeta-destacada:hover {
+  border-color: transparent;
+  box-shadow: 0 8px 28px rgba(38, 66, 32, 0.25);
+}
+
+.tarjeta-destacada .tarjeta-cabecera h2 {
+  color: #ffffff;
+  font-size: 1.5rem;
+}
+
+.tarjeta-destacada .tarjeta-texto {
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 32rem;
+}
+
+.icono.icono-destacado {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffdea5;
+}
+
+.tarjeta-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1.5rem;
+  color: #ffdea5;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.tarjeta-cta .material-symbols-outlined {
+  font-size: 1.1rem;
+  transition: transform 0.2s ease;
+}
+
+.tarjeta-destacada:hover .tarjeta-cta .material-symbols-outlined {
+  transform: translateX(4px);
+}
+
 /* ===== ACTION AREA ===== */
 .area-accion {
   margin-top: 3rem;

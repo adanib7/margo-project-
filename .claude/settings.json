@@ -14,7 +14,10 @@
       "Bash(curl -s -o /dev/null -w \"cliente_plano.php: %{http_code}\\\\n\" http://localhost/margo-project-/cliente_plano.php)",
       "Bash(curl -s http://localhost/margo-project-/login.php)",
       "Bash(taskkill //F //IM httpd.exe)",
-      "Bash(\"/c/xampp/php/php.exe\" -l \"c:\\\\xampp\\\\htdocs\\\\margo-project-\\\\index.php\")"
+      "Bash(\"/c/xampp/php/php.exe\" -l \"c:\\\\xampp\\\\htdocs\\\\margo-project-\\\\index.php\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost/margo-project-/dashboards/user.php)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1/)"
     ]
   }
 }

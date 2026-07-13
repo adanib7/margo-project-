@@ -19,6 +19,18 @@ require_once '../includes/header.php';
   </header>
 
   <div class="grilla-tarjetas">
+    <a class="tarjeta tarjeta-destacada" href="<?= buildUrl('/cliente_plano.php') ?>">
+      <div class="tarjeta-overlay"></div>
+      <div class="tarjeta-cabecera">
+        <div class="icono icono-destacado">
+         <span class="material-symbols-outlined">table_restaurant</span>
+        </div>
+        <h2>Reservar Mesa</h2>
+      </div>
+      <p class="tarjeta-texto">Elegí el día, el horario y tu mesa preferida en el plano del salón.</p>
+      <span class="tarjeta-cta">Reservar ahora <span class="material-symbols-outlined">arrow_forward</span></span>
+    </a>
+
     <a class="tarjeta" href="#">
       <div class="tarjeta-overlay"></div>
       <div class="tarjeta-cabecera">
