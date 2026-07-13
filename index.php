@@ -9,7 +9,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{background:var(--crema-50);color:var(--fg-default);overflow-x:hidden}
+body{background:var(--crema-50);color:var(--fg-default);font-family:var(--font-body);overflow-x:hidden}
 a{color:var(--verde-700);text-decoration:none;transition:color var(--dur-fast) var(--ease-out)}
 a:hover{color:var(--dorado-600)}
 img{display:block;max-width:100%}
@@ -38,7 +38,7 @@ section{scroll-margin-top:96px}
 /* ---- header ---- */
 header{position:fixed;top:0;left:0;right:0;height:76px;z-index:100;display:flex;align-items:center;transition:background var(--dur-base) var(--ease-out),box-shadow var(--dur-base) var(--ease-out),border-color var(--dur-base) var(--ease-out);border-bottom:1px solid transparent}
 header .wrap{display:flex;align-items:center;gap:24px}
-header .logo-text{flex-shrink:0;font-family:var(--font-display);font-weight:700;font-size:20px;line-height:1.15;color:#fff;letter-spacing:-.01em}
+header .logo-text{flex-shrink:0;font-family:var(--font-logo);font-weight:400;font-size:32px;line-height:1;color:#fff;letter-spacing:0}
 header .logo-text span{display:block;font-family:var(--font-body);font-weight:500;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.75)}
 nav.main{display:flex;gap:28px;margin-left:auto}
 nav.main a{font-family:var(--font-display);font-weight:500;font-size:14px;color:#fff;letter-spacing:.01em}
@@ -162,7 +162,7 @@ header.solid .lang{background:var(--crema-200)}
 
 footer{background:var(--verde-900);color:var(--crema-100);padding:64px 0 32px}
 footer .cols{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:48px;padding-bottom:48px;border-bottom:1px solid rgba(245,239,224,.15)}
-footer .logo-text{font-family:var(--font-display);font-weight:700;font-size:24px;color:#fff}
+footer .logo-text{font-family:var(--font-logo);font-weight:400;font-size:36px;color:#fff}
 footer .logo-text span{display:block;font-family:var(--font-body);font-weight:500;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dorado-300);margin-top:4px}
 footer .about{font-size:14px;line-height:1.7;color:rgba(245,239,224,.7);margin-top:20px;max-width:34ch}
 footer h4{font-family:var(--font-display);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--dorado-300);margin-bottom:18px}

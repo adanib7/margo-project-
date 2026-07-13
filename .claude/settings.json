@@ -13,7 +13,8 @@
       "Bash(curl -s -o /dev/null -w \"login.php: %{http_code}\\\\n\" http://localhost/margo-project-/login.php)",
       "Bash(curl -s -o /dev/null -w \"cliente_plano.php: %{http_code}\\\\n\" http://localhost/margo-project-/cliente_plano.php)",
       "Bash(curl -s http://localhost/margo-project-/login.php)",
-      "Bash(taskkill //F //IM httpd.exe)"
+      "Bash(taskkill //F //IM httpd.exe)",
+      "Bash(\"/c/xampp/php/php.exe\" -l \"c:\\\\xampp\\\\htdocs\\\\margo-project-\\\\index.php\")"
     ]
   }
 }
