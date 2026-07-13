@@ -51,8 +51,14 @@ function buildUrl(string $path, bool $absolute = false): string {
 $conn = null;
 $dbErrorMessage = '';
 
+// Evita que mysqli emita warnings nativos (rompen las respuestas JSON de la API);
+// el connect_error se sigue chequeando manualmente abajo.
+mysqli_report(MYSQLI_REPORT_OFF);
+
 try {
-    $conn = new mysqli("sql213.infinityfree.com", "if0_41994986", "hrXr99gspmS", "if0_41994986_margoproject");
+    // @: la falla de red ya se detecta manualmente vía connect_error; sin esto
+    // PHP emite un warning nativo que corrompe las respuestas JSON de la API.
+    $conn = @new mysqli("sql213.infinityfree.com", "if0_41994986", "hrXr99gspmS", "if0_41994986_margoproject");
     if ($conn->connect_error) {
         throw new RuntimeException($conn->connect_error);
     }
