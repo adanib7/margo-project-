@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tasklist //FI \"IMAGENAME eq httpd.exe\")",
+      "Bash(\"/c/xampp/apache_start.bat\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost/margo-project-/index.php)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost/margo-project-/login.php)",
+      "Bash(curl -s http://localhost/margo-project-/index.php)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(chromium-cli --session margo)",
+      "Bash(curl -s -o /dev/null -w \"colors_and_type.css: %{http_code}\\\\n\" http://localhost/margo-project-/assets/css/colors_and_type.css)",
+      "Bash(curl -s -o /dev/null -w \"login.php: %{http_code}\\\\n\" http://localhost/margo-project-/login.php)",
+      "Bash(curl -s -o /dev/null -w \"cliente_plano.php: %{http_code}\\\\n\" http://localhost/margo-project-/cliente_plano.php)",
+      "Bash(curl -s http://localhost/margo-project-/login.php)",
+      "Bash(taskkill //F //IM httpd.exe)"
+    ]
+  }
+}
