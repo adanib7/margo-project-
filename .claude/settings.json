@@ -48,7 +48,18 @@
       "Bash(/c/xampp/php/php.exe -l \"/c/xampp/htdocs/margo-project-/includes/nav.php\")",
       "Bash(/c/xampp/php/php.exe -l \"/c/xampp/htdocs/margo-project-/includes/footer.php\")",
       "Bash(curl -s -o /dev/null -w \"index.php: %{http_code}\\\\n\" http://localhost/margo-project-/index.php)",
-      "Bash(curl -s -o /dev/null -w \"logo asset: %{http_code}\\\\n\" http://localhost/margo-project-/assets/img/logo-horizontal-verde.png)"
+      "Bash(curl -s -o /dev/null -w \"logo asset: %{http_code}\\\\n\" http://localhost/margo-project-/assets/img/logo-horizontal-verde.png)",
+      "Bash(curl -s -X POST http://localhost/margo-project-/api/crear_reserva.php -H \"Content-Type: application/json\" -d '{\"nombre\":\"Test\",\"fecha\":\"2026-07-20\",\"hora\":\"20:00\",\"personas\":2,\"comentario\":\"\"}')",
+      "Read(//c/xampp/apache/logs/**)",
+      "Bash(nslookup sql213.infinityfree.com)",
+      "Bash(ping -n 1 infinityfree.com)",
+      "Bash(curl -s -o /dev/null -w \"infinityfree.com: %{http_code}\\\\n\" --max-time 5 https://infinityfree.com)",
+      "Bash(nslookup sql213.infinityfree.com 8.8.8.8)",
+      "Bash(nslookup sql213.infinityfree.com 1.1.1.1)",
+      "Bash(nslookup -type=A sql213.infinityfree.com 8.8.8.8)",
+      "Bash(nslookup -type=CNAME sql213.infinityfree.com 8.8.8.8)",
+      "Bash(nslookup -type=AAAA sql213.infinityfree.com 8.8.8.8)",
+      "WebSearch"
     ]
   }
 }

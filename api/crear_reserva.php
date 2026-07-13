@@ -60,6 +60,13 @@ if (!empty($errores)) {
 $stmt = $conn->prepare(
     "INSERT INTO reservas (usuario_id, nombre, fecha, hora, personas, comentario) VALUES (?, ?, ?, ?, ?, ?)"
 );
+
+if ($stmt === false) {
+    http_response_code(500);
+    echo json_encode(['ok' => false, 'mensaje' => 'La tabla de reservas no existe todavía en la base de datos.']);
+    exit;
+}
+
 $stmt->bind_param('isssis', $usuarioId, $nombre, $fecha, $hora, $personas, $comentario);
 
 if ($stmt->execute()) {
