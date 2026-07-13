@@ -62,7 +62,9 @@
       "WebSearch",
       "Bash(gh run *)",
       "Bash(curl -s \"https://api.github.com/repos/adanib7/margo-project-/actions/runs?per_page=5\")",
-      "Bash(grep -o '\"status\":\"[^\"]*\"\\\\|\"conclusion\":[^,]*\\\\|\"created_at\":\"[^\"]*\"\\\\|\"head_commit\":{\"id\":\"[^\"]*\"')"
+      "Bash(grep -o '\"status\":\"[^\"]*\"\\\\|\"conclusion\":[^,]*\\\\|\"created_at\":\"[^\"]*\"\\\\|\"head_commit\":{\"id\":\"[^\"]*\"')",
+      "Bash(/c/xampp/php/php.exe -l \"/c/xampp/htdocs/margo-project-/dashboards/mis-reservas.php\")",
+      "Bash(curl -s -L http://localhost/margo-project-/dashboards/mis-reservas.php)"
     ]
   }
 }

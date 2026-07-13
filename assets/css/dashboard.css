@@ -875,6 +875,11 @@ body {
 .badge-admin      { background-color: #caecbc; color: #264220; }
 .badge-superadmin { background-color: #ffdea5; color: #261900; }
 
+/* Badges de estado de reserva */
+.badge-estado-pendiente  { background-color: #ffdea5; color: #785a1a; }
+.badge-estado-confirmada { background-color: #caecbc; color: #264220; }
+.badge-estado-cancelada  { background-color: #ffdad6; color: #b91c1c; }
+
 /* Botones de acción en tabla */
 .gu-acciones {
   display: flex;

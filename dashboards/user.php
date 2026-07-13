@@ -36,7 +36,7 @@ $franjasHorarias = [
       <span class="tarjeta-cta">Reservar ahora <span class="material-symbols-outlined">arrow_forward</span></span>
     </a>
 
-    <a class="tarjeta" href="#">
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/mis-reservas.php') ?>">
       <div class="tarjeta-overlay"></div>
       <div class="tarjeta-cabecera">
         <div class="icono icono-primary">
