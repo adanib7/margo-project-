@@ -17,7 +17,21 @@
       "Bash(\"/c/xampp/php/php.exe\" -l \"c:\\\\xampp\\\\htdocs\\\\margo-project-\\\\index.php\")",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost/margo-project-/dashboards/user.php)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost/)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1/)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1/)",
+      "Bash(php -l \"/c/xampp/htdocs/margo-project-/dashboards/user.php\")",
+      "Bash(php -l \"/c/xampp/htdocs/margo-project-/api/crear_reserva.php\")",
+      "Bash(ls /c/xampp/php/php.exe 2>/dev/null && echo found)",
+      "Read(//c/xampp/php/**)",
+      "Bash(/c/xampp/php/php.exe -l \"/c/xampp/htdocs/margo-project-/dashboards/user.php\")",
+      "Bash(/c/xampp/php/php.exe -l \"/c/xampp/htdocs/margo-project-/api/crear_reserva.php\")",
+      "Bash(ls /c/xampp/apache_start.bat 2>/dev/null && echo found)",
+      "Read(//c/xampp/**)",
+      "Bash(cmd //c \"C:\\\\\\\\xampp\\\\\\\\apache_start.bat\")",
+      "Bash(curl -s -L http://localhost/margo-project-/dashboards/user.php -c /tmp/cookies.txt)",
+      "Bash(curl -s -L http://localhost/margo-project-/dashboards/user.php)",
+      "Bash(curl -s -X POST http://localhost/margo-project-/api/crear_reserva.php -H \"Content-Type: application/json\" -d '{}')",
+      "Bash(curl -s http://localhost/margo-project-/dashboards/user.php -o /tmp/dash.html)",
+      "Read(//tmp/**)"
     ]
   }
 }
