@@ -7,7 +7,9 @@ $roleLabels = [
 $rol = $_SESSION['rol'] ?? 'usuario';
 ?>
 <nav class="barra-superior">
-  <div class="marca">El Corralin del Campanal</div>
+  <div class="marca">
+    <img src="<?= buildUrl('/assets/img/logo-horizontal-verde.png') ?>" alt="El Corralín de Campanal" class="marca-logo">
+  </div>
 
 
   <div class="acciones-usuario">

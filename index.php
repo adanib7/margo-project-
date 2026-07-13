@@ -38,8 +38,8 @@ section{scroll-margin-top:96px}
 /* ---- header ---- */
 header{position:fixed;top:0;left:0;right:0;height:76px;z-index:100;display:flex;align-items:center;transition:background var(--dur-base) var(--ease-out),box-shadow var(--dur-base) var(--ease-out),border-color var(--dur-base) var(--ease-out);border-bottom:1px solid transparent}
 header .wrap{display:flex;align-items:center;gap:24px}
-header .logo-text{flex-shrink:0;font-family:var(--font-logo);font-weight:400;font-size:32px;line-height:1;color:#fff;letter-spacing:0}
-header .logo-text span{display:block;font-family:var(--font-body);font-weight:500;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.75)}
+header .logo-link{flex-shrink:0;display:block}
+header .logo-img{height:40px;width:auto;display:block;filter:brightness(0) invert(1);transition:filter var(--dur-base) var(--ease-out)}
 nav.main{display:flex;gap:28px;margin-left:auto}
 nav.main a{font-family:var(--font-display);font-weight:500;font-size:14px;color:#fff;letter-spacing:.01em}
 nav.main a:hover{color:var(--dorado-300)}
@@ -48,8 +48,7 @@ nav.main a:hover{color:var(--dorado-300)}
 header.solid{background:var(--crema-50);border-bottom-color:var(--gris-200);box-shadow:var(--shadow-sm)}
 header.solid nav.main a{color:var(--gris-800)}
 header.solid nav.main a:hover{color:var(--dorado-600)}
-header.solid .logo-text{color:var(--verde-900)}
-header.solid .logo-text span{color:var(--dorado-600)}
+header.solid .logo-img{filter:none}
 header.solid .lang-btn{color:var(--gris-700);border-color:var(--gris-300)}
 header.solid .lang-btn.on{background:var(--verde-700);color:#fff;border-color:var(--verde-700)}
 
@@ -162,8 +161,7 @@ header.solid .lang{background:var(--crema-200)}
 
 footer{background:var(--verde-900);color:var(--crema-100);padding:64px 0 32px}
 footer .cols{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:48px;padding-bottom:48px;border-bottom:1px solid rgba(245,239,224,.15)}
-footer .logo-text{font-family:var(--font-logo);font-weight:400;font-size:36px;color:#fff}
-footer .logo-text span{display:block;font-family:var(--font-body);font-weight:500;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dorado-300);margin-top:4px}
+footer .logo-img{height:48px;width:auto;filter:brightness(0) invert(1);margin-bottom:12px}
 footer .about{font-size:14px;line-height:1.7;color:rgba(245,239,224,.7);margin-top:20px;max-width:34ch}
 footer h4{font-family:var(--font-display);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--dorado-300);margin-bottom:18px}
 footer ul{list-style:none;display:grid;gap:12px}
@@ -195,7 +193,9 @@ footer .bottom a{color:rgba(245,239,224,.7)}
 
 <header id="site-header">
   <div class="wrap">
-    <a href="#top" class="logo-text">El Corralín<span>del Campanal</span></a>
+    <a href="#top" class="logo-link">
+      <img src="assets/img/logo-horizontal-verde.png" alt="El Corralín de Campanal" class="logo-img">
+    </a>
     <nav class="main">
       <a href="#cocina" data-i18n="nav_cocina">La cocina</a>
       <a href="#galeria" data-i18n="nav_galeria">Galería</a>
@@ -393,7 +393,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
   <div class="wrap">
     <div class="cols">
       <div>
-        <div class="logo-text">El Corralín<span>del Campanal</span></div>
+        <img src="assets/img/logo-horizontal-verde.png" alt="El Corralín de Campanal" class="logo-img">
         <p class="about" data-i18n="foot_about">Cocina asturiana tradicional y sidra de llagar en la villa de Nava, Principado de Asturias.</p>
       </div>
       <div>

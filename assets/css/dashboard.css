@@ -28,10 +28,14 @@ body {
 }
 
 .marca {
-  font-family: 'Montserrat', serif;
-  font-weight: 600;
-  font-size: 1.25rem;
-  color: #264220;
+  display: flex;
+  align-items: center;
+}
+
+.marca-logo {
+  height: 32px;
+  width: auto;
+  display: block;
 }
 
 .menu-escritorio {
@@ -408,12 +412,11 @@ body {
   box-sizing: border-box;
 }
 
-.titulo-pie {
-  font-family: 'Montserrat', serif;
-  font-size: 1.25rem;
-  font-weight: 600;
+.footer-logo {
+  height: 40px;
+  width: auto;
+  filter: brightness(0) invert(1);
   margin: 0 0 1rem;
-  color: #ffffff;
 }
 
 .texto-pie {

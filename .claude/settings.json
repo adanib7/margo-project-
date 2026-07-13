@@ -35,7 +35,20 @@
       "Bash(curl -s http://localhost/margo-project-/api/crear_reserva.php -X POST -H \"Content-Type: application/json\" -d '{}')",
       "Bash(/c/xampp/php/php.exe -l \"/c/xampp/htdocs/margo-project-/includes/config.php\")",
       "Bash(curl -s http://localhost/margo-project-/dashboards/user.php -o /tmp/dash2.html -w \"%{http_code}\\\\n\")",
-      "Bash(curl -s http://localhost/margo-project-/api/listar_usuarios.php)"
+      "Bash(curl -s http://localhost/margo-project-/api/listar_usuarios.php)",
+      "Bash(ls -la \"/c/Users/gonza/AppData/Local/Temp/claude/c--xampp-htdocs-margo-project-/a92d7a71-e595-450f-88b4-cd65d33bb788/scratchpad\" 2>/dev/null *)",
+      "Read(//c/Users/gonza/**)",
+      "Read(//c/Users/gonza/Downloads/logos-corralin/**)",
+      "Bash(cp \"/c/Users/gonza/Downloads/logos-corralin/logo1.png\" \"/c/xampp/htdocs/margo-project-/assets/img/logo-horizontal-verde.png\")",
+      "Bash(cp \"/c/Users/gonza/Downloads/logos-corralin/logo-vertical.png\" \"/c/xampp/htdocs/margo-project-/assets/img/logo-vertical-verde.png\")",
+      "Bash(cp \"/c/Users/gonza/Downloads/logos-corralin/corralin-logo-horizontal-negativo.png\" \"/c/xampp/htdocs/margo-project-/assets/img/logo-horizontal-blanco.png\")",
+      "Bash(cp \"/c/Users/gonza/Downloads/logos-corralin/corralin-logo-vertical-negativo.png\" \"/c/xampp/htdocs/margo-project-/assets/img/logo-vertical-blanco.png\")",
+      "Bash(/c/xampp/php/php.exe -l \"/c/xampp/htdocs/margo-project-/index.php\")",
+      "Bash(/c/xampp/php/php.exe -l \"/c/xampp/htdocs/margo-project-/login.php\")",
+      "Bash(/c/xampp/php/php.exe -l \"/c/xampp/htdocs/margo-project-/includes/nav.php\")",
+      "Bash(/c/xampp/php/php.exe -l \"/c/xampp/htdocs/margo-project-/includes/footer.php\")",
+      "Bash(curl -s -o /dev/null -w \"index.php: %{http_code}\\\\n\" http://localhost/margo-project-/index.php)",
+      "Bash(curl -s -o /dev/null -w \"logo asset: %{http_code}\\\\n\" http://localhost/margo-project-/assets/img/logo-horizontal-verde.png)"
     ]
   }
 }

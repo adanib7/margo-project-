@@ -21,8 +21,8 @@
 
 <footer class="pie-pagina">
   <div>
-    <div class="titulo-pie">El Corralin del Campanal</div>
-    <p class="texto-pie">© 2026 El Corralin del Campanal. Todos los derechos reservados.</p>
+    <img src="<?= buildUrl('/assets/img/logo-horizontal-verde.png') ?>" alt="El Corralín de Campanal" class="footer-logo">
+    <p class="texto-pie">© 2026 El Corralín de Campanal. Todos los derechos reservados.</p>
   </div>
   <div class="lista-pie">
     <a class="enlace-pie" href="#">Política de privacidad</a>

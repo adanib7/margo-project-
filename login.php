@@ -21,6 +21,8 @@ if (isset($_GET['error'])) {
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <form class="form" method="post" action="?modo=<?= $modo ?>">
+  <img src="assets/img/logo-horizontal-verde.png" alt="El Corralín de Campanal" class="login-logo">
+
   <div class="tabs">
     <a href="?modo=login"    class="<?= $modo === 'login'    ? 'activo' : '' ?>" id="tab-login">Iniciar sesión</a>
     <a href="?modo=registro" class="<?= $modo === 'registro' ? 'activo' : '' ?>" id="tab-registro">Registrarse</a>
