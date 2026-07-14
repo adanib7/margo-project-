@@ -239,7 +239,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
     <h1 data-i18n="hero_title">Conoce nuestro restaurante</h1>
     <p class="lede" data-i18n="hero_lede">Cocina asturiana de siempre en la villa de Nava. Elige día y hora — te esperamos.</p>
     <div class="hero-cta">
-      <a href="login.php" class="btn btn-accent btn-lg"><i data-lucide="calendar-check"></i><span data-i18n="cta_reservar_mesa">Reservar mesa</span></a>
+      <a href="public/login.php" class="btn btn-accent btn-lg"><i data-lucide="calendar-check"></i><span data-i18n="cta_reservar_mesa">Reservar mesa</span></a>
     </div>
     <div class="hero-meta">
       <div class="item"><i data-lucide="map-pin"></i><div><div class="k">Nava, Asturias</div><div class="s" data-i18n="meta_dir">Plaza Manuel Uría, 4</div></div></div>
