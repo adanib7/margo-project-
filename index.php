@@ -210,7 +210,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
         <button class="lang-btn" data-lang="fr">FR</button>
         <button class="lang-btn" data-lang="pt">PT</button>
       </div>
-      <a href="login.php" class="btn btn-accent btn-reservar-top" data-i18n="cta_reservar">Reservar</a>
+      <a href="public/login.php" class="btn btn-accent btn-reservar-top" data-i18n="cta_reservar">Reservar</a>
     </div>
   </div>
 </header>
@@ -226,7 +226,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
     <h1 data-i18n="hero_title">Reserva tu mesa en El Corralín</h1>
     <p class="lede" data-i18n="hero_lede">Cocina asturiana de siempre en la villa de Nava: sidra del llagar, cachopo al corte y fabada de la güela. Elige mesa, día y hora — te esperamos.</p>
     <div class="hero-cta">
-      <a href="login.php" class="btn btn-accent btn-lg"><i data-lucide="calendar-check"></i><span data-i18n="cta_reservar_mesa">Reservar mesa</span></a>
+      <a href="public/login.php" class="btn btn-accent btn-lg"><i data-lucide="calendar-check"></i><span data-i18n="cta_reservar_mesa">Reservar mesa</span></a>
       <a href="#carta" class="btn btn-ghost-light btn-lg"><i data-lucide="utensils"></i><span data-i18n="cta_ver_carta">Ver la carta</span></a>
     </div>
     <div class="hero-meta">
@@ -330,7 +330,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
     </div>
     <div class="menu-foot">
       <p data-i18n="carta_nota">¿Alergias o intolerancias? Dínoslo al reservar y lo tenemos en cuenta.</p>
-      <a href="login.php" class="btn btn-accent"><span data-i18n="cta_reservar_mesa">Reservar mesa</span></a>
+      <a href="public/login.php" class="btn btn-accent"><span data-i18n="cta_reservar_mesa">Reservar mesa</span></a>
     </div>
   </div>
 </section>
@@ -381,7 +381,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
         <i data-lucide="calendar-check" style="width:40px;height:40px;color:var(--verde-700)"></i>
         <h3 style="font-family:var(--font-display);font-weight:600;font-size:22px;color:var(--verde-800)" data-i18n="cont_card_title">Elige tu mesa</h3>
         <p style="font-size:15px;line-height:1.6;color:var(--fg-muted)" data-i18n="cont_card_sub">Inicia sesión o crea tu cuenta gratis para reservar mesa, día y hora en el plano del salón.</p>
-        <a href="login.php" class="btn btn-primary btn-lg" style="width:100%"><i data-lucide="calendar-check"></i><span data-i18n="f_enviar">Reservar mesa</span></a>
+        <a href="public/login.php" class="btn btn-primary btn-lg" style="width:100%"><i data-lucide="calendar-check"></i><span data-i18n="f_enviar">Reservar mesa</span></a>
       </div>
     </div>
   </div>
@@ -411,7 +411,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
           <li><a href="#cocina" data-i18n="nav_cocina">La cocina</a></li>
           <li><a href="#carta" data-i18n="nav_carta">Carta</a></li>
           <li><a href="#historia" data-i18n="nav_historia">Historia</a></li>
-          <li><a href="login.php" data-i18n="cta_reservar">Reservar</a></li>
+          <li><a href="public/login.php" data-i18n="cta_reservar">Reservar</a></li>
         </ul>
       </div>
     </div>
