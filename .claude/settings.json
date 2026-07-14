@@ -64,7 +64,10 @@
       "Bash(curl -s \"https://api.github.com/repos/adanib7/margo-project-/actions/runs?per_page=5\")",
       "Bash(grep -o '\"status\":\"[^\"]*\"\\\\|\"conclusion\":[^,]*\\\\|\"created_at\":\"[^\"]*\"\\\\|\"head_commit\":{\"id\":\"[^\"]*\"')",
       "Bash(/c/xampp/php/php.exe -l \"/c/xampp/htdocs/margo-project-/dashboards/mis-reservas.php\")",
-      "Bash(curl -s -L http://localhost/margo-project-/dashboards/mis-reservas.php)"
+      "Bash(curl -s -L http://localhost/margo-project-/dashboards/mis-reservas.php)",
+      "Bash(curl -s -o /dev/null -w \"comprobante.php: %{http_code}\\\\n\" -L http://localhost/margo-project-/comprobante.php)",
+      "Bash(curl -s http://localhost/margo-project-/api/reserva_ics.php?codigo=COR-TEST)",
+      "Bash(curl -s -o /dev/null -w \"mis-reservas.php: %{http_code}\\\\n\" -L http://localhost/margo-project-/dashboards/mis-reservas.php)"
     ]
   }
 }

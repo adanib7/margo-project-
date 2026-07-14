@@ -141,6 +141,32 @@ $franjasHorarias = [
         </button>
       </div>
     </form>
+
+    <div class="modal-exito" id="reservaExito" hidden>
+      <div class="modal-exito-icono">
+        <span class="material-symbols-outlined">check_circle</span>
+      </div>
+      <h3 class="modal-exito-titulo">¡Reserva confirmada!</h3>
+      <p class="modal-exito-texto">Guardá el código, te va a servir el día de tu visita.</p>
+      <div class="modal-exito-codigo" id="exitoCodigo"></div>
+
+      <div class="modal-exito-datos">
+        <div class="dato"><span class="etiqueta">Fecha</span><span class="valor" id="exitoFecha"></span></div>
+        <div class="dato"><span class="etiqueta">Hora</span><span class="valor" id="exitoHora"></span></div>
+        <div class="dato"><span class="etiqueta">Personas</span><span class="valor" id="exitoPersonas"></span></div>
+      </div>
+
+      <div class="modal-exito-acciones">
+        <a class="boton-secundario" id="exitoCalendario" href="#" target="_blank" rel="noopener">
+          <span class="material-symbols-outlined">event</span> Agregar al calendario
+        </a>
+        <a class="boton-accion" id="exitoComprobante" href="#" target="_blank" rel="noopener">
+          <span class="material-symbols-outlined">receipt_long</span> Ver comprobante
+        </a>
+      </div>
+
+      <button type="button" class="boton-secundario modal-exito-cerrar" id="btnCerrarExito">Cerrar</button>
+    </div>
   </div>
 </div>
 
@@ -153,6 +179,7 @@ $franjasHorarias = [
   const form       = document.getElementById('formReserva');
   const btnSubmit  = document.getElementById('btnSubmitReserva');
   const inputFecha = document.getElementById('rFecha');
+  const exito      = document.getElementById('reservaExito');
 
   inputFecha.min = new Date().toISOString().split('T')[0];
 
@@ -163,6 +190,7 @@ $franjasHorarias = [
 
   document.getElementById('btnCerrarModalReserva').addEventListener('click', cerrarModal);
   document.getElementById('btnCancelarModalReserva').addEventListener('click', cerrarModal);
+  document.getElementById('btnCerrarExito').addEventListener('click', cerrarModal);
   modal.addEventListener('click', e => { if (e.target === modal) cerrarModal(); });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && modal.classList.contains('modal-visible')) cerrarModal();
@@ -179,6 +207,25 @@ $franjasHorarias = [
     document.body.classList.remove('modal-abierto');
     limpiarErrores();
     setLoading(false);
+    mostrarFormulario();
+  }
+
+  function mostrarFormulario() {
+    form.hidden  = false;
+    exito.hidden = true;
+  }
+
+  function mostrarExito(reserva) {
+    form.hidden  = true;
+    exito.hidden = false;
+
+    const [anio, mes, dia] = reserva.fecha.split('-');
+    document.getElementById('exitoCodigo').textContent   = reserva.codigo;
+    document.getElementById('exitoFecha').textContent    = `${dia}/${mes}/${anio}`;
+    document.getElementById('exitoHora').textContent     = `${reserva.hora}hs`;
+    document.getElementById('exitoPersonas').textContent = reserva.personas;
+    document.getElementById('exitoCalendario').href = BASE + '/api/reserva_ics.php?codigo=' + encodeURIComponent(reserva.codigo);
+    document.getElementById('exitoComprobante').href = BASE + '/comprobante.php?codigo=' + encodeURIComponent(reserva.codigo);
   }
 
   function limpiarErrores() {
@@ -252,8 +299,8 @@ $franjasHorarias = [
       const data = await res.json();
 
       if (data.ok) {
-        cerrarModal();
-        mostrarToast(data.mensaje, 'exito');
+        setLoading(false);
+        mostrarExito(data);
         form.reset();
         document.getElementById('rNombre').value = <?= json_encode($_SESSION['usuario_logueado']) ?>;
         document.getElementById('rPersonas').value = 2;

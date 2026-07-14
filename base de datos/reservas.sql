@@ -2,6 +2,7 @@
 
 CREATE TABLE `reservas` (
   `id` int(11) NOT NULL,
+  `codigo` varchar(20) NOT NULL,
   `usuario_id` int(11) NOT NULL,
   `nombre` varchar(255) NOT NULL,
   `fecha` date NOT NULL,
@@ -14,6 +15,7 @@ CREATE TABLE `reservas` (
 
 ALTER TABLE `reservas`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `codigo` (`codigo`),
   ADD KEY `usuario_id` (`usuario_id`);
 
 ALTER TABLE `reservas`

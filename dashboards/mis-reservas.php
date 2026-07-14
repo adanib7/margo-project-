@@ -13,7 +13,7 @@ $errorCarga = ($conn === null);
 
 if ($conn !== null) {
     $stmt = $conn->prepare(
-        "SELECT fecha, hora, personas, comentario, estado FROM reservas WHERE usuario_id = ? ORDER BY fecha ASC, hora ASC"
+        "SELECT codigo, fecha, hora, personas, comentario, estado FROM reservas WHERE usuario_id = ? ORDER BY fecha ASC, hora ASC"
     );
     $stmt->bind_param('i', $_SESSION['usuario_id']);
     $stmt->execute();
@@ -57,6 +57,7 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
             <th>Personas</th>
             <th>Pedido especial</th>
             <th>Estado</th>
+            <th class="col-acciones">Comprobante</th>
           </tr>
         </thead>
         <tbody>
@@ -67,6 +68,15 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
               <td><?= (int) $r['personas'] ?></td>
               <td><?= $r['comentario'] !== null && $r['comentario'] !== '' ? htmlspecialchars($r['comentario'], ENT_QUOTES, 'UTF-8') : '—' ?></td>
               <td><span class="badge-rol badge-estado-<?= htmlspecialchars($r['estado'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($labelEstado[$r['estado']] ?? $r['estado'], ENT_QUOTES, 'UTF-8') ?></span></td>
+              <td>
+                <?php if (!empty($r['codigo'])): ?>
+                  <a class="btn-tabla" title="Ver comprobante" href="<?= buildUrl('/comprobante.php?codigo=' . urlencode($r['codigo'])) ?>" target="_blank" rel="noopener">
+                    <span class="material-symbols-outlined">receipt_long</span>
+                  </a>
+                <?php else: ?>
+                  —
+                <?php endif; ?>
+              </td>
             </tr>
           <?php endforeach; ?>
         </tbody>

@@ -639,6 +639,96 @@ body {
   color: #9e9e9e;
 }
 
+/* ===== MODAL: confirmación de reserva ===== */
+.modal-exito {
+  text-align: center;
+  padding-top: 0.5rem;
+}
+
+.modal-exito-icono {
+  color: #264220;
+  margin-bottom: 0.75rem;
+}
+
+.modal-exito-icono .material-symbols-outlined {
+  font-size: 3rem;
+}
+
+.modal-exito-titulo {
+  font-family: 'Montserrat', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #264220;
+  margin: 0 0 0.4rem;
+}
+
+.modal-exito-texto {
+  color: #434840;
+  font-size: 0.9rem;
+  margin: 0 0 1.1rem;
+}
+
+.modal-exito-codigo {
+  display: inline-block;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #264220;
+  background-color: #eef3ea;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.modal-exito-datos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  text-align: left;
+  background-color: #fafaf4;
+  border: 1px solid rgba(115, 121, 111, 0.2);
+  border-radius: 0.6rem;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.modal-exito-datos .dato {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.modal-exito-datos .etiqueta {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #73796f;
+}
+
+.modal-exito-datos .valor {
+  font-weight: 600;
+  color: #1a1c19;
+  text-align: right;
+}
+
+.modal-exito-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.modal-exito-acciones a {
+  justify-content: center;
+  text-decoration: none;
+}
+
+.modal-exito-cerrar {
+  width: 100%;
+}
+
 /* Botón ojo: flex item al final */
 .campo-ojo {
   flex-shrink: 0;

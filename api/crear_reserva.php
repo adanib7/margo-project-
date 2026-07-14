@@ -57,8 +57,14 @@ if (!empty($errores)) {
     exit;
 }
 
+$alfabetoCodigo = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+$codigo = 'COR-';
+for ($i = 0; $i < 6; $i++) {
+    $codigo .= $alfabetoCodigo[random_int(0, strlen($alfabetoCodigo) - 1)];
+}
+
 $stmt = $conn->prepare(
-    "INSERT INTO reservas (usuario_id, nombre, fecha, hora, personas, comentario) VALUES (?, ?, ?, ?, ?, ?)"
+    "INSERT INTO reservas (codigo, usuario_id, nombre, fecha, hora, personas, comentario) VALUES (?, ?, ?, ?, ?, ?, ?)"
 );
 
 if ($stmt === false) {
@@ -67,15 +73,18 @@ if ($stmt === false) {
     exit;
 }
 
-$stmt->bind_param('isssis', $usuarioId, $nombre, $fecha, $hora, $personas, $comentario);
+$stmt->bind_param('sisssis', $codigo, $usuarioId, $nombre, $fecha, $hora, $personas, $comentario);
 
 if ($stmt->execute()) {
-    $nuevoId = $stmt->insert_id;
     $stmt->close();
     echo json_encode([
         'ok'      => true,
         'mensaje' => "¡Reserva confirmada para el {$fecha} a las {$hora}hs!",
-        'id'      => $nuevoId,
+        'codigo'  => $codigo,
+        'nombre'  => $nombre,
+        'fecha'   => $fecha,
+        'hora'    => $hora,
+        'personas' => $personas,
     ]);
 } else {
     $stmt->close();
