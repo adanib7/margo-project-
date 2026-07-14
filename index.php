@@ -109,25 +109,6 @@ header.solid .lang{background:var(--crema-200)}
 .stats .n{font-family:var(--font-display);font-weight:700;font-size:34px;color:var(--dorado-600);line-height:1}
 .stats .l{font-size:13px;color:var(--fg-muted);margin-top:6px;max-width:14ch}
 
-/* ---- carta ---- */
-.carta{background:var(--verde-900);color:var(--crema-100)}
-.carta .sec-head h2{color:#fff}
-.carta .sec-head p{color:rgba(245,239,224,.75)}
-.carta .sec-head .eyebrow{color:var(--dorado-300)}
-.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px}
-.menu-col h3{font-family:var(--font-display);font-weight:600;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--dorado-300);padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid rgba(245,239,224,.18)}
-.menu-item{display:flex;align-items:baseline;gap:12px;padding:14px 0}
-.menu-item .mi-name{font-family:var(--font-display);font-weight:500;font-size:17px;color:#fff}
-.menu-item .mi-desc{font-size:13px;color:rgba(245,239,224,.6);margin-top:3px}
-.menu-item .dots{flex:1;border-bottom:1px dotted rgba(245,239,224,.3);transform:translateY(-4px)}
-.menu-item .mi-price{font-family:var(--font-display);font-weight:600;font-size:16px;color:var(--dorado-300);white-space:nowrap}
-.menu-foot{margin-top:48px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;padding-top:32px;border-top:1px solid rgba(245,239,224,.18)}
-.menu-foot p{font-size:15px;color:rgba(245,239,224,.8)}
-.menu-day{background:rgba(201,150,46,.14);border:1px solid rgba(201,150,46,.4);border-radius:var(--radius-md);padding:20px 24px;margin-bottom:40px;display:flex;align-items:center;gap:16px}
-.menu-day i{width:26px;height:26px;color:var(--dorado-300);flex-shrink:0}
-.menu-day .md-k{font-family:var(--font-display);font-weight:600;color:#fff;font-size:16px}
-.menu-day .md-v{font-size:14px;color:rgba(245,239,224,.72);margin-top:2px}
-.menu-day .md-price{margin-left:auto;font-family:var(--font-display);font-weight:700;font-size:24px;color:var(--dorado-300);white-space:nowrap}
 
 /* ---- ubicacion ---- */
 .info-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:56px;align-items:stretch}
