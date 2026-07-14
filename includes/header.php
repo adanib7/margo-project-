@@ -104,7 +104,14 @@
     }
   </script>
   <?php if (!empty($pageCSS)): ?>
-    <link rel="stylesheet" href="<?= htmlspecialchars($pageCSS, ENT_QUOTES, 'UTF-8') ?>" />
+    <?php
+      // Cache-buster: la versión cambia con la fecha de modificación del archivo,
+      // para que el navegador (y el caché estático de InfinityFree) siempre sirvan
+      // el CSS actualizado después de un deploy en vez de una copia vieja.
+      $cssAbsPath = dirname($_SERVER['SCRIPT_FILENAME']) . '/' . $pageCSS;
+      $cssVersion = is_file($cssAbsPath) ? filemtime($cssAbsPath) : time();
+    ?>
+    <link rel="stylesheet" href="<?= htmlspecialchars($pageCSS, ENT_QUOTES, 'UTF-8') ?>?v=<?= $cssVersion ?>" />
   <?php endif; ?>
   <title><?= htmlspecialchars($pageTitle ?? 'Margo Project', ENT_QUOTES, 'UTF-8') ?></title>
 </head>
