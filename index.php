@@ -177,6 +177,11 @@ footer .bottom a{color:rgba(245,239,224,.7)}
   header .wrap{padding-inline:8px}
   nav.main{gap:8px}
 
+  /* place language pills top-right on mobile */
+  header{position:fixed}
+  .lang{position:absolute;right:12px;top:10px;z-index:120}
+  .header-actions{padding-right:84px}
+
   /* single column content */
   .dishes{grid-template-columns:1fr}
   .gallery{grid-template-columns:1fr 1fr;grid-auto-rows:150px}
