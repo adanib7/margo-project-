@@ -199,7 +199,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
 
 <!-- HERO -->
 <section class="hero">
-  <div class="bg" data-note="foto: comedor / llagar en hora dorada"><img src="https://picsum.photos/seed/corralin-hero/1600/900" alt=""></div>
+  <div class="bg" data-note="foto: comedor / llagar en hora dorada"><img src="assets/img/hero.png" alt=""></div>
   <div class="overlay"></div>
   <div class="wrap">
     <span class="hero-eyebrow" data-i18n="hero_eyebrow">El Corralín del Campanal · Nava, Asturias</span>
@@ -212,7 +212,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
     <div class="hero-meta">
       <div class="item"><i data-lucide="map-pin"></i><div><div class="k">Nava, Asturias</div><div class="s" data-i18n="meta_dir">Plaza Manuel Uría, 4</div></div></div>
       <div class="item"><i data-lucide="clock"></i><div><div class="k" data-i18n="meta_horario_k">Cocina 13:00–16:00</div><div class="s" data-i18n="meta_horario_s">y 20:30–23:30</div></div></div>
-      <div class="item"><i data-lucide="phone"></i><div><div class="k">985 71 60 42</div><div class="s" data-i18n="meta_tel_s">Reservas por teléfono</div></div></div>
+      <div class="item"><i data-lucide="phone"></i><div><div class="k">985 71 60 42</div><div class="s" data-i18n="meta_tel_s">Reservar por teléfono</div></div></div>
     </div>
   </div>
 </section>
