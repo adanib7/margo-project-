@@ -1,7 +1,7 @@
 <?php
 function requireLogin(): void {
     if (!isset($_SESSION['usuario_logueado'])) {
-        header('Location: ' . buildUrl('/login.php', true));
+        header('Location: ' . buildUrl('/public/login.php', true));
         exit;
     }
 }

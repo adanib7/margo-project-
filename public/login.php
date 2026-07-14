@@ -1,10 +1,10 @@
 <?php
 session_start();
-require_once 'includes/config.php';
-require_once 'includes/check_auth.php';
-require_once 'includes/auth.php';
-$pageCSS = 'assets/css/login.css';
-require_once 'includes/header.php';
+require_once '../includes/config.php';
+require_once '../includes/check_auth.php';
+require_once '../includes/auth.php';
+$pageCSS = '../assets/css/login.css';
+require_once '../includes/header.php';
 
 // Mostrar errores que vengan de google_auth.php
 if (isset($_GET['error'])) {
@@ -21,7 +21,7 @@ if (isset($_GET['error'])) {
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <form class="form" method="post" action="?modo=<?= $modo ?>">
-  <img src="assets/img/logo-horizontal-verde.png" alt="El Corralín de Campanal" class="login-logo">
+  <img src="../assets/img/logo-horizontal-verde.png" alt="El Corralín de Campanal" class="login-logo">
 
   <div class="tabs">
     <a href="?modo=login"    class="<?= $modo === 'login'    ? 'activo' : '' ?>" id="tab-login">Iniciar sesión</a>
