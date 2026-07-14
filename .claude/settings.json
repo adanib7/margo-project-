@@ -73,7 +73,16 @@
       "Bash(php -l public/login.php)",
       "Bash(php -l includes/google_auth.php)",
       "PowerShell($php = \"C:\\\\xampp\\\\php\\\\php.exe\"; if \\(Test-Path $php\\) { & $php -l \"c:\\\\xampp\\\\htdocs\\\\margo-project-\\\\public\\\\login.php\"; & $php -l \"c:\\\\xampp\\\\htdocs\\\\margo-project-\\\\includes\\\\auth.php\"; & $php -l \"c:\\\\xampp\\\\htdocs\\\\margo-project-\\\\includes\\\\check_auth.php\"; & $php -l \"c:\\\\xampp\\\\htdocs\\\\margo-project-\\\\includes\\\\google_auth.php\"; & $php -l \"c:\\\\xampp\\\\htdocs\\\\margo-project-\\\\includes\\\\nav.php\" } else { \"php.exe not found at expected xampp path\" })",
-      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost/margo-project-/public/login.php\" -UseBasicParsing -TimeoutSec 5; \"STATUS: $\\($r.StatusCode\\)\" } catch { \"ERROR: $\\($_.Exception.Message\\)\" })"
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost/margo-project-/public/login.php\" -UseBasicParsing -TimeoutSec 5; \"STATUS: $\\($r.StatusCode\\)\" } catch { \"ERROR: $\\($_.Exception.Message\\)\" })",
+      "Bash(identify c:/xampp/htdocs/margo-project-/assets/img/hero.png)",
+      "Bash(magick -version)",
+      "Bash(convert -version)",
+      "Bash(php -v)",
+      "Bash(php -m)",
+      "Bash(/c/xampp/php/php.exe -m)",
+      "Bash(sort -k5 -n)",
+      "Bash(powershell -NoProfile -Command 'Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile\\('\\\\''assets/img/hero.png'\\\\''\\); $bmp = New-Object System.Drawing.Bitmap $img.Width, $img.Height, \\([System.Drawing.Imaging.PixelFormat]::Format24bppRgb\\); $g = [System.Drawing.Graphics]::FromImage\\($bmp\\); $g.DrawImage\\($img, 0, 0, $img.Width, $img.Height\\); $g.Dispose\\(\\); $codec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders\\(\\) | Where-Object { $_.MimeType -eq '\\\\''image/jpeg'\\\\'' }; $params = New-Object System.Drawing.Imaging.EncoderParameters 1; $params.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter \\([System.Drawing.Imaging.Encoder]::Quality\\), 82L; $bmp.Save\\('\\\\''assets/img/hero.jpg'\\\\'', $codec, $params\\); $bmp.Dispose\\(\\); $img.Dispose\\(\\); Write-Output '\\\\''done'\\\\''')",
+      "Bash(powershell -NoProfile -Command 'Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile\\('\\\\''assets/img/hero.png'\\\\''\\); $bmp = New-Object System.Drawing.Bitmap $img.Width, $img.Height, \\([System.Drawing.Imaging.PixelFormat]::Format24bppRgb\\); $g = [System.Drawing.Graphics]::FromImage\\($bmp\\); $g.DrawImage\\($img, 0, 0, $img.Width, $img.Height\\); $g.Dispose\\(\\); $codec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders\\(\\) | Where-Object { $_.MimeType -eq '\\\\''image/jpeg'\\\\'' }; $params = New-Object System.Drawing.Imaging.EncoderParameters 1; $params.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter \\([System.Drawing.Imaging.Encoder]::Quality\\), 70L; $bmp.Save\\('\\\\''assets/img/hero.jpg'\\\\'', $codec, $params\\); $bmp.Dispose\\(\\); $img.Dispose\\(\\); Write-Output '\\\\''done'\\\\''')"
     ]
   }
 }
