@@ -298,41 +298,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
   </div>
 </section>
 
-<!-- CARTA -->
-<section class="sec carta" id="carta">
-  <div class="wrap">
-    <div class="sec-head center">
-      <span class="eyebrow" data-i18n="carta_eyebrow">La carta</span>
-      <h2 data-i18n="carta_title">Para comer con calma</h2>
-      <p data-i18n="carta_sub">Una selección. La carta completa cambia con la temporada.</p>
-    </div>
-    <div class="menu-day">
-      <i data-lucide="soup"></i>
-      <div><div class="md-k" data-i18n="menu_dia_k">Menú del día · de martes a viernes</div><div class="md-v" data-i18n="menu_dia_v">Entrante, principal, postre casero y sidra o bebida</div></div>
-      <div class="md-price">18 €</div>
-    </div>
-    <div class="menu-grid">
-      <div class="menu-col">
-        <h3 data-i18n="menu_entrantes">Para empezar</h3>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi1">Tabla de quesos asturianos</div><div class="mi-desc" data-i18n="mi1d">Cabrales, Afuega'l Pitu y Gamonéu con pan de escanda</div></div><div class="dots"></div><div class="mi-price">14 €</div></div>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi2">Croquetas de compango</div><div class="mi-desc" data-i18n="mi2d">Media docena, cremosas por dentro</div></div><div class="dots"></div><div class="mi-price">9 €</div></div>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi3">Chorizo a la sidra</div><div class="mi-desc" data-i18n="mi3d">Guisado en su punto</div></div><div class="dots"></div><div class="mi-price">8 €</div></div>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi4">Pixín rebozado</div><div class="mi-desc" data-i18n="mi4d">Rape de rula, frito ligero</div></div><div class="dots"></div><div class="mi-price">12 €</div></div>
-      </div>
-      <div class="menu-col">
-        <h3 data-i18n="menu_principales">Principales</h3>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi5">Cachopo al corte</div><div class="mi-desc" data-i18n="mi5d">Ternera, jamón y queso · para dos</div></div><div class="dots"></div><div class="mi-price">26 €</div></div>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi6">Fabada asturiana</div><div class="mi-desc" data-i18n="mi6d">Con su compango completo</div></div><div class="dots"></div><div class="mi-price">15 €</div></div>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi7">Merluza a la sidra</div><div class="mi-desc" data-i18n="mi7d">Con almejas y patata</div></div><div class="dots"></div><div class="mi-price">19 €</div></div>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi8">Arroz con leche requemado</div><div class="mi-desc" data-i18n="mi8d">Postre de la casa</div></div><div class="dots"></div><div class="mi-price">6 €</div></div>
-      </div>
-    </div>
-    <div class="menu-foot">
-      <p data-i18n="carta_nota">¿Alergias o intolerancias? Dínoslo al reservar y lo tenemos en cuenta.</p>
-      <a href="login.php" class="btn btn-accent"><span data-i18n="cta_reservar_mesa">Reservar mesa</span></a>
-    </div>
-  </div>
-</section>
+
 
 <!-- UBICACION / HORARIO -->
 <section class="sec" id="ubicacion">
