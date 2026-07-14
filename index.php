@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>El Corralín del Campanal · Restaurante y llagar en Nava, Asturias</title>
 <link rel="stylesheet" href="assets/css/colors_and_type.css">
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="assets/js/lucide.min.js" defer></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -39,7 +39,7 @@ section{scroll-margin-top:96px}
 header{position:fixed;top:0;left:0;right:0;height:76px;z-index:100;display:flex;align-items:center;transition:background var(--dur-base) var(--ease-out),box-shadow var(--dur-base) var(--ease-out),border-color var(--dur-base) var(--ease-out);border-bottom:1px solid transparent}
 header .wrap{display:flex;align-items:center;gap:24px}
 header .logo-link{flex-shrink:0;display:block}
-header .logo-img{height:40px;width:auto;display:block;filter:brightness(0) invert(1);transition:filter var(--dur-base) var(--ease-out)}
+header .logo-img{height:52px;width:auto;display:block;filter:brightness(0) invert(1);transition:filter var(--dur-base) var(--ease-out)}
 nav.main{display:flex;gap:28px;margin-left:auto}
 nav.main a{font-family:var(--font-display);font-weight:500;font-size:14px;color:#fff;letter-spacing:.01em}
 nav.main a:hover{color:var(--dorado-300)}
@@ -443,7 +443,7 @@ const header=document.getElementById('site-header');
 function onScroll(){header.classList.toggle('solid',window.scrollY>60);}
 onScroll();window.addEventListener('scroll',onScroll,{passive:true});
 
-if(window.lucide)lucide.createIcons();
+document.addEventListener('DOMContentLoaded',()=>{if(window.lucide)lucide.createIcons();});
 </script>
 </body>
 </html>
