@@ -199,7 +199,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
 
 <!-- HERO -->
 <section class="hero">
-  <div class="bg" data-note="foto: comedor / llagar en hora dorada"><img src="assets/img/hero.png" alt=""></div>
+  <div class="bg" data-note="foto: comedor / llagar en hora dorada"><img src="assets/img/hero.jpg" alt="" width="1798" height="1354" fetchpriority="high"></div>
   <div class="overlay"></div>
   <div class="wrap">
     <span class="hero-eyebrow" data-i18n="hero_eyebrow">El Corralín del Campanal · Nava, Asturias</span>
