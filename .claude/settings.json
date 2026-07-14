@@ -69,7 +69,11 @@
       "Bash(curl -s http://localhost/margo-project-/api/reserva_ics.php?codigo=COR-TEST)",
       "Bash(curl -s -o /dev/null -w \"mis-reservas.php: %{http_code}\\\\n\" -L http://localhost/margo-project-/dashboards/mis-reservas.php)",
       "Bash(/c/xampp/php/php.exe -l \"/c/xampp/htdocs/margo-project-/includes/header.php\")",
-      "Bash(curl -s -L http://localhost/margo-project-/dashboards/user.php -o /tmp/dash_check.html)"
+      "Bash(curl -s -L http://localhost/margo-project-/dashboards/user.php -o /tmp/dash_check.html)",
+      "Bash(php -l public/login.php)",
+      "Bash(php -l includes/google_auth.php)",
+      "PowerShell($php = \"C:\\\\xampp\\\\php\\\\php.exe\"; if \\(Test-Path $php\\) { & $php -l \"c:\\\\xampp\\\\htdocs\\\\margo-project-\\\\public\\\\login.php\"; & $php -l \"c:\\\\xampp\\\\htdocs\\\\margo-project-\\\\includes\\\\auth.php\"; & $php -l \"c:\\\\xampp\\\\htdocs\\\\margo-project-\\\\includes\\\\check_auth.php\"; & $php -l \"c:\\\\xampp\\\\htdocs\\\\margo-project-\\\\includes\\\\google_auth.php\"; & $php -l \"c:\\\\xampp\\\\htdocs\\\\margo-project-\\\\includes\\\\nav.php\" } else { \"php.exe not found at expected xampp path\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost/margo-project-/public/login.php\" -UseBasicParsing -TimeoutSec 5; \"STATUS: $\\($r.StatusCode\\)\" } catch { \"ERROR: $\\($_.Exception.Message\\)\" })"
     ]
   }
 }
