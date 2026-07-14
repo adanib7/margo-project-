@@ -14,7 +14,7 @@ $tipo    = "error";
 if (isset($_GET['logout'])) {
     unset($_SESSION['usuario_logueado'], $_SESSION['rol']);
     session_destroy();
-    header('Location: ' . buildUrl('/login.php', true));
+    header('Location: ' . buildUrl('/public/login.php', true));
     exit;
 }
 

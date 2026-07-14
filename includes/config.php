@@ -7,8 +7,8 @@ $scriptDir = str_replace('\\', '/', dirname($scriptPath));
 // Eliminar caracteres de ruta no deseados y normalizar
 $basePath = rtrim($scriptDir, '/');
 
-// Si la ruta termina en /includes, /dashboards o /api, subir un nivel
-if (preg_match('/(\/includes|\/dashboards|\/api)$/', $basePath)) {
+// Si la ruta termina en /includes, /dashboards, /api o /public, subir un nivel
+if (preg_match('/(\/includes|\/dashboards|\/api|\/public)$/', $basePath)) {
     $basePath = str_replace('\\', '/', dirname($basePath));
 }
 
