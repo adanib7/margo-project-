@@ -200,7 +200,6 @@ footer .bottom a{color:rgba(245,239,224,.7)}
       <a href="#cocina" data-i18n="nav_cocina">La cocina</a>
       <a href="#galeria" data-i18n="nav_galeria">Galería</a>
       <a href="#historia" data-i18n="nav_historia">Historia</a>
-      <a href="#carta" data-i18n="nav_carta">Carta</a>
       <a href="#contacto" data-i18n="nav_contacto">Contacto</a>
     </nav>
     <div class="header-actions">
@@ -227,7 +226,6 @@ footer .bottom a{color:rgba(245,239,224,.7)}
     <p class="lede" data-i18n="hero_lede">Cocina asturiana de siempre en la villa de Nava: sidra del llagar, cachopo al corte y fabada de la güela. Elige mesa, día y hora — te esperamos.</p>
     <div class="hero-cta">
       <a href="login.php" class="btn btn-accent btn-lg"><i data-lucide="calendar-check"></i><span data-i18n="cta_reservar_mesa">Reservar mesa</span></a>
-      <a href="#carta" class="btn btn-ghost-light btn-lg"><i data-lucide="utensils"></i><span data-i18n="cta_ver_carta">Ver la carta</span></a>
     </div>
     <div class="hero-meta">
       <div class="item"><i data-lucide="map-pin"></i><div><div class="k">Nava, Asturias</div><div class="s" data-i18n="meta_dir">Plaza Manuel Uría, 4</div></div></div>
@@ -295,42 +293,6 @@ footer .bottom a{color:rgba(245,239,224,.7)}
         </div>
       </div>
       <div class="ph" data-note="foto: fachada / equipo del restaurante"><img src="https://picsum.photos/seed/corralin-fachada/800/900" alt=""></div>
-    </div>
-  </div>
-</section>
-
-<!-- CARTA -->
-<section class="sec carta" id="carta">
-  <div class="wrap">
-    <div class="sec-head center">
-      <span class="eyebrow" data-i18n="carta_eyebrow">La carta</span>
-      <h2 data-i18n="carta_title">Para comer con calma</h2>
-      <p data-i18n="carta_sub">Una selección. La carta completa cambia con la temporada.</p>
-    </div>
-    <div class="menu-day">
-      <i data-lucide="soup"></i>
-      <div><div class="md-k" data-i18n="menu_dia_k">Menú del día · de martes a viernes</div><div class="md-v" data-i18n="menu_dia_v">Entrante, principal, postre casero y sidra o bebida</div></div>
-      <div class="md-price">18 €</div>
-    </div>
-    <div class="menu-grid">
-      <div class="menu-col">
-        <h3 data-i18n="menu_entrantes">Para empezar</h3>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi1">Tabla de quesos asturianos</div><div class="mi-desc" data-i18n="mi1d">Cabrales, Afuega'l Pitu y Gamonéu con pan de escanda</div></div><div class="dots"></div><div class="mi-price">14 €</div></div>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi2">Croquetas de compango</div><div class="mi-desc" data-i18n="mi2d">Media docena, cremosas por dentro</div></div><div class="dots"></div><div class="mi-price">9 €</div></div>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi3">Chorizo a la sidra</div><div class="mi-desc" data-i18n="mi3d">Guisado en su punto</div></div><div class="dots"></div><div class="mi-price">8 €</div></div>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi4">Pixín rebozado</div><div class="mi-desc" data-i18n="mi4d">Rape de rula, frito ligero</div></div><div class="dots"></div><div class="mi-price">12 €</div></div>
-      </div>
-      <div class="menu-col">
-        <h3 data-i18n="menu_principales">Principales</h3>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi5">Cachopo al corte</div><div class="mi-desc" data-i18n="mi5d">Ternera, jamón y queso · para dos</div></div><div class="dots"></div><div class="mi-price">26 €</div></div>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi6">Fabada asturiana</div><div class="mi-desc" data-i18n="mi6d">Con su compango completo</div></div><div class="dots"></div><div class="mi-price">15 €</div></div>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi7">Merluza a la sidra</div><div class="mi-desc" data-i18n="mi7d">Con almejas y patata</div></div><div class="dots"></div><div class="mi-price">19 €</div></div>
-        <div class="menu-item"><div><div class="mi-name" data-i18n="mi8">Arroz con leche requemado</div><div class="mi-desc" data-i18n="mi8d">Postre de la casa</div></div><div class="dots"></div><div class="mi-price">6 €</div></div>
-      </div>
-    </div>
-    <div class="menu-foot">
-      <p data-i18n="carta_nota">¿Alergias o intolerancias? Dínoslo al reservar y lo tenemos en cuenta.</p>
-      <a href="login.php" class="btn btn-accent"><span data-i18n="cta_reservar_mesa">Reservar mesa</span></a>
     </div>
   </div>
 </section>
@@ -409,7 +371,6 @@ footer .bottom a{color:rgba(245,239,224,.7)}
         <h4 data-i18n="foot_explora">Explora</h4>
         <ul>
           <li><a href="#cocina" data-i18n="nav_cocina">La cocina</a></li>
-          <li><a href="#carta" data-i18n="nav_carta">Carta</a></li>
           <li><a href="#historia" data-i18n="nav_historia">Historia</a></li>
           <li><a href="login.php" data-i18n="cta_reservar">Reservar</a></li>
         </ul>
