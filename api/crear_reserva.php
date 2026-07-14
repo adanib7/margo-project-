@@ -64,7 +64,7 @@ for ($i = 0; $i < 6; $i++) {
 }
 
 $stmt = $conn->prepare(
-    "INSERT INTO reservas (codigo, usuario_id, nombre, fecha, hora, personas, comentario) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    "INSERT INTO reservas (codigo, usuario_id, nombre, fecha, hora, personas, comentario, estado) VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmada')"
 );
 
 if ($stmt === false) {
