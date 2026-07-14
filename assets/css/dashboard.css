@@ -729,6 +729,206 @@ body {
   width: 100%;
 }
 
+/* Perforación tipo ticket en el código de la reserva */
+.modal-exito-codigo {
+  position: relative;
+}
+
+.modal-exito-codigo::before,
+.modal-exito-codigo::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(115, 121, 111, 0.2);
+}
+
+.modal-exito-codigo::before { left: -7px; }
+.modal-exito-codigo::after  { right: -7px; }
+
+/* ===== MODAL: Reservar mesa (banner + controles a medida) ===== */
+.modal-contenedor-reserva {
+  padding: 0;
+  overflow: hidden;
+}
+
+.modal-contenedor-reserva .modal-form,
+.modal-contenedor-reserva .modal-exito {
+  padding: 1.75rem 2rem 2rem;
+}
+
+.modal-encabezado-reserva {
+  position: relative;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  margin-bottom: 0;
+  padding: 2rem 2rem 1.75rem;
+  background:
+    radial-gradient(circle at 92% 8%, rgba(255, 255, 255, 0.1) 0, transparent 45%),
+    radial-gradient(circle at 6% 95%, rgba(255, 255, 255, 0.08) 0, transparent 40%),
+    linear-gradient(135deg, #264220 0%, #3d5a35 100%);
+}
+
+.modal-cerrar-reserva {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.modal-cerrar-reserva:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.modal-icono-reserva {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.85rem;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffdea5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.9rem;
+}
+
+.modal-icono-reserva .material-symbols-outlined {
+  font-size: 1.6rem;
+}
+
+.modal-titulo-reserva {
+  margin: 0 0 0.3rem;
+  font-family: 'Montserrat', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.modal-subtitulo-reserva {
+  margin: 0;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Chips de horario */
+.horario-grupo {
+  margin-bottom: 0.6rem;
+}
+
+.horario-grupo:last-child {
+  margin-bottom: 0;
+}
+
+.horario-grupo-titulo {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #73796f;
+  margin-bottom: 0.4rem;
+}
+
+.horario-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.horario-chip {
+  border: 1.5px solid rgba(115, 121, 111, 0.35);
+  background-color: #fafaf4;
+  color: #434840;
+  border-radius: 9999px;
+  padding: 0.45rem 0.9rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+}
+
+.horario-chip:hover {
+  border-color: #264220;
+  background-color: #eef3ea;
+}
+
+.horario-chip:active {
+  transform: scale(0.96);
+}
+
+.horario-chip-activo,
+.horario-chip-activo:hover {
+  background-color: #264220;
+  border-color: #264220;
+  color: #ffffff;
+}
+
+/* Selector de personas */
+.stepper-personas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1.5px solid rgba(115, 121, 111, 0.4);
+  border-radius: 0.6rem;
+  background-color: #fafaf4;
+  padding: 0.4rem;
+}
+
+.stepper-btn {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.5rem;
+  border: none;
+  background-color: #264220;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s;
+}
+
+.stepper-btn:hover {
+  background-color: #3d5a35;
+}
+
+.stepper-btn:active {
+  transform: scale(0.94);
+}
+
+.stepper-btn .material-symbols-outlined {
+  font-size: 1.3rem;
+}
+
+.stepper-valor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.stepper-valor span:first-child {
+  font-family: 'Montserrat', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #264220;
+}
+
+.stepper-sub {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #73796f;
+}
+
 /* Botón ojo: flex item al final */
 .campo-ojo {
   flex-shrink: 0;

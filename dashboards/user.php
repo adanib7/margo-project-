@@ -64,18 +64,16 @@ $franjasHorarias = [
      MODAL: Reservar mesa
 ════════════════════════════════════════ -->
 <div class="modal-fondo" id="modalReserva" role="dialog" aria-modal="true" aria-labelledby="modalReservaTitulo">
-  <div class="modal-contenedor">
-    <div class="modal-encabezado">
-      <div class="modal-icono" id="modalReservaIcono">
-        <span class="material-symbols-outlined">table_restaurant</span>
-      </div>
-      <div>
-        <h2 class="modal-titulo" id="modalReservaTitulo">Reservar mesa</h2>
-        <p class="modal-subtitulo">Completá los datos y te confirmamos la reserva.</p>
-      </div>
-      <button class="modal-cerrar" id="btnCerrarModalReserva" aria-label="Cerrar">
+  <div class="modal-contenedor modal-contenedor-reserva">
+    <div class="modal-encabezado modal-encabezado-reserva">
+      <button class="modal-cerrar modal-cerrar-reserva" id="btnCerrarModalReserva" aria-label="Cerrar">
         <span class="material-symbols-outlined">close</span>
       </button>
+      <div class="modal-icono-reserva">
+        <span class="material-symbols-outlined">table_restaurant</span>
+      </div>
+      <h2 class="modal-titulo-reserva" id="modalReservaTitulo">Reservar mesa</h2>
+      <p class="modal-subtitulo-reserva">Elegí el día, el horario y te guardamos el lugar.</p>
     </div>
 
     <form class="modal-form" id="formReserva" novalidate>
@@ -99,28 +97,35 @@ $franjasHorarias = [
       </div>
 
       <div class="campo-grupo">
-        <label class="campo-etiqueta" for="rHora">Horario</label>
-        <div class="campo-input-wrapper">
-          <span class="campo-icono material-symbols-outlined">schedule</span>
-          <select class="campo-input campo-select" id="rHora" name="hora" required>
-            <option value="" disabled selected>Elegí un horario</option>
-            <?php foreach ($franjasHorarias as $franja => $horas): ?>
-              <optgroup label="<?= htmlspecialchars($franja, ENT_QUOTES, 'UTF-8') ?>">
-                <?php foreach ($horas as $hora): ?>
-                  <option value="<?= $hora ?>"><?= $hora ?> hs</option>
-                <?php endforeach; ?>
-              </optgroup>
-            <?php endforeach; ?>
-          </select>
-        </div>
+        <label class="campo-etiqueta">Horario</label>
+        <input type="hidden" id="rHora" name="hora" required>
+        <?php foreach ($franjasHorarias as $franja => $horas): ?>
+          <div class="horario-grupo">
+            <span class="horario-grupo-titulo"><?= htmlspecialchars($franja, ENT_QUOTES, 'UTF-8') ?></span>
+            <div class="horario-chips">
+              <?php foreach ($horas as $hora): ?>
+                <button type="button" class="horario-chip" data-hora="<?= $hora ?>"><?= $hora ?></button>
+              <?php endforeach; ?>
+            </div>
+          </div>
+        <?php endforeach; ?>
         <span class="campo-error" id="rErrorHora"></span>
       </div>
 
       <div class="campo-grupo">
-        <label class="campo-etiqueta" for="rPersonas">Cantidad de personas</label>
-        <div class="campo-input-wrapper">
-          <span class="campo-icono material-symbols-outlined">groups</span>
-          <input class="campo-input" type="number" id="rPersonas" name="personas" min="1" max="20" value="2" required>
+        <label class="campo-etiqueta">Cantidad de personas</label>
+        <input type="hidden" id="rPersonas" name="personas" value="2" required>
+        <div class="stepper-personas">
+          <button type="button" class="stepper-btn" id="btnPersonasMenos" aria-label="Menos personas">
+            <span class="material-symbols-outlined">remove</span>
+          </button>
+          <div class="stepper-valor">
+            <span id="personasValor">2</span>
+            <span class="stepper-sub">personas</span>
+          </div>
+          <button type="button" class="stepper-btn" id="btnPersonasMas" aria-label="Más personas">
+            <span class="material-symbols-outlined">add</span>
+          </button>
         </div>
         <span class="campo-error" id="rErrorPersonas"></span>
       </div>
@@ -180,8 +185,35 @@ $franjasHorarias = [
   const btnSubmit  = document.getElementById('btnSubmitReserva');
   const inputFecha = document.getElementById('rFecha');
   const exito      = document.getElementById('reservaExito');
+  const inputHora     = document.getElementById('rHora');
+  const inputPersonas = document.getElementById('rPersonas');
+  const personasValor = document.getElementById('personasValor');
+  const PERSONAS_MIN = 1;
+  const PERSONAS_MAX = 20;
 
   inputFecha.min = new Date().toISOString().split('T')[0];
+
+  document.querySelectorAll('.horario-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.horario-chip').forEach(c => c.classList.remove('horario-chip-activo'));
+      chip.classList.add('horario-chip-activo');
+      inputHora.value = chip.dataset.hora;
+      document.getElementById('rErrorHora').textContent = '';
+    });
+  });
+
+  function setPersonas(valor) {
+    valor = Math.min(PERSONAS_MAX, Math.max(PERSONAS_MIN, valor));
+    inputPersonas.value = valor;
+    personasValor.textContent = valor;
+  }
+
+  document.getElementById('btnPersonasMenos').addEventListener('click', () => {
+    setPersonas(parseInt(inputPersonas.value, 10) - 1);
+  });
+  document.getElementById('btnPersonasMas').addEventListener('click', () => {
+    setPersonas(parseInt(inputPersonas.value, 10) + 1);
+  });
 
   btnAbrir.addEventListener('click', e => {
     e.preventDefault();
@@ -237,7 +269,8 @@ $franjasHorarias = [
 
   function marcarError(inputId, errorId, texto) {
     const el = document.getElementById(inputId);
-    el.closest('.campo-input-wrapper').classList.add('campo-wrapper-error');
+    const wrapper = el.closest('.campo-input-wrapper');
+    if (wrapper) wrapper.classList.add('campo-wrapper-error');
     document.getElementById(errorId).textContent = texto;
   }
 
@@ -303,7 +336,8 @@ $franjasHorarias = [
         mostrarExito(data);
         form.reset();
         document.getElementById('rNombre').value = <?= json_encode($_SESSION['usuario_logueado']) ?>;
-        document.getElementById('rPersonas').value = 2;
+        document.querySelectorAll('.horario-chip').forEach(c => c.classList.remove('horario-chip-activo'));
+        setPersonas(2);
       } else if (data.errores) {
         const map = {
           nombre:   ['rNombre',   'rErrorNombre'],
