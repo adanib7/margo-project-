@@ -21,6 +21,10 @@ if (isset($_GET['error'])) {
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <form class="form" method="post" action="?modo=<?= $modo ?>">
+  <a href="../index.php" class="enlace-volver-login">
+    <span class="material-symbols-outlined">arrow_back</span>
+    Volver al inicio
+  </a>
   <img src="../assets/img/logo-horizontal-verde.png" alt="El Corralín de Campanal" class="login-logo">
 
   <div class="tabs">

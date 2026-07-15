@@ -150,6 +150,23 @@ body {
   text-decoration: underline;
 }
 
+/* ===== Botón de volver ===== */
+.enlace-volver-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #2D5F3F;
+  font-weight: 600;
+  text-decoration: none;
+  margin-bottom: 10px;
+}
+.enlace-volver-login:hover {
+  color: #1d4d36;
+}
+.enlace-volver-login .material-symbols-outlined {
+  font-size: 1rem;
+}
+
 /* ===== Botón principal ===== */
 .button-submit {
   margin: 20px 0 10px 0;

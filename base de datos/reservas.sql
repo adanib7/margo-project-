@@ -9,6 +9,7 @@ CREATE TABLE `reservas` (
   `hora` time NOT NULL,
   `personas` int(11) NOT NULL,
   `comentario` varchar(500) DEFAULT NULL,
+  `telefono` varchar(50) DEFAULT NULL,
   `estado` varchar(20) NOT NULL DEFAULT 'pendiente',
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

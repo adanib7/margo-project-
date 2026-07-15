@@ -17,7 +17,7 @@ if ($codigo === '' || $conn === null) {
 }
 
 $stmt = $conn->prepare(
-    "SELECT codigo, nombre, fecha, hora, personas FROM reservas WHERE codigo = ? AND usuario_id = ?"
+    "SELECT codigo, nombre, fecha, hora, personas, telefono FROM reservas WHERE codigo = ? AND usuario_id = ?"
 );
 $stmt->bind_param('si', $codigo, $_SESSION['usuario_id']);
 $stmt->execute();
@@ -39,6 +39,9 @@ function icsEscape(string $texto): string {
 
 $resumen      = icsEscape('Reserva en El Corralín de Campanal');
 $descripcion  = icsEscape("Reserva para {$reserva['personas']} personas a nombre de {$reserva['nombre']}. Código: {$reserva['codigo']}");
+if (!empty($reserva['telefono'])) {
+    $descripcion .= icsEscape(" Teléfono: {$reserva['telefono']}");
+}
 $ubicacion    = icsEscape('Plaza Manuel Uría, 4, 33520 Nava, Asturias');
 
 $lineas = [

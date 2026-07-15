@@ -28,12 +28,19 @@ $fecha      = trim($body['fecha']      ?? '');
 $hora       = trim($body['hora']       ?? '');
 $personas   = (int) ($body['personas'] ?? 0);
 $comentario = trim($body['comentario'] ?? '');
+$telefono   = trim($body['telefono'] ?? '');
 $usuarioId  = (int) $_SESSION['usuario_id'];
 
 $errores = [];
 
 if ($nombre === '') {
     $errores['nombre'] = 'El nombre es obligatorio.';
+}
+
+if ($telefono === '') {
+    $errores['telefono'] = 'El teléfono es obligatorio.';
+} elseif (!preg_match('/^[0-9+()\s-]{6,25}$/', $telefono)) {
+    $errores['telefono'] = 'Ingresá un teléfono válido.';
 }
 
 $fechaObj = DateTime::createFromFormat('Y-m-d', $fecha);
@@ -57,6 +64,21 @@ if (!empty($errores)) {
     exit;
 }
 
+$stmt = $conn->prepare("SELECT id FROM reservas WHERE fecha = ? AND hora = ? AND estado != 'cancelada' LIMIT 1");
+$stmt->bind_param('ss', $fecha, $hora);
+$stmt->execute();
+$stmt->store_result();
+if ($stmt->num_rows > 0) {
+    $errores['hora'] = 'Ese horario ya fue reservado. Elegí otro.';
+}
+$stmt->close();
+
+if (!empty($errores)) {
+    http_response_code(409);
+    echo json_encode(['ok' => false, 'errores' => $errores]);
+    exit;
+}
+
 $alfabetoCodigo = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 $codigo = 'COR-';
 for ($i = 0; $i < 6; $i++) {
@@ -64,7 +86,7 @@ for ($i = 0; $i < 6; $i++) {
 }
 
 $stmt = $conn->prepare(
-    "INSERT INTO reservas (codigo, usuario_id, nombre, fecha, hora, personas, comentario, estado) VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmada')"
+    "INSERT INTO reservas (codigo, usuario_id, nombre, fecha, hora, personas, comentario, telefono, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmada')"
 );
 
 if ($stmt === false) {
@@ -73,7 +95,7 @@ if ($stmt === false) {
     exit;
 }
 
-$stmt->bind_param('sisssis', $codigo, $usuarioId, $nombre, $fecha, $hora, $personas, $comentario);
+$stmt->bind_param('sisssiss', $codigo, $usuarioId, $nombre, $fecha, $hora, $personas, $comentario, $telefono);
 
 if ($stmt->execute()) {
     $stmt->close();
