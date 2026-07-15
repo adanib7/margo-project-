@@ -275,7 +275,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
   <div class="overlay"></div>
   <div class="wrap">
     <span class="hero-eyebrow" data-i18n="hero_eyebrow">El Corralín de Campanal · Nava, Asturias</span>
-    <h1 data-i18n="hero_title">Algo</h1>
+    <h1 data-i18n="hero_title">Conoce nuestra restaurante</h1>
     <p class="lede" data-i18n="hero_lede">Cocina asturiana de siempre en la villa de Nava. Elige día y hora — te esperamos.</p>
     <div class="hero-cta">
       <a href="public/login.php" class="btn btn-accent btn-lg"><i data-lucide="calendar-check"></i><span data-i18n="cta_reservar_mesa">Reservar mesa</span></a>
