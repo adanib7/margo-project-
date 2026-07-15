@@ -47,7 +47,7 @@ $franjasHorarias = [
       <p class="tarjeta-texto">Revisa tus reservas.</p>
     </a>
 
-    <a class="tarjeta" href="#">
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/mi_perfil.php') ?>">
       <div class="tarjeta-overlay"></div>
       <div class="tarjeta-cabecera">
         <div class="icono">
@@ -162,10 +162,20 @@ $franjasHorarias = [
           <span class="campo-error" id="rErrorNombre"></span>
         </div>
 
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="rTelefono">Teléfono de contacto</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">phone</span>
+            <input class="campo-input" type="tel" id="rTelefono" name="telefono" placeholder="Ej. +34 600 123 456" required>
+          </div>
+          <span class="campo-error" id="rErrorTelefono"></span>
+        </div>
+
         <div class="resumen-reserva">
           <div class="resumen-fila"><span>Fecha</span><strong id="resumenFecha">—</strong></div>
           <div class="resumen-fila"><span>Hora</span><strong id="resumenHora">—</strong></div>
           <div class="resumen-fila"><span>Personas</span><strong id="resumenPersonas">—</strong></div>
+          <div class="resumen-fila"><span>Teléfono</span><strong id="resumenTelefono">—</strong></div>
         </div>
       </div>
 
@@ -190,6 +200,7 @@ $franjasHorarias = [
         <div class="dato"><span class="etiqueta">Fecha</span><span class="valor" id="exitoFecha"></span></div>
         <div class="dato"><span class="etiqueta">Hora</span><span class="valor" id="exitoHora"></span></div>
         <div class="dato"><span class="etiqueta">Personas</span><span class="valor" id="exitoPersonas"></span></div>
+        <div class="dato"><span class="etiqueta">Teléfono</span><span class="valor" id="exitoTelefono"></span></div>
       </div>
 
       <div class="modal-exito-acciones">
@@ -221,7 +232,9 @@ $franjasHorarias = [
   const exito      = document.getElementById('reservaExito');
   const inputHora     = document.getElementById('rHora');
   const inputPersonas = document.getElementById('rPersonas');
+  const inputTelefono = document.getElementById('rTelefono');
   const personasValor = document.getElementById('personasValor');
+  const horarioChips  = Array.from(document.querySelectorAll('.horario-chip'));
   const PERSONAS_MIN = 1;
   const PERSONAS_MAX = 20;
   const TOTAL_PASOS = 3;
@@ -230,10 +243,12 @@ $franjasHorarias = [
   const PASO_DE_CAMPO = {
     fecha: 1, hora: 1,
     personas: 2,
+    telefono: 3,
     nombre: 3,
   };
 
   inputFecha.min = new Date().toISOString().split('T')[0];
+  inputFecha.addEventListener('change', onFechaChange);
 
   document.querySelectorAll('.horario-chip').forEach(chip => {
     chip.addEventListener('click', () => {
@@ -248,6 +263,39 @@ $franjasHorarias = [
     valor = Math.min(PERSONAS_MAX, Math.max(PERSONAS_MIN, valor));
     inputPersonas.value = valor;
     personasValor.textContent = valor;
+  }
+
+  async function onFechaChange() {
+    const fecha = inputFecha.value;
+    inputHora.value = '';
+    horarioChips.forEach(chip => {
+      chip.style.display = '';
+      chip.classList.remove('horario-chip-activo', 'horario-chip-ocupado');
+      chip.title = '';
+    });
+
+    if (!fecha) return;
+    await cargarHorariosOcupados(fecha);
+  }
+
+  async function cargarHorariosOcupados(fecha) {
+    try {
+      const res = await fetch(BASE + '/api/ocupaciones_horarios.php?fecha=' + encodeURIComponent(fecha));
+      const data = await res.json();
+      if (!data.ok || !Array.isArray(data.horarios)) return;
+
+      const ocupados = new Set(data.horarios.map(h => h.slice(0, 5)));
+      horarioChips.forEach(chip => {
+        if (ocupados.has(chip.dataset.hora)) {
+          chip.style.display = 'none';
+          chip.classList.remove('horario-chip-activo');
+          chip.classList.add('horario-chip-ocupado');
+          chip.title = 'Horario ocupado';
+        }
+      });
+    } catch (error) {
+      // Si falla la carga de horarios ocupados, no bloqueamos la reserva.
+    }
   }
 
   document.getElementById('btnPersonasMenos').addEventListener('click', () => {
@@ -360,10 +408,12 @@ $franjasHorarias = [
     const fecha    = document.getElementById('rFecha').value;
     const hora     = document.getElementById('rHora').value;
     const personas = document.getElementById('rPersonas').value;
+    const telefono = document.getElementById('rTelefono').value.trim();
 
     document.getElementById('resumenFecha').textContent = formatearFecha(fecha);
     document.getElementById('resumenHora').textContent  = hora ? `${hora} hs` : '—';
     document.getElementById('resumenPersonas').textContent = personas;
+    document.getElementById('resumenTelefono').textContent = telefono || '—';
   }
 
   function formatearFecha(fecha) {
@@ -381,12 +431,13 @@ $franjasHorarias = [
     document.getElementById('exitoFecha').textContent    = `${dia}/${mes}/${anio}`;
     document.getElementById('exitoHora').textContent     = `${reserva.hora}hs`;
     document.getElementById('exitoPersonas').textContent = reserva.personas;
+    document.getElementById('exitoTelefono').textContent = reserva.telefono || '—';
     document.getElementById('exitoCalendario').href = BASE + '/api/reserva_ics.php?codigo=' + encodeURIComponent(reserva.codigo);
     document.getElementById('exitoComprobante').href = BASE + '/comprobante.php?codigo=' + encodeURIComponent(reserva.codigo);
   }
 
   function limpiarErrores() {
-    ['rErrorNombre', 'rErrorFecha', 'rErrorHora', 'rErrorPersonas'].forEach(id => {
+    ['rErrorNombre', 'rErrorFecha', 'rErrorHora', 'rErrorPersonas', 'rErrorTelefono'].forEach(id => {
       document.getElementById(id).textContent = '';
     });
     form.querySelectorAll('.campo-wrapper-error').forEach(el => el.classList.remove('campo-wrapper-error'));
@@ -412,6 +463,7 @@ $franjasHorarias = [
     const fecha    = document.getElementById('rFecha').value;
     const hora     = document.getElementById('rHora').value;
     const personas = parseInt(document.getElementById('rPersonas').value, 10);
+    const telefono = document.getElementById('rTelefono').value.trim();
 
     if (!nombre) {
       marcarError('rNombre', 'rErrorNombre', 'El nombre es obligatorio.');
@@ -427,6 +479,13 @@ $franjasHorarias = [
     }
     if (!personas || personas < 1 || personas > 20) {
       marcarError('rPersonas', 'rErrorPersonas', 'Ingresá entre 1 y 20 personas.');
+      ok = false;
+    }
+    if (!telefono) {
+      marcarError('rTelefono', 'rErrorTelefono', 'Ingresá un teléfono de contacto.');
+      ok = false;
+    } else if (!/^[0-9+()\s-]{6,25}$/.test(telefono)) {
+      marcarError('rTelefono', 'rErrorTelefono', 'Ingresá un teléfono válido.');
       ok = false;
     }
     return ok;
@@ -473,13 +532,16 @@ $franjasHorarias = [
       hora:       document.getElementById('rHora').value,
       personas:   parseInt(document.getElementById('rPersonas').value, 10),
       comentario: document.getElementById('rComentario').value.trim(),
+      telefono:   document.getElementById('rTelefono').value.trim(),
     };
 
     try {
-      const res  = await fetch(BASE + '/api/crear_reserva.php', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload),
+      const res = await fetch(BASE + '/api/crear_reserva.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+        },
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
 
@@ -488,6 +550,7 @@ $franjasHorarias = [
         mostrarExito(data);
         form.reset();
         document.getElementById('rNombre').value = <?= json_encode($_SESSION['usuario_logueado']) ?>;
+        document.getElementById('rTelefono').value = '';
         document.querySelectorAll('.horario-chip').forEach(c => c.classList.remove('horario-chip-activo'));
         setPersonas(2);
       } else if (data.errores) {
@@ -496,6 +559,7 @@ $franjasHorarias = [
           fecha:    ['rFecha',    'rErrorFecha'],
           hora:     ['rHora',     'rErrorHora'],
           personas: ['rPersonas', 'rErrorPersonas'],
+          telefono: ['rTelefono', 'rErrorTelefono'],
         };
         const campos = Object.keys(data.errores).filter(c => map[c]);
         const pasoConError = Math.min(...campos.map(c => PASO_DE_CAMPO[c] || TOTAL_PASOS));

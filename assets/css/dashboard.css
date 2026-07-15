@@ -1004,6 +1004,10 @@ body {
   color: #ffffff;
 }
 
+.horario-chip-ocupado {
+  display: none;
+}
+
 /* Selector de personas */
 .stepper-personas {
   display: flex;

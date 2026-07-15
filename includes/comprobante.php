@@ -9,7 +9,7 @@ $reserva = null;
 
 if ($codigo !== '' && $conn !== null) {
     $stmt = $conn->prepare(
-        "SELECT codigo, nombre, fecha, hora, personas, comentario, estado FROM reservas WHERE codigo = ? AND usuario_id = ?"
+        "SELECT codigo, nombre, fecha, hora, personas, comentario, telefono, estado FROM reservas WHERE codigo = ? AND usuario_id = ?"
     );
     $stmt->bind_param('si', $codigo, $_SESSION['usuario_id']);
     $stmt->execute();
@@ -210,6 +210,12 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
         <span class="etiqueta">Personas</span>
         <span class="valor"><?= (int) $reserva['personas'] ?></span>
       </div>
+      <?php if (!isset($reserva['telefono']) || $reserva['telefono'] !== ''): ?>
+      <div class="dato">
+        <span class="etiqueta">Teléfono</span>
+        <span class="valor"><?= htmlspecialchars($reserva['telefono'] ?? '—', ENT_QUOTES, 'UTF-8') ?></span>
+      </div>
+      <?php endif; ?>
       <?php if (!empty($reserva['comentario'])): ?>
       <div class="dato">
         <span class="etiqueta">Pedido especial</span>
