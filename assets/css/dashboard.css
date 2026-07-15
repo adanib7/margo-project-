@@ -821,6 +821,135 @@ body {
   color: rgba(255, 255, 255, 0.8);
 }
 
+/* Indicador de pasos */
+.pasos-indicador {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  margin-top: 1.15rem;
+}
+
+.paso-dot {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.25s, color 0.25s;
+}
+
+.paso-dot-activo {
+  background-color: #ffdea5;
+  color: #264220;
+}
+
+.paso-dot-completo {
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #264220;
+}
+
+.paso-linea {
+  flex: 1;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 1px;
+  transition: background-color 0.25s;
+}
+
+.paso-linea-completa {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.paso-contador {
+  margin: 0.5rem 0 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* Pasos del formulario de reserva */
+.modal-form-pasos {
+  position: relative;
+}
+
+.modal-paso {
+  display: none;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.modal-paso-activo {
+  display: flex;
+}
+
+.paso-titulo {
+  margin: 0;
+  font-family: 'Montserrat', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #264220;
+}
+
+@keyframes pasoEntraDerecha {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pasoEntraIzquierda {
+  from { opacity: 0; transform: translateX(-28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.entra-derecha { animation: pasoEntraDerecha 0.28s ease; }
+.entra-izquierda { animation: pasoEntraIzquierda 0.28s ease; }
+
+/* Resumen de la reserva (paso final) */
+.resumen-reserva {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background-color: #fafaf4;
+  border: 1px solid rgba(115, 121, 111, 0.25);
+  border-radius: 0.6rem;
+  padding: 0.9rem 1.1rem;
+}
+
+.resumen-fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.resumen-fila span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #73796f;
+}
+
+.resumen-fila strong {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #264220;
+  text-align: right;
+}
+
+.modal-acciones.modal-acciones-pasos {
+  justify-content: space-between;
+}
+
 /* Chips de horario */
 .horario-grupo {
   margin-bottom: 0.6rem;

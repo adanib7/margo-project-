@@ -43,7 +43,7 @@ header .logo-img{height:72px;width:auto;display:block;filter:brightness(0) inver
 nav.main{display:flex;gap:28px;margin-left:auto}
 nav.main a{font-family:var(--font-display);font-weight:500;font-size:14px;color:#fff;letter-spacing:.01em}
 nav.main a:hover{color:var(--dorado-300)}
-.header-actions{display:flex;align-items:center;gap:16px}
+.header-actions{display:flex;align-items:center;gap:16px;margin-left:auto}
 /* scrolled state */
 header.solid{background:var(--crema-50);border-bottom-color:var(--gris-200);box-shadow:var(--shadow-sm)}
 header.solid nav.main a{color:var(--gris-800)}
@@ -58,6 +58,42 @@ header.solid .lang-btn.on{background:var(--verde-700);color:#fff;border-color:va
 .lang-btn:hover{background:rgba(255,255,255,.14)}
 .lang-btn.on{background:var(--dorado-500);color:var(--verde-900);border-color:var(--dorado-500)}
 header.solid .lang{background:var(--crema-200)}
+
+/* ---- hamburger toggle ---- */
+.menu-toggle{display:none;flex-direction:column;justify-content:center;align-items:center;gap:5px;width:44px;height:44px;flex-shrink:0;background:transparent;border:none;cursor:pointer;margin-left:auto}
+.menu-toggle span{display:block;width:24px;height:2px;border-radius:2px;background:#fff;transition:transform var(--dur-base) var(--ease-out),opacity var(--dur-fast) var(--ease-out),background var(--dur-base) var(--ease-out)}
+header.solid .menu-toggle span{background:var(--gris-800)}
+.menu-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.menu-toggle.open span:nth-child(2){opacity:0}
+.menu-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* ---- mobile menu ---- */
+.mobile-backdrop{position:fixed;inset:0;background:rgba(20,28,20,.45);opacity:0;pointer-events:none;transition:opacity var(--dur-base) var(--ease-out);z-index:98}
+.mobile-backdrop.open{opacity:1;pointer-events:auto}
+.mobile-menu{position:fixed;top:76px;left:0;right:0;background:var(--crema-50);border-bottom:1px solid var(--gris-200);box-shadow:var(--shadow-lg);z-index:99;max-height:calc(100vh - 76px);overflow-y:auto;opacity:0;transform:translateY(-14px) scale(.98);transform-origin:top center;pointer-events:none;transition:opacity var(--dur-base) var(--ease-out),transform var(--dur-base) var(--ease-out)}
+.mobile-menu.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.mobile-nav{display:flex;flex-direction:column;padding:8px 0}
+.mobile-nav a{font-family:var(--font-display);font-weight:600;font-size:17px;color:var(--gris-800);padding:15px 4px;border-bottom:1px solid var(--gris-100);opacity:0;transform:translateX(-14px);transition:opacity var(--dur-base) var(--ease-out),transform var(--dur-base) var(--ease-out),color var(--dur-fast) var(--ease-out)}
+.mobile-menu.open .mobile-nav a{opacity:1;transform:translateX(0)}
+.mobile-menu.open .mobile-nav a:nth-child(1){transition-delay:.04s}
+.mobile-menu.open .mobile-nav a:nth-child(2){transition-delay:.08s}
+.mobile-menu.open .mobile-nav a:nth-child(3){transition-delay:.12s}
+.mobile-menu.open .mobile-nav a:nth-child(4){transition-delay:.16s}
+.mlang-block{border-bottom:1px solid var(--gris-100);opacity:0;transform:translateX(-14px);transition:opacity var(--dur-base) var(--ease-out),transform var(--dur-base) var(--ease-out)}
+.mobile-menu.open .mlang-block{opacity:1;transform:translateX(0);transition-delay:.2s}
+.mlang-toggle{display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:none;padding:15px 4px;font-family:var(--font-display);font-weight:600;font-size:15px;color:var(--gris-800);cursor:pointer}
+.mlang-toggle i[data-lucide="globe"]{width:18px;height:18px;color:var(--verde-700)}
+.mlang-current{margin-left:auto;font-size:12px;letter-spacing:.06em;color:var(--fg-muted)}
+.mlang-chevron{width:16px;height:16px;color:var(--fg-muted);transition:transform var(--dur-base) var(--ease-out)}
+.mlang-block.open .mlang-chevron{transform:rotate(90deg)}
+.mlang-options{display:grid;grid-template-columns:0fr;transition:grid-template-columns var(--dur-base) var(--ease-out)}
+.mlang-block.open .mlang-options{grid-template-columns:1fr}
+.mlang-options-inner{overflow:hidden;display:flex;gap:8px;min-width:0;padding-bottom:14px}
+.mlang-options .lang-btn{color:var(--gris-700);background:var(--crema-100);border:1px solid var(--gris-300);flex-shrink:0}
+.mlang-options .lang-btn:hover{background:var(--crema-200)}
+.mlang-options .lang-btn.on{background:var(--verde-700);color:#fff;border-color:var(--verde-700)}
+.mobile-reservar{margin-top:20px;opacity:0;transform:translateX(-14px);transition:opacity var(--dur-base) var(--ease-out),transform var(--dur-base) var(--ease-out);transition-delay:.24s}
+.mobile-menu.open .mobile-reservar{opacity:1;transform:translateX(0)}
 
 /* ---- hero ---- */
 .hero{position:relative;min-height:100vh;display:flex;align-items:center;padding-top:76px}
@@ -154,6 +190,9 @@ footer .bottom a{color:rgba(245,239,224,.7)}
 /* ---- responsive ---- */
 @media(max-width:960px){
   nav.main{display:none}
+  .header-actions .lang{display:none}
+  .header-actions .btn-reservar-top{display:none}
+  .menu-toggle{display:flex}
   .dishes{grid-template-columns:1fr;max-width:440px;margin-inline:auto}
   .gallery{grid-template-columns:repeat(2,1fr)}
   .split,.menu-grid,.info-grid,.contact .split{grid-template-columns:1fr;gap:40px}
@@ -166,7 +205,6 @@ footer .bottom a{color:rgba(245,239,224,.7)}
   .hero-meta{gap:24px}
   .stats{flex-wrap:wrap;gap:28px}
   .gallery{grid-template-columns:1fr 1fr;grid-auto-rows:150px}
-  .header-actions .btn-reservar-top{display:none}
 }
 </style>
 </head>
@@ -191,9 +229,41 @@ footer .bottom a{color:rgba(245,239,224,.7)}
         <button class="lang-btn" data-lang="pt">PT</button>
       </div>
       <a href="public/login.php" class="btn btn-accent btn-reservar-top" data-i18n="cta_reservar">Reservar</a>
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobileMenu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </header>
+
+<div class="mobile-backdrop" id="mobileBackdrop"></div>
+<div class="mobile-menu" id="mobileMenu">
+  <div class="wrap">
+    <nav class="mobile-nav">
+      <a href="#cocina" data-i18n="nav_cocina">La cocina</a>
+      <a href="#galeria" data-i18n="nav_galeria">Galería</a>
+      <a href="#historia" data-i18n="nav_historia">Historia</a>
+      <a href="#contacto" data-i18n="nav_contacto">Contacto</a>
+    </nav>
+    <div class="mlang-block" id="mlangBlock">
+      <button class="mlang-toggle" id="mlangToggle" type="button" aria-expanded="false" aria-controls="mlangOptions">
+        <i data-lucide="globe"></i>
+        <span>Idioma</span>
+        <span class="mlang-current" id="mlangCurrent">ES</span>
+        <i data-lucide="chevron-right" class="mlang-chevron"></i>
+      </button>
+      <div class="mlang-options" id="mlangOptions">
+        <div class="mlang-options-inner">
+          <button class="lang-btn on" data-lang="es">ES</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+          <button class="lang-btn" data-lang="fr">FR</button>
+          <button class="lang-btn" data-lang="pt">PT</button>
+        </div>
+      </div>
+    </div>
+    <a href="public/login.php" class="btn btn-accent btn-lg mobile-reservar" style="width:100%" data-i18n="cta_reservar">Reservar</a>
+  </div>
+</div>
 
 <main id="top">
 
@@ -436,12 +506,52 @@ function setLang(lang){
   });
   document.documentElement.lang=lang;
   document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('on',b.dataset.lang===lang));
+  const mc=document.getElementById('mlangCurrent');
+  if(mc)mc.textContent=lang.toUpperCase();
 }
-document.querySelectorAll('.lang-btn').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+document.querySelectorAll('.lang-btn').forEach(b=>b.addEventListener('click',()=>{
+  setLang(b.dataset.lang);
+  if(mlangBlock)mlangBlock.classList.remove('open');
+}));
 
 const header=document.getElementById('site-header');
 function onScroll(){header.classList.toggle('solid',window.scrollY>60);}
 onScroll();window.addEventListener('scroll',onScroll,{passive:true});
+
+/* ---- mobile menu ---- */
+const menuToggle=document.getElementById('menuToggle');
+const mobileMenu=document.getElementById('mobileMenu');
+const mobileBackdrop=document.getElementById('mobileBackdrop');
+const mlangBlock=document.getElementById('mlangBlock');
+const mlangToggle=document.getElementById('mlangToggle');
+
+function closeMenu(){
+  menuToggle.classList.remove('open');
+  menuToggle.setAttribute('aria-expanded','false');
+  mobileMenu.classList.remove('open');
+  mobileBackdrop.classList.remove('open');
+  mlangBlock.classList.remove('open');
+  mlangToggle.setAttribute('aria-expanded','false');
+  document.body.style.overflow='';
+}
+function openMenu(){
+  menuToggle.classList.add('open');
+  menuToggle.setAttribute('aria-expanded','true');
+  mobileMenu.classList.add('open');
+  mobileBackdrop.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+menuToggle.addEventListener('click',()=>{
+  menuToggle.classList.contains('open')?closeMenu():openMenu();
+});
+mobileBackdrop.addEventListener('click',closeMenu);
+mobileMenu.querySelectorAll('.mobile-nav a, .mobile-reservar').forEach(el=>el.addEventListener('click',closeMenu));
+mlangToggle.addEventListener('click',()=>{
+  const isOpen=mlangBlock.classList.toggle('open');
+  mlangToggle.setAttribute('aria-expanded',String(isOpen));
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
+window.addEventListener('resize',()=>{if(window.innerWidth>960)closeMenu();});
 
 document.addEventListener('DOMContentLoaded',()=>{if(window.lucide)lucide.createIcons();});
 </script>

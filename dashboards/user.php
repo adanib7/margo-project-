@@ -74,75 +74,106 @@ $franjasHorarias = [
       </div>
       <h2 class="modal-titulo-reserva" id="modalReservaTitulo">Reservar mesa</h2>
       <p class="modal-subtitulo-reserva">Elegí el día, el horario y te guardamos el lugar.</p>
+
+      <div class="pasos-indicador" aria-hidden="true">
+        <div class="paso-dot" data-paso-dot="1"><span>1</span></div>
+        <div class="paso-linea" data-paso-linea="1"></div>
+        <div class="paso-dot" data-paso-dot="2"><span>2</span></div>
+        <div class="paso-linea" data-paso-linea="2"></div>
+        <div class="paso-dot" data-paso-dot="3"><span>3</span></div>
+      </div>
+      <p class="paso-contador" id="pasoContador">Paso 1 de 3</p>
     </div>
 
-    <form class="modal-form" id="formReserva" novalidate>
-      <div class="campo-grupo">
-        <label class="campo-etiqueta" for="rNombre">Nombre completo</label>
-        <div class="campo-input-wrapper">
-          <span class="campo-icono material-symbols-outlined">person</span>
-          <input class="campo-input" type="text" id="rNombre" name="nombre"
-                 value="<?= htmlspecialchars($_SESSION['usuario_logueado'], ENT_QUOTES, 'UTF-8') ?>" required>
-        </div>
-        <span class="campo-error" id="rErrorNombre"></span>
-      </div>
+    <form class="modal-form modal-form-pasos" id="formReserva" novalidate>
 
-      <div class="campo-grupo">
-        <label class="campo-etiqueta" for="rFecha">Fecha</label>
-        <div class="campo-input-wrapper">
-          <span class="campo-icono material-symbols-outlined">calendar_month</span>
-          <input class="campo-input" type="date" id="rFecha" name="fecha" required>
-        </div>
-        <span class="campo-error" id="rErrorFecha"></span>
-      </div>
+      <!-- Paso 1: Cuándo -->
+      <div class="modal-paso modal-paso-activo" data-paso="1">
+        <h3 class="paso-titulo">¿Cuándo querés venir?</h3>
 
-      <div class="campo-grupo">
-        <label class="campo-etiqueta">Horario</label>
-        <input type="hidden" id="rHora" name="hora" required>
-        <?php foreach ($franjasHorarias as $franja => $horas): ?>
-          <div class="horario-grupo">
-            <span class="horario-grupo-titulo"><?= htmlspecialchars($franja, ENT_QUOTES, 'UTF-8') ?></span>
-            <div class="horario-chips">
-              <?php foreach ($horas as $hora): ?>
-                <button type="button" class="horario-chip" data-hora="<?= $hora ?>"><?= $hora ?></button>
-              <?php endforeach; ?>
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="rFecha">Fecha</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">calendar_month</span>
+            <input class="campo-input" type="date" id="rFecha" name="fecha" required>
+          </div>
+          <span class="campo-error" id="rErrorFecha"></span>
+        </div>
+
+        <div class="campo-grupo">
+          <label class="campo-etiqueta">Horario</label>
+          <input type="hidden" id="rHora" name="hora" required>
+          <?php foreach ($franjasHorarias as $franja => $horas): ?>
+            <div class="horario-grupo">
+              <span class="horario-grupo-titulo"><?= htmlspecialchars($franja, ENT_QUOTES, 'UTF-8') ?></span>
+              <div class="horario-chips">
+                <?php foreach ($horas as $hora): ?>
+                  <button type="button" class="horario-chip" data-hora="<?= $hora ?>"><?= $hora ?></button>
+                <?php endforeach; ?>
+              </div>
             </div>
-          </div>
-        <?php endforeach; ?>
-        <span class="campo-error" id="rErrorHora"></span>
-      </div>
-
-      <div class="campo-grupo">
-        <label class="campo-etiqueta">Cantidad de personas</label>
-        <input type="hidden" id="rPersonas" name="personas" value="2" required>
-        <div class="stepper-personas">
-          <button type="button" class="stepper-btn" id="btnPersonasMenos" aria-label="Menos personas">
-            <span class="material-symbols-outlined">remove</span>
-          </button>
-          <div class="stepper-valor">
-            <span id="personasValor">2</span>
-            <span class="stepper-sub">personas</span>
-          </div>
-          <button type="button" class="stepper-btn" id="btnPersonasMas" aria-label="Más personas">
-            <span class="material-symbols-outlined">add</span>
-          </button>
+          <?php endforeach; ?>
+          <span class="campo-error" id="rErrorHora"></span>
         </div>
-        <span class="campo-error" id="rErrorPersonas"></span>
       </div>
 
-      <div class="campo-grupo">
-        <label class="campo-etiqueta" for="rComentario">
-          Pedido especial <span class="campo-opcional">(opcional)</span>
-        </label>
-        <textarea class="campo-textarea" id="rComentario" name="comentario" rows="2"
-                  placeholder="Ej. mesa junto a la ventana, cumpleaños, etc."></textarea>
+      <!-- Paso 2: Cuántos -->
+      <div class="modal-paso" data-paso="2">
+        <h3 class="paso-titulo">¿Cuántos son?</h3>
+
+        <div class="campo-grupo">
+          <label class="campo-etiqueta">Cantidad de personas</label>
+          <input type="hidden" id="rPersonas" name="personas" value="2" required>
+          <div class="stepper-personas">
+            <button type="button" class="stepper-btn" id="btnPersonasMenos" aria-label="Menos personas">
+              <span class="material-symbols-outlined">remove</span>
+            </button>
+            <div class="stepper-valor">
+              <span id="personasValor">2</span>
+              <span class="stepper-sub">personas</span>
+            </div>
+            <button type="button" class="stepper-btn" id="btnPersonasMas" aria-label="Más personas">
+              <span class="material-symbols-outlined">add</span>
+            </button>
+          </div>
+          <span class="campo-error" id="rErrorPersonas"></span>
+        </div>
+
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="rComentario">
+            Pedido especial <span class="campo-opcional">(opcional)</span>
+          </label>
+          <textarea class="campo-textarea" id="rComentario" name="comentario" rows="2"
+                    placeholder="Ej. mesa junto a la ventana, cumpleaños, etc."></textarea>
+        </div>
       </div>
 
-      <div class="modal-acciones">
-        <button type="button" class="boton-secundario" id="btnCancelarModalReserva">Cancelar</button>
-        <button type="submit" class="boton-accion boton-modal-submit" id="btnSubmitReserva">
-          <span class="material-symbols-outlined">check</span>
-          <span id="btnSubmitReservaTexto">Confirmar reserva</span>
+      <!-- Paso 3: Confirmá -->
+      <div class="modal-paso" data-paso="3">
+        <h3 class="paso-titulo">Confirmá tu reserva</h3>
+
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="rNombre">Nombre completo</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">person</span>
+            <input class="campo-input" type="text" id="rNombre" name="nombre"
+                   value="<?= htmlspecialchars($_SESSION['usuario_logueado'], ENT_QUOTES, 'UTF-8') ?>" required>
+          </div>
+          <span class="campo-error" id="rErrorNombre"></span>
+        </div>
+
+        <div class="resumen-reserva">
+          <div class="resumen-fila"><span>Fecha</span><strong id="resumenFecha">—</strong></div>
+          <div class="resumen-fila"><span>Hora</span><strong id="resumenHora">—</strong></div>
+          <div class="resumen-fila"><span>Personas</span><strong id="resumenPersonas">—</strong></div>
+        </div>
+      </div>
+
+      <div class="modal-acciones modal-acciones-pasos">
+        <button type="button" class="boton-secundario" id="btnPasoIzquierda">Cancelar</button>
+        <button type="submit" class="boton-accion boton-modal-submit" id="btnPasoDerecha">
+          <span class="material-symbols-outlined" id="iconoPasoDerecha">arrow_forward</span>
+          <span id="textoPasoDerecha">Continuar</span>
         </button>
       </div>
     </form>
@@ -182,7 +213,10 @@ $franjasHorarias = [
   const btnAbrir   = document.getElementById('btnAbrirReserva');
   const modal      = document.getElementById('modalReserva');
   const form       = document.getElementById('formReserva');
-  const btnSubmit  = document.getElementById('btnSubmitReserva');
+  const btnDerecha  = document.getElementById('btnPasoDerecha');
+  const btnIzquierda = document.getElementById('btnPasoIzquierda');
+  const iconoPasoDerecha = document.getElementById('iconoPasoDerecha');
+  const textoPasoDerecha = document.getElementById('textoPasoDerecha');
   const inputFecha = document.getElementById('rFecha');
   const exito      = document.getElementById('reservaExito');
   const inputHora     = document.getElementById('rHora');
@@ -190,6 +224,14 @@ $franjasHorarias = [
   const personasValor = document.getElementById('personasValor');
   const PERSONAS_MIN = 1;
   const PERSONAS_MAX = 20;
+  const TOTAL_PASOS = 3;
+  let pasoActual = 1;
+
+  const PASO_DE_CAMPO = {
+    fecha: 1, hora: 1,
+    personas: 2,
+    nombre: 3,
+  };
 
   inputFecha.min = new Date().toISOString().split('T')[0];
 
@@ -220,8 +262,15 @@ $franjasHorarias = [
     abrirModal();
   });
 
+  btnIzquierda.addEventListener('click', () => {
+    if (pasoActual === 1) {
+      cerrarModal();
+    } else {
+      irAPaso(pasoActual - 1);
+    }
+  });
+
   document.getElementById('btnCerrarModalReserva').addEventListener('click', cerrarModal);
-  document.getElementById('btnCancelarModalReserva').addEventListener('click', cerrarModal);
   document.getElementById('btnCerrarExito').addEventListener('click', cerrarModal);
   modal.addEventListener('click', e => { if (e.target === modal) cerrarModal(); });
   document.addEventListener('keydown', e => {
@@ -231,7 +280,8 @@ $franjasHorarias = [
   function abrirModal() {
     modal.classList.add('modal-visible');
     document.body.classList.add('modal-abierto');
-    document.getElementById('rNombre').focus();
+    resetPasos();
+    document.getElementById('rFecha').focus();
   }
 
   function cerrarModal() {
@@ -245,6 +295,81 @@ $franjasHorarias = [
   function mostrarFormulario() {
     form.hidden  = false;
     exito.hidden = true;
+    resetPasos();
+  }
+
+  function resetPasos() {
+    document.querySelectorAll('.modal-paso').forEach(p => {
+      p.classList.remove('modal-paso-activo', 'entra-derecha', 'entra-izquierda');
+    });
+    document.querySelector('.modal-paso[data-paso="1"]').classList.add('modal-paso-activo');
+    pasoActual = 1;
+    actualizarIndicador();
+    actualizarBotones();
+  }
+
+  function irAPaso(nuevo) {
+    if (nuevo === pasoActual) return;
+    const direccion = nuevo > pasoActual ? 'adelante' : 'atras';
+    const panelAnterior = form.querySelector(`.modal-paso[data-paso="${pasoActual}"]`);
+    const panelNuevo    = form.querySelector(`.modal-paso[data-paso="${nuevo}"]`);
+
+    panelAnterior.classList.remove('modal-paso-activo');
+    panelNuevo.classList.add('modal-paso-activo');
+
+    const claseEntrada = direccion === 'adelante' ? 'entra-derecha' : 'entra-izquierda';
+    panelNuevo.classList.add(claseEntrada);
+    panelNuevo.addEventListener('animationend', () => {
+      panelNuevo.classList.remove(claseEntrada);
+    }, { once: true });
+
+    pasoActual = nuevo;
+    actualizarIndicador();
+    actualizarBotones();
+    if (pasoActual === 3) actualizarResumen();
+
+    const primerCampo = panelNuevo.querySelector('input:not([type="hidden"]), textarea');
+    if (primerCampo) primerCampo.focus({ preventScroll: true });
+  }
+
+  function actualizarIndicador() {
+    document.querySelectorAll('.paso-dot').forEach(dot => {
+      const n = parseInt(dot.dataset.pasoDot, 10);
+      dot.classList.toggle('paso-dot-activo', n === pasoActual);
+      dot.classList.toggle('paso-dot-completo', n < pasoActual);
+    });
+    document.querySelectorAll('.paso-linea').forEach(linea => {
+      const n = parseInt(linea.dataset.pasoLinea, 10);
+      linea.classList.toggle('paso-linea-completa', n < pasoActual);
+    });
+    document.getElementById('pasoContador').textContent = `Paso ${pasoActual} de ${TOTAL_PASOS}`;
+  }
+
+  function actualizarBotones() {
+    btnIzquierda.textContent = pasoActual === 1 ? 'Cancelar' : 'Atrás';
+    if (pasoActual === TOTAL_PASOS) {
+      iconoPasoDerecha.textContent = 'check';
+      textoPasoDerecha.textContent = 'Confirmar reserva';
+    } else {
+      iconoPasoDerecha.textContent = 'arrow_forward';
+      textoPasoDerecha.textContent = 'Continuar';
+    }
+  }
+
+  function actualizarResumen() {
+    const fecha    = document.getElementById('rFecha').value;
+    const hora     = document.getElementById('rHora').value;
+    const personas = document.getElementById('rPersonas').value;
+
+    document.getElementById('resumenFecha').textContent = formatearFecha(fecha);
+    document.getElementById('resumenHora').textContent  = hora ? `${hora} hs` : '—';
+    document.getElementById('resumenPersonas').textContent = personas;
+  }
+
+  function formatearFecha(fecha) {
+    if (!fecha) return '—';
+    const [anio, mes, dia] = fecha.split('-');
+    return `${dia}/${mes}/${anio}`;
   }
 
   function mostrarExito(reserva) {
@@ -275,11 +400,10 @@ $franjasHorarias = [
   }
 
   function setLoading(on) {
-    btnSubmit.disabled = on;
-    const icono = btnSubmit.querySelector('.material-symbols-outlined');
-    icono.textContent = on ? 'progress_activity' : 'check';
-    icono.classList.toggle('icono-spin', on);
-    document.getElementById('btnSubmitReservaTexto').textContent = on ? 'Reservando…' : 'Confirmar reserva';
+    btnDerecha.disabled = on;
+    iconoPasoDerecha.textContent = on ? 'progress_activity' : 'check';
+    iconoPasoDerecha.classList.toggle('icono-spin', on);
+    textoPasoDerecha.textContent = on ? 'Reservando…' : 'Confirmar reserva';
   }
 
   function validar() {
@@ -308,8 +432,36 @@ $franjasHorarias = [
     return ok;
   }
 
+  function validarPaso(paso) {
+    limpiarErrores();
+    let ok = true;
+
+    if (paso === 1) {
+      if (!document.getElementById('rFecha').value) {
+        marcarError('rFecha', 'rErrorFecha', 'Elegí una fecha.');
+        ok = false;
+      }
+      if (!inputHora.value) {
+        marcarError('rHora', 'rErrorHora', 'Elegí un horario.');
+        ok = false;
+      }
+    } else if (paso === 3) {
+      if (!document.getElementById('rNombre').value.trim()) {
+        marcarError('rNombre', 'rErrorNombre', 'El nombre es obligatorio.');
+        ok = false;
+      }
+    }
+    return ok;
+  }
+
   form.addEventListener('submit', async e => {
     e.preventDefault();
+
+    if (pasoActual < TOTAL_PASOS) {
+      if (validarPaso(pasoActual)) irAPaso(pasoActual + 1);
+      return;
+    }
+
     limpiarErrores();
     if (!validar()) return;
 
@@ -345,9 +497,10 @@ $franjasHorarias = [
           hora:     ['rHora',     'rErrorHora'],
           personas: ['rPersonas', 'rErrorPersonas'],
         };
-        Object.entries(data.errores).forEach(([campo, msg]) => {
-          if (map[campo]) marcarError(map[campo][0], map[campo][1], msg);
-        });
+        const campos = Object.keys(data.errores).filter(c => map[c]);
+        const pasoConError = Math.min(...campos.map(c => PASO_DE_CAMPO[c] || TOTAL_PASOS));
+        if (pasoConError < pasoActual) irAPaso(pasoConError);
+        campos.forEach(campo => marcarError(map[campo][0], map[campo][1], data.errores[campo]));
         setLoading(false);
       } else {
         mostrarToast(data.mensaje || 'Error inesperado.', 'error');
