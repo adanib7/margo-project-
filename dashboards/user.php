@@ -47,7 +47,7 @@ $franjasHorarias = [
       <p class="tarjeta-texto">Revisa tus reservas.</p>
     </a>
 
-    <a class="tarjeta" href="#">
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/mi_perfil.php') ?>">
       <div class="tarjeta-overlay"></div>
       <div class="tarjeta-cabecera">
         <div class="icono">
