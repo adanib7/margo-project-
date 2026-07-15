@@ -90,23 +90,37 @@ $stmt = $conn->prepare(
 );
 
 if ($stmt === false) {
-    http_response_code(500);
-    echo json_encode(['ok' => false, 'mensaje' => 'La tabla de reservas no existe todavía en la base de datos.']);
-    exit;
+    $errorMsg = $conn->error;
+    if (stripos($errorMsg, 'unknown column') !== false) {
+        $stmt = $conn->prepare(
+            "INSERT INTO reservas (codigo, usuario_id, nombre, fecha, hora, personas, comentario, estado) VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmada')"
+        );
+        if ($stmt === false) {
+            http_response_code(500);
+            echo json_encode(['ok' => false, 'mensaje' => 'No se pudo preparar la inserción de reserva.']);
+            exit;
+        }
+        $stmt->bind_param('sisssis', $codigo, $usuarioId, $nombre, $fecha, $hora, $personas, $comentario);
+    } else {
+        http_response_code(500);
+        echo json_encode(['ok' => false, 'mensaje' => 'La tabla de reservas no existe todavía en la base de datos.']);
+        exit;
+    }
+} else {
+    $stmt->bind_param('sisssiss', $codigo, $usuarioId, $nombre, $fecha, $hora, $personas, $comentario, $telefono);
 }
-
-$stmt->bind_param('sisssiss', $codigo, $usuarioId, $nombre, $fecha, $hora, $personas, $comentario, $telefono);
 
 if ($stmt->execute()) {
     $stmt->close();
     echo json_encode([
-        'ok'      => true,
-        'mensaje' => "¡Reserva confirmada para el {$fecha} a las {$hora}hs!",
-        'codigo'  => $codigo,
-        'nombre'  => $nombre,
-        'fecha'   => $fecha,
-        'hora'    => $hora,
+        'ok'       => true,
+        'mensaje'  => "¡Reserva confirmada para el {$fecha} a las {$hora}hs!",
+        'codigo'   => $codigo,
+        'nombre'   => $nombre,
+        'fecha'    => $fecha,
+        'hora'     => $hora,
         'personas' => $personas,
+        'telefono' => $telefono,
     ]);
 } else {
     $stmt->close();

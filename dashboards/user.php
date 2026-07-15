@@ -533,7 +533,15 @@ $franjasHorarias = [
       personas:   parseInt(document.getElementById('rPersonas').value, 10),
       comentario: document.getElementById('rComentario').value.trim(),
       telefono:   document.getElementById('rTelefono').value.trim(),
-        body:    JSON.stringify(payload),
+    };
+
+    try {
+      const res = await fetch(BASE + '/api/crear_reserva.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+        },
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
 
