@@ -92,7 +92,18 @@
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost/margo-project-/index.php --max-time 5)",
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost/index.php --max-time 5)",
       "Bash(npx --version)",
-      "Bash(npx playwright *)"
+      "Bash(npx playwright *)",
+      "Bash(npm init *)",
+      "Bash(PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install playwright)",
+      "Bash(node verify.js)",
+      "Bash(node inspect.js)",
+      "Bash(node inspect2.js)",
+      "Bash(node -e ' *)",
+      "Bash(node find_overflow.js)",
+      "Bash(node find_overflow2.js)",
+      "Bash(node verify2.js)",
+      "Bash(node check_grid.js)",
+      "Bash(node verify_footer_fix.js)"
     ]
   }
 }

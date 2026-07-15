@@ -8,7 +8,7 @@
 <script src="assets/js/lucide.min.js" defer></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;overflow-x:hidden}
 body{background:var(--crema-50);color:var(--fg-default);font-family:var(--font-body);overflow-x:hidden}
 a{color:var(--verde-700);text-decoration:none;transition:color var(--dur-fast) var(--ease-out)}
 a:hover{color:var(--dorado-600)}
@@ -177,7 +177,8 @@ header.solid .menu-toggle span{background:var(--gris-800)}
 .contact-lines .cv{font-size:14px;color:var(--fg-muted);margin-top:2px}
 
 footer{background:var(--verde-900);color:var(--crema-100);padding:64px 0 32px}
-footer .cols{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:48px;padding-bottom:48px;border-bottom:1px solid rgba(245,239,224,.15)}
+footer .cols{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:48px;padding-bottom:48px;border-bottom:1px solid rgba(245,239,224,.15);min-width:0}
+footer .cols>div{min-width:0}
 footer .logo-img{height:48px;width:auto;filter:brightness(0) invert(1);margin-bottom:12px}
 footer .about{font-size:14px;line-height:1.7;color:rgba(245,239,224,.7);margin-top:20px;max-width:34ch}
 footer h4{font-family:var(--font-display);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--dorado-300);margin-bottom:18px}
@@ -199,6 +200,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
   .split .ph{height:340px;order:-1}
   .map .ph{min-height:320px}
   .sec{padding-block:72px}
+  footer .cols{grid-template-columns:1fr;gap:36px}
 }
 @media(max-width:560px){
   .wrap{width:calc(100% - 40px)}
