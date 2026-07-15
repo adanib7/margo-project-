@@ -224,11 +224,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
     <div class="header-actions">
       <div class="lang" id="lang">
         <button class="lang-btn lang-toggle on" data-lang="es" aria-expanded="false" aria-haspopup="menu">ES</button>
-        <div class="lang-panel" role="menu" aria-label="Seleccionar idioma">
-          <button class="lang-btn" data-lang="en" role="menuitem">EN</button>
-          <button class="lang-btn" data-lang="fr" role="menuitem">FR</button>
-          <button class="lang-btn" data-lang="pt" role="menuitem">PT</button>
-        </div>
+        <div class="lang-panel" role="menu" aria-label="Seleccionar idioma"></div>
       </div>
       <a href="public/login.php" class="btn btn-accent btn-reservar-top" data-i18n="cta_reservar">Reservar</a>
     </div>
@@ -467,6 +463,22 @@ const I18N={
     foot_about:"Cozinha asturiana tradicional e sidra de lagar na vila de Nava, Principado das Astúrias.",foot_visita:"Visita-nos",foot_explora:"Explora",foot_top:"Voltar ao topo"}
 };
 document.querySelectorAll('[data-i18n]').forEach(el=>{el._orig=el.textContent;});
+const LANGS=['es','en','fr','pt'];
+
+function buildLangPanel(active){
+  if(!langPanel) return;
+  langPanel.innerHTML='';
+  LANGS.filter(code=>code!==active).forEach(code=>{
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='lang-btn';
+    btn.dataset.lang=code;
+    btn.role='menuitem';
+    btn.textContent=code.toUpperCase();
+    langPanel.appendChild(btn);
+  });
+}
+
 function setLang(lang){
   const dict=I18N[lang];
   document.querySelectorAll('[data-i18n]').forEach(el=>{
@@ -476,8 +488,11 @@ function setLang(lang){
   });
   document.documentElement.lang=lang;
   document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('on',b.dataset.lang===lang));
-  const langToggle=document.querySelector('.lang-toggle');
-  if(langToggle){langToggle.textContent=lang.toUpperCase();}
+  if(langToggle){
+    langToggle.textContent=lang.toUpperCase();
+    langToggle.dataset.lang=lang;
+  }
+  buildLangPanel(lang);
   closeLangPanel();
 }
 
@@ -513,6 +528,8 @@ if(langPanel){
 }
 
 document.addEventListener('click',closeLangPanel);
+
+setLang('es');
 
 const header=document.getElementById('site-header');
 function onScroll(){header.classList.toggle('solid',window.scrollY>60);}
