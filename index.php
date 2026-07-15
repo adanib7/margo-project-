@@ -92,7 +92,7 @@ header.solid .menu-toggle span{background:var(--gris-800)}
 .mlang-options .lang-btn{color:var(--gris-700);background:var(--crema-100);border:1px solid var(--gris-300);flex-shrink:0}
 .mlang-options .lang-btn:hover{background:var(--crema-200)}
 .mlang-options .lang-btn.on{background:var(--verde-700);color:#fff;border-color:var(--verde-700)}
-.mobile-reservar{margin-top:20px;opacity:0;transform:translateX(-14px);transition:opacity var(--dur-base) var(--ease-out),transform var(--dur-base) var(--ease-out);transition-delay:.24s}
+.mobile-reservar{margin-top:20px;margin-bottom:28px;opacity:0;transform:translateX(-14px);transition:opacity var(--dur-base) var(--ease-out),transform var(--dur-base) var(--ease-out);transition-delay:.24s}
 .mobile-menu.open .mobile-reservar{opacity:1;transform:translateX(0)}
 
 /* ---- hero ---- */
