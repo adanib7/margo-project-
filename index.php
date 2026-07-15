@@ -53,7 +53,12 @@ header.solid .lang-btn{color:var(--gris-700);border-color:var(--gris-300)}
 header.solid .lang-btn.on{background:var(--verde-700);color:#fff;border-color:var(--verde-700)}
 
 /* ---- language pills ---- */
-.lang{display:flex;gap:4px;background:rgba(27,59,39,.28);border-radius:var(--radius-pill);padding:4px}
+.lang{display:flex;align-items:center;position:relative}
+.lang-toggle{min-width:48px}
+.lang-panel{display:none;position:absolute;top:calc(100% + 8px);right:0;flex-direction:column;gap:8px;padding:12px;background:rgba(255,255,255,.98);border:1px solid rgba(27,59,39,.16);box-shadow:0 18px 45px rgba(15,46,22,.15);border-radius:18px;min-width:120px;z-index:200}
+.lang-panel .lang-btn{width:100%;justify-content:center;color:var(--gris-800);background:transparent;border-color:transparent}
+.lang-panel .lang-btn:hover{background:var(--verde-50);color:var(--verde-800)}
+.lang.open .lang-panel{display:flex}
 .lang-btn{font-family:var(--font-display);font-weight:600;font-size:11px;letter-spacing:.06em;color:#fff;background:transparent;border:1px solid transparent;border-radius:var(--radius-pill);height:32px;min-width:38px;padding:0 4px;cursor:pointer;transition:all var(--dur-fast) var(--ease-out)}
 .lang-btn:hover{background:rgba(255,255,255,.14)}
 .lang-btn.on{background:var(--dorado-500);color:var(--verde-900);border-color:var(--dorado-500)}
@@ -218,10 +223,12 @@ footer .bottom a{color:rgba(245,239,224,.7)}
     </nav>
     <div class="header-actions">
       <div class="lang" id="lang">
-        <button class="lang-btn on" data-lang="es">ES</button>
-        <button class="lang-btn" data-lang="en">EN</button>
-        <button class="lang-btn" data-lang="fr">FR</button>
-        <button class="lang-btn" data-lang="pt">PT</button>
+        <button class="lang-btn lang-toggle on" data-lang="es" aria-expanded="false" aria-haspopup="menu">ES</button>
+        <div class="lang-panel" role="menu" aria-label="Seleccionar idioma">
+          <button class="lang-btn" data-lang="en" role="menuitem">EN</button>
+          <button class="lang-btn" data-lang="fr" role="menuitem">FR</button>
+          <button class="lang-btn" data-lang="pt" role="menuitem">PT</button>
+        </div>
       </div>
       <a href="public/login.php" class="btn btn-accent btn-reservar-top" data-i18n="cta_reservar">Reservar</a>
     </div>
@@ -469,8 +476,43 @@ function setLang(lang){
   });
   document.documentElement.lang=lang;
   document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('on',b.dataset.lang===lang));
+  const langToggle=document.querySelector('.lang-toggle');
+  if(langToggle){langToggle.textContent=lang.toUpperCase();}
+  closeLangPanel();
 }
-document.querySelectorAll('.lang-btn').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+
+const langElement=document.getElementById('lang');
+const langToggle=document.querySelector('.lang-toggle');
+const langPanel=document.querySelector('.lang-panel');
+function closeLangPanel(){
+  if(langElement){
+    langElement.classList.remove('open');
+  }
+  if(langToggle){
+    langToggle.setAttribute('aria-expanded','false');
+  }
+}
+
+if(langToggle){
+  langToggle.addEventListener('click',e=>{
+    langElement.classList.toggle('open');
+    langToggle.setAttribute('aria-expanded',langElement.classList.contains('open'));
+    e.stopPropagation();
+  });
+}
+if(langElement){
+  langElement.addEventListener('click',e=>e.stopPropagation());
+}
+if(langPanel){
+  langPanel.addEventListener('click',e=>{
+    const btn=e.target.closest('.lang-btn');
+    if(btn && btn.dataset.lang){
+      setLang(btn.dataset.lang);
+    }
+  });
+}
+
+document.addEventListener('click',closeLangPanel);
 
 const header=document.getElementById('site-header');
 function onScroll(){header.classList.toggle('solid',window.scrollY>60);}
