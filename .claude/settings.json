@@ -103,7 +103,8 @@
       "Bash(node find_overflow2.js)",
       "Bash(node verify2.js)",
       "Bash(node check_grid.js)",
-      "Bash(node verify_footer_fix.js)"
+      "Bash(node verify_footer_fix.js)",
+      "Bash(node verify_recheck.js)"
     ]
   }
 }
