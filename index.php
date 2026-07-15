@@ -53,7 +53,12 @@ header.solid .lang-btn{color:var(--gris-700);border-color:var(--gris-300)}
 header.solid .lang-btn.on{background:var(--verde-700);color:#fff;border-color:var(--verde-700)}
 
 /* ---- language pills ---- */
-.lang{display:flex;gap:4px;background:rgba(27,59,39,.28);border-radius:var(--radius-pill);padding:4px}
+.lang{display:flex;align-items:center;position:relative}
+.lang-toggle{min-width:48px}
+.lang-panel{display:none;position:absolute;top:calc(100% + 8px);right:0;flex-direction:column;gap:8px;padding:12px;background:rgba(255,255,255,.98);border:1px solid rgba(27,59,39,.16);box-shadow:0 18px 45px rgba(15,46,22,.15);border-radius:18px;min-width:120px;z-index:200}
+.lang-panel .lang-btn{width:100%;justify-content:center;color:var(--gris-800);background:transparent;border-color:transparent}
+.lang-panel .lang-btn:hover{background:var(--verde-50);color:var(--verde-800)}
+.lang.open .lang-panel{display:flex}
 .lang-btn{font-family:var(--font-display);font-weight:600;font-size:11px;letter-spacing:.06em;color:#fff;background:transparent;border:1px solid transparent;border-radius:var(--radius-pill);height:32px;min-width:38px;padding:0 4px;cursor:pointer;transition:all var(--dur-fast) var(--ease-out)}
 .lang-btn:hover{background:rgba(255,255,255,.14)}
 .lang-btn.on{background:var(--dorado-500);color:var(--verde-900);border-color:var(--dorado-500)}
@@ -191,22 +196,32 @@ footer .bottom a{color:rgba(245,239,224,.7)}
 /* ---- responsive ---- */
 @media(max-width:960px){
   nav.main{display:none}
-  .header-actions .lang{display:none}
-  .header-actions .btn-reservar-top{display:none}
-  .menu-toggle{display:flex}
   .dishes{grid-template-columns:1fr;max-width:440px;margin-inline:auto}
   .gallery{grid-template-columns:repeat(2,1fr)}
   .split,.menu-grid,.info-grid,.contact .split{grid-template-columns:1fr;gap:40px}
   .split .ph{height:340px;order:-1}
   .map .ph{min-height:320px}
   .sec{padding-block:72px}
-  footer .cols{grid-template-columns:1fr;gap:36px}
 }
 @media(max-width:560px){
   .wrap{width:calc(100% - 40px)}
-  .hero-meta{gap:24px}
-  .stats{flex-wrap:wrap;gap:28px}
+}
+@media (max-width:560px){
+  /* compact header and readable type */
+  header{position:sticky}
+  header .logo-img{height:36px}
+  header .wrap{padding-inline:8px}
+  nav.main{gap:8px}
+
+  /* place language pills top-right on mobile */
+  header{position:fixed}
+  .lang{position:absolute;right:12px;top:10px;z-index:120}
+  .header-actions{padding-right:84px}
+
+  /* single column content */
+  .dishes{grid-template-columns:1fr}
   .gallery{grid-template-columns:1fr 1fr;grid-auto-rows:150px}
+  .header-actions .btn-reservar-top{display:none}
 }
 </style>
 </head>
@@ -225,10 +240,8 @@ footer .bottom a{color:rgba(245,239,224,.7)}
     </nav>
     <div class="header-actions">
       <div class="lang" id="lang">
-        <button class="lang-btn on" data-lang="es">ES</button>
-        <button class="lang-btn" data-lang="en">EN</button>
-        <button class="lang-btn" data-lang="fr">FR</button>
-        <button class="lang-btn" data-lang="pt">PT</button>
+        <button class="lang-btn lang-toggle on" data-lang="es" aria-expanded="false" aria-haspopup="menu">ES</button>
+        <div class="lang-panel" role="menu" aria-label="Seleccionar idioma"></div>
       </div>
       <a href="public/login.php" class="btn btn-accent btn-reservar-top" data-i18n="cta_reservar">Reservar</a>
       <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobileMenu">
@@ -278,7 +291,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
     <h1 data-i18n="hero_title">Conoce nuestro restaurante</h1>
     <p class="lede" data-i18n="hero_lede">Cocina asturiana de siempre en la villa de Nava. Elige día y hora — te esperamos.</p>
     <div class="hero-cta">
-      <a href="login.php" class="btn btn-accent btn-lg"><i data-lucide="calendar-check"></i><span data-i18n="cta_reservar_mesa">Reservar mesa</span></a>
+      <a href="public/login.php" class="btn btn-accent btn-lg"><i data-lucide="calendar-check"></i><span data-i18n="cta_reservar_mesa">Reservar mesa</span></a>
     </div>
     <div class="hero-meta">
       <div class="item"><i data-lucide="map-pin"></i><div><div class="k">Nava, Asturias</div><div class="s" data-i18n="meta_dir">Plaza Manuel Uría, 4</div></div></div>
@@ -499,6 +512,22 @@ const I18N={
     foot_about:"Cozinha asturiana tradicional e sidra de lagar na vila de Nava, Principado das Astúrias.",foot_visita:"Visita-nos",foot_explora:"Explora",foot_top:"Voltar ao topo"}
 };
 document.querySelectorAll('[data-i18n]').forEach(el=>{el._orig=el.textContent;});
+const LANGS=['es','en','fr','pt'];
+
+function buildLangPanel(active){
+  if(!langPanel) return;
+  langPanel.innerHTML='';
+  LANGS.filter(code=>code!==active).forEach(code=>{
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='lang-btn';
+    btn.dataset.lang=code;
+    btn.role='menuitem';
+    btn.textContent=code.toUpperCase();
+    langPanel.appendChild(btn);
+  });
+}
+
 function setLang(lang){
   const dict=I18N[lang];
   document.querySelectorAll('[data-i18n]').forEach(el=>{
@@ -508,13 +537,8 @@ function setLang(lang){
   });
   document.documentElement.lang=lang;
   document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('on',b.dataset.lang===lang));
-  const mc=document.getElementById('mlangCurrent');
-  if(mc)mc.textContent=lang.toUpperCase();
 }
-document.querySelectorAll('.lang-btn').forEach(b=>b.addEventListener('click',()=>{
-  setLang(b.dataset.lang);
-  if(mlangBlock)mlangBlock.classList.remove('open');
-}));
+document.querySelectorAll('.lang-btn').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
 
 const header=document.getElementById('site-header');
 function onScroll(){header.classList.toggle('solid',window.scrollY>60);}
