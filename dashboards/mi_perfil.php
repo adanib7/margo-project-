@@ -132,13 +132,7 @@ require_once '../includes/nav.php';
         <span class="campo-error"><?= htmlspecialchars($errores['email'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
       </div>
 
-      <div class="campo-grupo">
-        <label class="campo-etiqueta" for="rol">Rol</label>
-        <div class="campo-input-wrapper campo-input-wrapper-lectura">
-          <span class="campo-icono material-symbols-outlined">badge</span>
-          <input class="campo-input" type="text" id="rol" value="<?= htmlspecialchars(ucfirst($rol), ENT_QUOTES, 'UTF-8') ?>" readonly>
-        </div>
-      </div>
+      
 
       <div class="campo-grupo">
         <label class="campo-etiqueta" for="password">Contraseña nueva <span class="campo-opcional">(opcional)</span></label>
