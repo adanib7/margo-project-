@@ -31,7 +31,7 @@ require_once '../includes/header.php';
       <p class="tarjeta-texto">Crear, editar y revisar cuentas de usuarios, admins y superadmins.</p>
     </a>
 
-    <a class="tarjeta" href="<?= buildUrl('/admin_plano.php') ?>">
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/admin_plano.php') ?>">
       <div class="tarjeta-cabecera">
         <div class="icono">
           <span class="material-symbols-outlined">table_restaurant</span>
