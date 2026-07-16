@@ -1,7 +1,6 @@
 <?php
-// Conexión a la base. Ajustá los datos a los de tu XAMPP.
 $host = "localhost";
-$db   = "corralin";      // nombre de tu base
+$db   = "corralin";      
 $user = "root";
 $pass = "";
 

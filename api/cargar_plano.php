@@ -1,6 +1,5 @@
 <?php
-// Devuelve todas las mesas del plano en JSON.
-// Si le pasás ?fecha=2026-07-15&hora=21:00 también te dice si cada mesa está ocupada.
+
 require "conexion.php";
 header("Content-Type: application/json");
 
@@ -9,8 +8,7 @@ $mesas = $pdo->query("SELECT id, numero, capacidad, pos_x, pos_y, forma, ancho, 
 // Estado de ocupación (solo si mandan fecha y hora)
 $ocupadas = [];
 if (!empty($_GET['fecha']) && !empty($_GET['hora'])) {
-    // OJO: ajustá los nombres de columnas a tu tabla reserva real.
-    // Acá se asume: reserva(id, id_mesa, fecha DATE, hora TIME, estado)
+
     $stmt = $pdo->prepare(
         "SELECT id_mesa FROM reserva
          WHERE fecha = ? AND hora = ? AND estado != 'cancelada'"
@@ -20,8 +18,6 @@ if (!empty($_GET['fecha']) && !empty($_GET['hora'])) {
 }
 
 foreach ($mesas as &$m) {
-    // MySQL devuelve los números como texto y eso rompe a Konva,
-    // así que los casteamos antes de mandar el JSON.
     $m['id']        = (int)$m['id'];
     $m['numero']    = (int)$m['numero'];
     $m['capacidad'] = (int)$m['capacidad'];
