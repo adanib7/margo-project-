@@ -12,7 +12,7 @@ ALTER TABLE mesa
   ADD COLUMN alto FLOAT NOT NULL DEFAULT 70,
   ADD COLUMN rotacion FLOAT NOT NULL DEFAULT 0;
 
--- Si todavía no tenés la tabla mesa, usá esta en su lugar:
+-- Si no existe la tabla mesa, descomentar bloque para crearla:
 /*
 CREATE TABLE mesa (
   id INT AUTO_INCREMENT PRIMARY KEY,

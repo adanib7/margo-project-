@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php -l includes/comprobante.php)",
+      "Bash(php -l dashboards/mis-reservas.php)",
+      "Bash(php -l dashboards/user.php)",
+      "Read(//c/xampp/php/**)",
+      "Read(//c/xampp/**)",
+      "Bash(/c/xampp/php/php.exe -l includes/comprobante.php)",
+      "Bash(/c/xampp/php/php.exe -l dashboards/mis-reservas.php)",
+      "Bash(/c/xampp/php/php.exe -l dashboards/user.php)"
+    ]
+  }
+}

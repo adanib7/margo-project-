@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once 'includes/config.php';
-require_once 'includes/check_auth.php';
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/check_auth.php';
 requireLogin();
 
 $codigo  = trim($_GET['codigo'] ?? '');
@@ -178,7 +178,7 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
 <?php else: ?>
   <div class="ticket">
     <div class="ticket-header">
-      <img src="assets/img/logo-horizontal-verde.png" alt="El Corralín de Campanal">
+      <img src="<?= buildUrl('/assets/img/logo-horizontal-verde.png') ?>" alt="El Corralín de Campanal">
       <p>Comprobante de reserva</p>
     </div>
 

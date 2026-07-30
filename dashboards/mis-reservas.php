@@ -70,7 +70,7 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
               <td><span class="badge-rol badge-estado-<?= htmlspecialchars($r['estado'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($labelEstado[$r['estado']] ?? $r['estado'], ENT_QUOTES, 'UTF-8') ?></span></td>
               <td>
                 <?php if (!empty($r['codigo'])): ?>
-                  <a class="btn-tabla" title="Ver comprobante" href="<?= buildUrl('/comprobante.php?codigo=' . urlencode($r['codigo'])) ?>" target="_blank" rel="noopener">
+                  <a class="btn-tabla" title="Ver comprobante" href="<?= buildUrl('/includes/comprobante.php?codigo=' . urlencode($r['codigo'])) ?>" target="_blank" rel="noopener">
                     <span class="material-symbols-outlined">receipt_long</span>
                   </a>
                 <?php else: ?>

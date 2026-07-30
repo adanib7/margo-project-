@@ -1,8 +1,5 @@
 <?php
-// Editor del plano de mesas (solo admin).
-// Acá también iría tu control de sesión:
-// session_start();
-// if (($_SESSION['rol'] ?? '') !== 'admin') { header("Location: login.php"); exit; }
+
 ?>
 <!DOCTYPE html>
 <html lang="es">

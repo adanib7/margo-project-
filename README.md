@@ -1,0 +1,14 @@
+CRUD PRUEBA SEMESTRAL DE PROGRAMACION
+
+
+COMO USAR:
+
+EN TU ADMINISTRADOR DE BASE DE DATOS SUBIR LOS SQL CON NOMBRE: margo-project.sql y luego plano.sql ubicados en la carpeta base de datos
+
+UNA VEZ VISTA LA LANDING PAGE, HACER CLICK EN RESERVAR 
+CREDENCIALES DE SUPER ADMIN:
+
+usuario: PruebaSU
+contraseña: Margoproject1
+
+Dentro del panel: CRUD DE PLANO DE MESAS EN CARD DE PLANO DE MESAS

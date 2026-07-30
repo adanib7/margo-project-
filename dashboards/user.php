@@ -433,7 +433,7 @@ $franjasHorarias = [
     document.getElementById('exitoPersonas').textContent = reserva.personas;
     document.getElementById('exitoTelefono').textContent = reserva.telefono || '—';
     document.getElementById('exitoCalendario').href = BASE + '/api/reserva_ics.php?codigo=' + encodeURIComponent(reserva.codigo);
-    document.getElementById('exitoComprobante').href = BASE + '/comprobante.php?codigo=' + encodeURIComponent(reserva.codigo);
+    document.getElementById('exitoComprobante').href = BASE + '/includes/comprobante.php?codigo=' + encodeURIComponent(reserva.codigo);
   }
 
   function limpiarErrores() {
