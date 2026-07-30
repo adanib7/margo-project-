@@ -1,28 +1,10 @@
 <?php
 
-function getPdo(): PDO
+require_once __DIR__ . '/../includes/config.php';
+
+function ensureMesaTable($conn): void
 {
-    static $pdo = null;
-    if ($pdo instanceof PDO) {
-        return $pdo;
-    }
-
-    $host = getenv('DB_HOST') ?: 'localhost';
-    $db   = getenv('DB_NAME') ?: 'margo';
-    $user = getenv('DB_USER') ?: 'root';
-    $pass = getenv('DB_PASS') ?: '';
-
-    $pdo = new PDO("mysql:host={$host};dbname={$db};charset=utf8mb4", $user, $pass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    ]);
-
-    return $pdo;
-}
-
-function ensureMesaTable(PDO $pdo): void
-{
-    $pdo->exec("
+    $conn->query("
         CREATE TABLE IF NOT EXISTS mesas (
             id INT AUTO_INCREMENT PRIMARY KEY,
             numero INT NOT NULL DEFAULT 1,
@@ -48,23 +30,32 @@ function ensureMesaTable(PDO $pdo): void
     ];
 
     foreach ($columns as [$col, $definition]) {
-        $stmt = $pdo->prepare("SHOW COLUMNS FROM mesas LIKE ?");
-        $stmt->execute([$col]);
-        if ($stmt->rowCount() === 0) {
-            $pdo->exec("ALTER TABLE mesas ADD COLUMN {$col} {$definition}");
+        $stmt = $conn->prepare("SHOW COLUMNS FROM mesas LIKE ?");
+        if (!$stmt) {
+            continue;
         }
+        $stmt->bind_param('s', $col);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result && $result->num_rows === 0) {
+            $conn->query("ALTER TABLE mesas ADD COLUMN {$col} {$definition}");
+        }
+        $stmt->close();
     }
 }
 
-function hasReservation(PDO $pdo, int $mesaId): bool
+function hasReservation($conn, int $mesaId): bool
 {
-    try {
-        $stmt = $pdo->prepare("SELECT 1 FROM reservas WHERE mesa_id = ? LIMIT 1");
-        $stmt->execute([$mesaId]);
-        return (bool) $stmt->fetch();
-    } catch (PDOException $e) {
+    $stmt = $conn->prepare("SELECT 1 FROM reservas WHERE mesa_id = ? LIMIT 1");
+    if (!$stmt) {
         return false;
     }
+    $stmt->bind_param('i', $mesaId);
+    $stmt->execute();
+    $stmt->store_result();
+    $has = $stmt->num_rows > 0;
+    $stmt->close();
+    return $has;
 }
 
 function sendJson(array $data): void
@@ -74,17 +65,27 @@ function sendJson(array $data): void
     exit;
 }
 
-$pdo = getPdo();
-ensureMesaTable($pdo);
-
-$action = '';
-if (isset($_GET['action'])) {
-    $action = $_GET['action'];
+if (!isset($conn) || $conn === null) {
+    http_response_code(500);
+    sendJson(['error' => 'No se pudo conectar a la base de datos del servidor.']);
 }
 
+ensureMesaTable($conn);
+
+$action = $_GET['action'] ?? '';
+
 if ($action === 'cargar') {
-    $stmt = $pdo->query("SELECT id, numero, capacidad, forma, pos_x, pos_y, ancho, alto, rotacion FROM mesas ORDER BY id ASC");
-    sendJson($stmt->fetchAll());
+    $result = $conn->query("SELECT id, numero, capacidad, forma, pos_x, pos_y, ancho, alto, rotacion FROM mesas ORDER BY id ASC");
+    if (!$result) {
+        sendJson(['error' => 'Error al cargar las mesas.']);
+    }
+
+    $mesas = [];
+    while ($row = $result->fetch_assoc()) {
+        $mesas[] = $row;
+    }
+
+    sendJson($mesas);
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -108,29 +109,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $rotacion = (float) ($m['rotacion'] ?? 0);
 
             if ($id) {
-                $stmt = $pdo->prepare("
+                $stmt = $conn->prepare("
                     UPDATE mesas
                     SET numero = ?, capacidad = ?, forma = ?, pos_x = ?, pos_y = ?, ancho = ?, alto = ?, rotacion = ?
                     WHERE id = ?
                 ");
-                $stmt->execute([$numero, $capacidad, $forma, $posX, $posY, $ancho, $alto, $rotacion, $id]);
+                $stmt->bind_param('iissddddi', $numero, $capacidad, $forma, $posX, $posY, $ancho, $alto, $rotacion, $id);
+                $stmt->execute();
+                $stmt->close();
             } else {
-                $stmt = $pdo->prepare("
+                $stmt = $conn->prepare("
                     INSERT INTO mesas (numero, capacidad, forma, pos_x, pos_y, ancho, alto, rotacion)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ");
-                $stmt->execute([$numero, $capacidad, $forma, $posX, $posY, $ancho, $alto, $rotacion]);
+                $stmt->bind_param('iissdddd', $numero, $capacidad, $forma, $posX, $posY, $ancho, $alto, $rotacion);
+                $stmt->execute();
+                $stmt->close();
             }
         }
 
         $noEliminadas = [];
         foreach ($eliminadas as $mesaId) {
             $id = (int) $mesaId;
-            if ($id > 0 && hasReservation($pdo, $id)) {
+            if ($id > 0 && hasReservation($conn, $id)) {
                 $noEliminadas[] = $id;
             } else {
-                $stmt = $pdo->prepare("DELETE FROM mesas WHERE id = ?");
-                $stmt->execute([$id]);
+                $stmt = $conn->prepare("DELETE FROM mesas WHERE id = ?");
+                $stmt->bind_param('i', $id);
+                $stmt->execute();
+                $stmt->close();
             }
         }
 
