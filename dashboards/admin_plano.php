@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     SET numero = ?, capacidad = ?, forma = ?, pos_x = ?, pos_y = ?, ancho = ?, alto = ?, rotacion = ?
                     WHERE id = ?
                 ");
-                $stmt->bind_param('iissddddi', $numero, $capacidad, $forma, $posX, $posY, $ancho, $alto, $rotacion, $id);
+                $stmt->bind_param('iisdddddi', $numero, $capacidad, $forma, $posX, $posY, $ancho, $alto, $rotacion, $id);
                 $stmt->execute();
                 $stmt->close();
             } else {
@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     INSERT INTO mesas (numero, capacidad, forma, pos_x, pos_y, ancho, alto, rotacion)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ");
-                $stmt->bind_param('iissdddd', $numero, $capacidad, $forma, $posX, $posY, $ancho, $alto, $rotacion);
+                $stmt->bind_param('iisddddd', $numero, $capacidad, $forma, $posX, $posY, $ancho, $alto, $rotacion);
                 $stmt->execute();
                 $stmt->close();
             }
@@ -154,12 +154,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Plano de mesas · El Corralín</title>
-<script src="https://unpkg.com/konva@9/konva.min.js"></script>
 <style>
   :root {
     --verde: #2D5F3F;
+    --verde-claro: #3d7d54;
     --ambar: #C9962E;
     --crema: #F5EFE0;
+    --rojo: #a33;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -190,7 +191,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     border: 2px solid var(--verde);
     border-radius: 6px;
     overflow: hidden;
+    line-height: 0;
   }
+
+  /* --- Lienzo del plano, ahora un div con grilla via CSS --- */
+  #plano {
+    position: relative;
+    width: 900px;
+    height: 560px;
+    background-color: #fff;
+    background-image:
+      linear-gradient(#e9e2cc 1px, transparent 1px),
+      linear-gradient(90deg, #e9e2cc 1px, transparent 1px);
+    background-size: 40px 40px;
+    touch-action: none;
+    user-select: none;
+  }
+
   aside {
     width: 230px;
     display: flex;
@@ -225,8 +242,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     text-align: center;
   }
   button.principal:hover { filter: brightness(.92); }
-  button.peligro { border-color: #a33; color: #a33; }
-  button.peligro:hover { background: #a33; color: #fff; }
+  button.peligro { border-color: var(--rojo); color: var(--rojo); }
+  button.peligro:hover { background: var(--rojo); color: #fff; }
   .campo { display: flex; flex-direction: column; gap: 3px; }
   .campo label { font-size: .75rem; font-family: Arial, sans-serif; }
   .campo input {
@@ -235,6 +252,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     border-radius: 4px;
     background: #fff;
     font-size: .9rem;
+    font-family: Arial, sans-serif;
   }
   #panel-mesa { display: none; }
   #panel-mesa.visible { display: flex; flex-direction: column; gap: 10px; }
@@ -242,6 +260,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     font-size: .8rem;
     font-family: Arial, sans-serif;
     min-height: 1.2em;
+  }
+  #ayuda {
+    font-size: .72rem;
+    font-family: Arial, sans-serif;
+    color: #7a7256;
+    line-height: 1.4;
+  }
+
+  /* --- Mesas --- */
+  .mesa {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--verde);
+    border: 3px solid var(--ambar);
+    cursor: grab;
+    box-sizing: border-box;
+    touch-action: none;
+  }
+  .mesa:active { cursor: grabbing; }
+  .mesa.cuadrada { border-radius: 8px; }
+  .mesa.redonda { border-radius: 50%; }
+  .mesa.seleccionada {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ambar);
+  }
+  .mesa-numero {
+    font-family: Georgia, serif;
+    font-weight: bold;
+    font-size: 20px;
+    color: var(--crema);
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  /* --- Controles (aparecen solo si la mesa está seleccionada) --- */
+  .handle { position: absolute; display: none; z-index: 5; }
+  .mesa.seleccionada .handle { display: block; }
+
+  .handle.esquina {
+    width: 13px; height: 13px;
+    background: #fff;
+    border: 2px solid var(--ambar);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .handle.tl { top: 0;   left: 0;   cursor: nwse-resize; }
+  .handle.tr { top: 0;   left: 100%; cursor: nesw-resize; }
+  .handle.bl { top: 100%; left: 0;   cursor: nesw-resize; }
+  .handle.br { top: 100%; left: 100%; cursor: nwse-resize; }
+
+  .handle.rotar {
+    width: 13px; height: 13px;
+    background: #fff;
+    border: 2px solid var(--verde);
+    border-radius: 50%;
+    top: -30px; left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: grab;
+  }
+  .handle.rotar::after {
+    content: '';
+    position: absolute;
+    width: 2px; height: 22px;
+    background: var(--ambar);
+    left: 50%; top: 100%;
+    transform: translateX(-50%);
   }
 </style>
 </head>
@@ -276,153 +361,247 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h2>Plano</h2>
     <button class="principal" onclick="guardarPlano()">Guardar plano</button>
     <p id="aviso"></p>
+    <p id="ayuda">Arrastrá el cuerpo para mover · esquinas para cambiar el tamaño · el círculo de arriba para girar · Supr para eliminar.</p>
   </aside>
 </div>
 
 <script>
 const ANCHO = 900, ALTO = 560, GRILLA = 10;
-const VERDE = '#2D5F3F', AMBAR = '#C9962E', CREMA = '#F5EFE0';
+const MIN_TAM = 30, MAX_TAM = 400;
 
-const stage = new Konva.Stage({ container: 'plano', width: ANCHO, height: ALTO });
-const capa = new Konva.Layer();
-stage.add(capa);
-
-const fondo = new Konva.Rect({ width: ANCHO, height: ALTO, fill: CREMA, listening: true });
-capa.add(fondo);
-
-for (let x = GRILLA * 4; x < ANCHO; x += GRILLA * 4) {
-  capa.add(new Konva.Line({ points: [x, 0, x, ALTO], stroke: '#e3dcc8', strokeWidth: 1, listening: false }));
-}
-for (let y = GRILLA * 4; y < ALTO; y += GRILLA * 4) {
-  capa.add(new Konva.Line({ points: [0, y, ANCHO, y], stroke: '#e3dcc8', strokeWidth: 1, listening: false }));
-}
-
-const trans = new Konva.Transformer({
-  rotationSnaps: [0, 45, 90, 135, 180, 225, 270, 315],
-  anchorStroke: AMBAR, anchorFill: '#fff', borderStroke: AMBAR,
-  enabledAnchors: ['top-left', 'top-right', 'bottom-left', 'bottom-right']
-});
-capa.add(trans);
+const plano = document.getElementById('plano');
+const panelMesa = document.getElementById('panel-mesa');
+const inNumero = document.getElementById('in-numero');
+const inCapacidad = document.getElementById('in-capacidad');
+const aviso = document.getElementById('aviso');
 
 let seleccionada = null;
 const eliminadas = [];
 
+function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
+function normalizarAngulo(a) { a = a % 360; return a < 0 ? a + 360 : a; }
+
+/* Aplica x,y (centro), ancho, alto y rotación al estilo del div */
+function renderMesa(el) {
+  el.style.width = el._w + 'px';
+  el.style.height = el._h + 'px';
+  el.style.left = (el._x - el._w / 2) + 'px';
+  el.style.top = (el._y - el._h / 2) + 'px';
+  el.style.transform = `rotate(${el._rot}deg)`;
+}
+
+function setGeom(el, cambios) {
+  Object.assign(el, {
+    _x: cambios.x ?? el._x,
+    _y: cambios.y ?? el._y,
+    _w: cambios.w ?? el._w,
+    _h: cambios.h ?? el._h,
+    _rot: cambios.rot ?? el._rot,
+  });
+  renderMesa(el);
+}
+
 function crearMesa(datos) {
-  const ancho = parseFloat(datos.ancho) || 70;
-  const alto = parseFloat(datos.alto) || 70;
+  const el = document.createElement('div');
+  const forma = datos.forma === 'redonda' ? 'redonda' : 'cuadrada';
+  el.className = 'mesa ' + forma;
+  el.dataset.mesaId = datos.id || '';
+  el.dataset.numero = datos.numero ?? 1;
+  el.dataset.capacidad = datos.capacidad ?? 4;
+  el.dataset.forma = forma;
 
-  const grupo = new Konva.Group({
-    x: parseFloat(datos.pos_x) || 100,
-    y: parseFloat(datos.pos_y) || 100,
-    rotation: parseFloat(datos.rotacion) || 0,
-    draggable: true
+  const numero = document.createElement('span');
+  numero.className = 'mesa-numero';
+  numero.textContent = datos.numero ?? 1;
+  el.appendChild(numero);
+
+  ['tl', 'tr', 'bl', 'br'].forEach(pos => {
+    const h = document.createElement('div');
+    h.className = `handle esquina ${pos}`;
+    h.dataset.handle = pos;
+    el.appendChild(h);
+    activarResize(el, h);
   });
 
-  grupo.setAttrs({
-    mesaId: datos.id || null,
-    numero: parseInt(datos.numero) || 1,
-    capacidad: parseInt(datos.capacidad) || 4,
-    forma: datos.forma || 'cuadrada'
-  });
+  const rotHandle = document.createElement('div');
+  rotHandle.className = 'handle rotar';
+  el.appendChild(rotHandle);
+  activarRotacion(el, rotHandle);
 
-  let figura;
-  if (grupo.getAttr('forma') === 'redonda') {
-    figura = new Konva.Circle({
-      radius: ancho / 2,
-      fill: VERDE, stroke: AMBAR, strokeWidth: 3
-    });
-  } else {
-    figura = new Konva.Rect({
-      width: ancho, height: alto,
-      offsetX: ancho / 2, offsetY: alto / 2,
-      cornerRadius: 8,
-      fill: VERDE, stroke: AMBAR, strokeWidth: 3
-    });
-  }
+  el._x = parseFloat(datos.pos_x) || 100;
+  el._y = parseFloat(datos.pos_y) || 100;
+  el._w = parseFloat(datos.ancho) || 70;
+  el._h = parseFloat(datos.alto) || 70;
+  el._rot = parseFloat(datos.rotacion) || 0;
+  renderMesa(el);
 
-  const texto = new Konva.Text({
-    text: String(grupo.getAttr('numero')),
-    fontSize: 20, fontStyle: 'bold',
-    fontFamily: 'Georgia', fill: CREMA,
-    listening: false
-  });
-  texto.offsetX(texto.width() / 2);
-  texto.offsetY(texto.height() / 2);
+  plano.appendChild(el);
+  activarArrastre(el);
+  el.addEventListener('pointerdown', () => seleccionar(el));
 
-  grupo.add(figura, texto);
-  grupo.on('click tap', () => seleccionar(grupo));
-
-  grupo.on('dragend', () => {
-    grupo.x(Math.round(Math.min(Math.max(grupo.x(), 30), ANCHO - 30) / GRILLA) * GRILLA);
-    grupo.y(Math.round(Math.min(Math.max(grupo.y(), 30), ALTO - 30) / GRILLA) * GRILLA);
-  });
-
-  grupo.on('transformend', () => {
-    const sx = grupo.scaleX();
-    const sy = grupo.scaleY();
-    if (figura.className === 'Circle') {
-      figura.radius(figura.radius() * sx);
-    } else {
-      figura.width(figura.width() * sx);
-      figura.height(figura.height() * sy);
-      figura.offsetX(figura.width() / 2);
-      figura.offsetY(figura.height() / 2);
-    }
-    grupo.scale({ x: 1, y: 1 });
-    grupo.scaleY(sy);
-  });
-
-  capa.add(grupo);
-  return grupo;
+  return el;
 }
 
 function agregarMesa(forma) {
-  const numeros = capa.find('Group').map(g => g.getAttr('numero') || 0);
-  const grupo = crearMesa({
-    numero: Math.max(0, ...numeros) + 1,
+  const numeros = Array.from(plano.querySelectorAll('.mesa')).map(el => parseInt(el.dataset.numero) || 0);
+  const el = crearMesa({
+    numero: (numeros.length ? Math.max(...numeros) : 0) + 1,
     capacidad: 4,
     forma,
     pos_x: ANCHO / 2,
     pos_y: ALTO / 2,
     ancho: 70,
-    alto: 70
+    alto: 70,
   });
-  seleccionar(grupo);
+  seleccionar(el);
 }
 
-function seleccionar(grupo) {
-  seleccionada = grupo;
-  trans.nodes(grupo ? [grupo] : []);
-  const panel = document.getElementById('panel-mesa');
-  panel.classList.toggle('visible', !!grupo);
-  if (grupo) {
-    document.getElementById('in-numero').value = grupo.getAttr('numero');
-    document.getElementById('in-capacidad').value = grupo.getAttr('capacidad');
+function seleccionar(el) {
+  if (seleccionada === el) return;
+  if (seleccionada) seleccionada.classList.remove('seleccionada');
+  seleccionada = el;
+  if (el) {
+    el.classList.add('seleccionada');
+    plano.appendChild(el); // trae al frente
+  }
+  panelMesa.classList.toggle('visible', !!el);
+  if (el) {
+    inNumero.value = el.dataset.numero;
+    inCapacidad.value = el.dataset.capacidad;
   }
 }
 
-fondo.on('click tap', () => seleccionar(null));
-
-document.getElementById('in-numero').addEventListener('input', e => {
-  if (!seleccionada) return;
-  seleccionada.setAttr('numero', parseInt(e.target.value) || 1);
-  const t = seleccionada.findOne('Text');
-  t.text(String(seleccionada.getAttr('numero')));
-  t.offsetX(t.width() / 2);
+/* Clic en el fondo del plano deselecciona */
+plano.addEventListener('pointerdown', e => {
+  if (e.target === plano) seleccionar(null);
 });
 
-document.getElementById('in-capacidad').addEventListener('input', e => {
+document.addEventListener('keydown', e => {
+  if (document.activeElement.tagName === 'INPUT') return;
+  if ((e.key === 'Delete' || e.key === 'Backspace') && seleccionada) {
+    eliminarSeleccionada();
+  } else if (e.key === 'Escape') {
+    seleccionar(null);
+  }
+});
+
+inNumero.addEventListener('input', e => {
   if (!seleccionada) return;
-  seleccionada.setAttr('capacidad', parseInt(e.target.value) || 1);
+  const v = parseInt(e.target.value) || 1;
+  seleccionada.dataset.numero = v;
+  seleccionada.querySelector('.mesa-numero').textContent = v;
+});
+
+inCapacidad.addEventListener('input', e => {
+  if (!seleccionada) return;
+  seleccionada.dataset.capacidad = parseInt(e.target.value) || 1;
 });
 
 function eliminarSeleccionada() {
   if (!seleccionada) return;
-  if (seleccionada.getAttr('mesaId')) eliminadas.push(seleccionada.getAttr('mesaId'));
-  seleccionada.destroy();
+  if (seleccionada.dataset.mesaId) eliminadas.push(seleccionada.dataset.mesaId);
+  seleccionada.remove();
   seleccionar(null);
 }
 
+/* --- Arrastrar para mover --- */
+function activarArrastre(el) {
+  el.addEventListener('pointerdown', e => {
+    if (e.target.classList.contains('handle')) return;
+    e.stopPropagation();
+    el.setPointerCapture(e.pointerId);
+
+    const startMouseX = e.clientX, startMouseY = e.clientY;
+    const startX = el._x, startY = el._y;
+
+    function mover(ev) {
+      const nx = clamp(startX + (ev.clientX - startMouseX), el._w / 2, ANCHO - el._w / 2);
+      const ny = clamp(startY + (ev.clientY - startMouseY), el._h / 2, ALTO - el._h / 2);
+      setGeom(el, { x: nx, y: ny });
+    }
+    function soltar() {
+      setGeom(el, {
+        x: clamp(Math.round(el._x / GRILLA) * GRILLA, el._w / 2, ANCHO - el._w / 2),
+        y: clamp(Math.round(el._y / GRILLA) * GRILLA, el._h / 2, ALTO - el._h / 2),
+      });
+      el.removeEventListener('pointermove', mover);
+      el.removeEventListener('pointerup', soltar);
+    }
+    el.addEventListener('pointermove', mover);
+    el.addEventListener('pointerup', soltar);
+  });
+}
+
+/* --- Manijas de esquina: redimensionar (desde el centro, respeta la rotación) --- */
+function activarResize(el, handle) {
+  handle.addEventListener('pointerdown', e => {
+    e.stopPropagation();
+    seleccionar(el);
+    handle.setPointerCapture(e.pointerId);
+    const rectContenedor = plano.getBoundingClientRect();
+    const esCirculo = el.dataset.forma === 'redonda';
+
+    function coordLocal(ev) {
+      const mx = ev.clientX - rectContenedor.left;
+      const my = ev.clientY - rectContenedor.top;
+      const dx = mx - el._x, dy = my - el._y;
+      const rad = -el._rot * Math.PI / 180;
+      return {
+        lx: dx * Math.cos(rad) - dy * Math.sin(rad),
+        ly: dx * Math.sin(rad) + dy * Math.cos(rad),
+      };
+    }
+
+    function mover(ev) {
+      const { lx, ly } = coordLocal(ev);
+      if (esCirculo) {
+        const d = clamp(Math.hypot(lx, ly) * 2, MIN_TAM, MAX_TAM);
+        setGeom(el, { w: d, h: d });
+      } else {
+        setGeom(el, {
+          w: clamp(Math.abs(lx) * 2, MIN_TAM, MAX_TAM),
+          h: clamp(Math.abs(ly) * 2, MIN_TAM, MAX_TAM),
+        });
+      }
+    }
+    function soltar() {
+      handle.removeEventListener('pointermove', mover);
+      handle.removeEventListener('pointerup', soltar);
+    }
+    handle.addEventListener('pointermove', mover);
+    handle.addEventListener('pointerup', soltar);
+  });
+}
+
+/* --- Manija superior: rotar (con imán cada 45°) --- */
+function activarRotacion(el, handle) {
+  handle.addEventListener('pointerdown', e => {
+    e.stopPropagation();
+    seleccionar(el);
+    handle.setPointerCapture(e.pointerId);
+    const rectContenedor = plano.getBoundingClientRect();
+
+    function mover(ev) {
+      const mx = ev.clientX - rectContenedor.left;
+      const my = ev.clientY - rectContenedor.top;
+      let ang = normalizarAngulo(Math.atan2(my - el._y, mx - el._x) * 180 / Math.PI + 90);
+
+      const cercano45 = Math.round(ang / 45) * 45 % 360;
+      const dif = Math.min(Math.abs(ang - cercano45), 360 - Math.abs(ang - cercano45));
+      if (dif < 6) ang = cercano45;
+
+      setGeom(el, { rot: ang });
+    }
+    function soltar() {
+      handle.removeEventListener('pointermove', mover);
+      handle.removeEventListener('pointerup', soltar);
+    }
+    handle.addEventListener('pointermove', mover);
+    handle.addEventListener('pointerup', soltar);
+  });
+}
+
+/* --- Cargar / Guardar --- */
 async function cargarPlano() {
   const res = await fetch('admin_plano.php?action=cargar');
   const mesas = await res.json();
@@ -430,43 +609,38 @@ async function cargarPlano() {
 }
 
 async function guardarPlano() {
-  const aviso = document.getElementById('aviso');
-  const mesas = capa.find('Group').map(g => {
-    const fig = g.findOne('Circle') || g.findOne('Rect');
-    const esCirculo = fig.className === 'Circle';
-    return {
-      id: g.getAttr('mesaId'),
-      numero: g.getAttr('numero'),
-      capacidad: g.getAttr('capacidad'),
-      forma: g.getAttr('forma'),
-      pos_x: g.x(),
-      pos_y: g.y(),
-      ancho: esCirculo ? fig.radius() * 2 : fig.width(),
-      alto: esCirculo ? fig.radius() * 2 : fig.height(),
-      rotacion: g.rotation()
-    };
-  });
+  const mesas = Array.from(plano.querySelectorAll('.mesa')).map(el => ({
+    id: el.dataset.mesaId || null,
+    numero: el.dataset.numero,
+    capacidad: el.dataset.capacidad,
+    forma: el.dataset.forma,
+    pos_x: el._x,
+    pos_y: el._y,
+    ancho: el._w,
+    alto: el._h,
+    rotacion: el._rot,
+  }));
 
   const res = await fetch('admin_plano.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'guardar', mesas, eliminadas })
+    body: JSON.stringify({ action: 'guardar', mesas, eliminadas }),
   });
 
   const datos = await res.json();
 
   if (datos.ok) {
-    aviso.style.color = VERDE;
+    aviso.style.color = 'var(--verde)';
     aviso.textContent = datos.no_eliminadas?.length
       ? 'Guardado. Algunas mesas no se borraron porque tienen reservas.'
       : 'Plano guardado ✓';
 
-    capa.find('Group').forEach(g => g.destroy());
+    plano.querySelectorAll('.mesa').forEach(el => el.remove());
     eliminadas.length = 0;
     seleccionar(null);
     cargarPlano();
   } else {
-    aviso.style.color = '#a33';
+    aviso.style.color = 'var(--rojo)';
     aviso.textContent = datos.error || 'Error al guardar';
   }
 }
