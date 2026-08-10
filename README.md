@@ -10,13 +10,13 @@ Sistema de gestión para un restaurante, desarrollado en PHP + MySQL. Incluye un
 
 ## Acceso
 
-El proyecto ya está desplegado en hosting (InfinityFree), no requiere instalación local.
+El proyecto está desplegado en hosting (InfinityFree) y también puede correrse en local con XAMPP; el mismo código detecta automáticamente en qué entorno está y elige la base de datos correspondiente (no hay que tocar nada a mano).
 
- **URL:** `[corralin.kesug.com]`
+ **URL online:** `corralin.kesug.com`
 
-## Cómo usar
+### Opción A — Online (sin instalar nada)
 
-1. Entrar al link de arriba. Desde la landing page, hacer clic en **Reservar** para iniciar sesión.
+1. Entrar a `corralin.kesug.com`. Desde la landing page, hacer clic en **Reservar** para iniciar sesión.
 2. Ingresar con las credenciales de Super Admin:
 
    | Usuario  | Contraseña     |
@@ -24,6 +24,14 @@ El proyecto ya está desplegado en hosting (InfinityFree), no requiere instalaci
    | PruebaSU | Margoproject1  |
 
 3. Dentro del panel, entrar a la card **Plano de mesas** para acceder al CRUD.
+
+### Opción B — Local con XAMPP
+
+1. Descomprimir este zip dentro de `C:\xampp\htdocs\` (la carpeta puede llamarse `margo-project-`).
+2. Abrir el Panel de Control de XAMPP e iniciar **Apache** y **MySQL**.
+3. Ir al navegador a `http://localhost/margo-project-/dashboards/admin_plano.php` para ver el CRUD del plano de mesas directamente (no pide login).
+4. La base de datos local (`margo-project-`) y la tabla de mesas se crean solas la primera vez que se accede al sitio, no hace falta importar nada para ver el CRUD del plano.
+5. (Opcional) Para probar también el login y los dashboards, importar `base de datos/margo-project-.sql` desde phpMyAdmin (`http://localhost/phpmyadmin`) en la base `margo-project-`, y después entrar a `http://localhost/margo-project-/public/login.php` con las credenciales de la tabla de arriba.
 
 ## Archivo usado
 
