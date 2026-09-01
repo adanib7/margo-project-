@@ -41,6 +41,16 @@ require_once '../includes/header.php';
       <p class="tarjeta-texto">Editar la distribución de mesas que ven los clientes al reservar.</p>
     </a>
 
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/inventario.php') ?>">
+      <div class="tarjeta-cabecera">
+        <div class="icono">
+          <span class="material-symbols-outlined">inventory_2</span>
+        </div>
+        <h2>Inventario</h2>
+      </div>
+      <p class="tarjeta-texto">Controlar el stock de ingredientes, bebidas y suministros del local.</p>
+    </a>
+
     <a class="tarjeta" href="#">
       <div class="tarjeta-cabecera">
         <div class="icono">

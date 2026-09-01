@@ -24,6 +24,39 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `inventario`
+--
+
+CREATE TABLE `inventario` (
+  `id` int(11) NOT NULL,
+  `nombre` varchar(120) NOT NULL,
+  `categoria` varchar(30) NOT NULL DEFAULT 'general',
+  `unidad` varchar(20) NOT NULL DEFAULT 'unidad',
+  `stock` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `stock_minimo` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `precio_unitario` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `proveedor` varchar(120) DEFAULT NULL,
+  `creado_en` timestamp NOT NULL DEFAULT current_timestamp(),
+  `actualizado_en` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `inventario`
+--
+
+INSERT INTO `inventario` (`id`, `nombre`, `categoria`, `unidad`, `stock`, `stock_minimo`, `precio_unitario`, `proveedor`) VALUES
+(1, 'Faba de la Granja', 'seco', 'kg', 18.00, 8.00, 6.50, 'Legumbres del Nalón'),
+(2, 'Ternera asturiana', 'carne', 'kg', 12.50, 6.00, 14.90, 'Carnicería Cué'),
+(3, 'Queso Afuega\'l Pitu', 'lacteo', 'kg', 3.20, 2.00, 19.00, 'Quesería La Peral'),
+(4, 'Sidra natural DOP', 'bebida', 'botella', 96.00, 48.00, 3.20, 'Llagar Trabanco'),
+(5, 'Chorizo asturiano', 'carne', 'kg', 5.00, 4.00, 11.50, 'Embutidos Nava'),
+(6, 'Cebolla', 'verdura', 'kg', 22.00, 10.00, 1.10, 'Huerta El Sueve'),
+(7, 'Aceite de oliva virgen', 'seco', 'l', 14.00, 6.00, 7.80, 'Distribuciones Uría'),
+(8, 'Detergente lavavajillas', 'limpieza', 'caja', 2.00, 3.00, 24.00, 'Higiene Pro');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `usuarios`
 --
 
@@ -54,6 +87,13 @@ INSERT INTO `usuarios` (`id`, `google_id`, `email`, `nombre`, `foto`, `password`
 --
 
 --
+-- Indexes for table `inventario`
+--
+ALTER TABLE `inventario`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `nombre` (`nombre`);
+
+--
 -- Indexes for table `usuarios`
 --
 ALTER TABLE `usuarios`
@@ -64,6 +104,12 @@ ALTER TABLE `usuarios`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `inventario`
+--
+ALTER TABLE `inventario`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `usuarios`

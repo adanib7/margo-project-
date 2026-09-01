@@ -1496,3 +1496,96 @@ body {
     padding-bottom: 90px;
   }
 }
+
+/* ===== INVENTARIO ===== */
+
+/* Filtro "bajo stock" */
+.filtro-bajo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.filtro-bajo.filtro-activo {
+  background-color: #b07f22;
+  border-color: #b07f22;
+}
+.filtro-bajo.filtro-activo:hover { background-color: #96691a; }
+
+/* Formulario en 2 columnas dentro del modal */
+.inv-form-fila {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 1rem;
+}
+@media (min-width: 520px) {
+  .inv-form-fila { grid-template-columns: 1fr 1fr; }
+}
+
+/* Puntito de color por categoría */
+.inv-cat-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  background-color: #73796f;
+}
+.inv-cat-bebida    { background-color: #c9962e; }
+.inv-cat-carne     { background-color: #8c2f39; }
+.inv-cat-pescado   { background-color: #3d6a8c; }
+.inv-cat-verdura   { background-color: #2d5f3f; }
+.inv-cat-fruta     { background-color: #b7791f; }
+.inv-cat-lacteo    { background-color: #d9c7a3; }
+.inv-cat-seco      { background-color: #9a7b4f; }
+.inv-cat-congelado { background-color: #6a9bb0; }
+.inv-cat-limpieza  { background-color: #5a8f8f; }
+.inv-cat-general   { background-color: #73796f; }
+
+/* Celda de stock con stepper */
+.inv-stock-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+.inv-step {
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 1px solid rgba(115,121,111,0.35);
+  border-radius: 0.4rem;
+  background-color: #ffffff;
+  color: #434840;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+.inv-step:hover:not(:disabled) {
+  background-color: #eeeee8;
+  border-color: #264220;
+}
+.inv-step:disabled { opacity: 0.5; cursor: default; }
+.inv-step .material-symbols-outlined { font-size: 1rem; }
+
+.inv-stock-num {
+  min-width: 2.5rem;
+  text-align: center;
+  font-weight: 600;
+  color: #1a1c19;
+}
+.inv-stock-num.es-bajo { color: #b91c1c; }
+.inv-unidad { color: #73796f; font-size: 0.8rem; }
+
+.inv-badge-bajo {
+  background-color: #ffdad6;
+  color: #b91c1c;
+}
+
+@media (max-width: 1023px) {
+  .inv-tabla th:nth-child(6), .inv-tabla td:nth-child(6),
+  .inv-tabla th:nth-child(7), .inv-tabla td:nth-child(7),
+  .inv-tabla th:nth-child(8), .inv-tabla td:nth-child(8) {
+    display: none;
+  }
+}
