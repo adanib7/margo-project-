@@ -120,18 +120,14 @@ function ensureInventarioTable(mysqli $conn): void
         ['actualizado_en',  'TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'],
     ];
 
+    // Nota: MariaDB no acepta `SHOW COLUMNS ... LIKE ?` como sentencia preparada,
+    // por eso se arma la consulta directo. $col sale del array de arriba (literal
+    // del código, nunca entrada del usuario), así que es seguro.
     foreach ($columnas as [$col, $definicion]) {
-        $stmt = $conn->prepare("SHOW COLUMNS FROM inventario LIKE ?");
-        if (!$stmt) {
-            continue;
-        }
-        $stmt->bind_param('s', $col);
-        $stmt->execute();
-        $res = $stmt->get_result();
+        $res = $conn->query("SHOW COLUMNS FROM inventario LIKE '{$col}'");
         if ($res && $res->num_rows === 0) {
             $conn->query("ALTER TABLE inventario ADD COLUMN {$col} {$definicion}");
         }
-        $stmt->close();
     }
 
     // Reparar la clave primaria si `id` quedó sin AUTO_INCREMENT (pasa cuando se

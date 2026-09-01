@@ -40,18 +40,13 @@ function ensureMesaTable(mysqli $conn): void
         ['rotacion', 'DOUBLE NOT NULL DEFAULT 0'],
     ];
 
+    // MariaDB no acepta `SHOW COLUMNS ... LIKE ?` preparado; $col es literal del
+    // código (no entrada de usuario), así que se consulta directo.
     foreach ($columns as [$col, $definition]) {
-        $stmt = $conn->prepare("SHOW COLUMNS FROM mesas LIKE ?");
-        if (!$stmt) {
-            continue;
-        }
-        $stmt->bind_param('s', $col);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $result = $conn->query("SHOW COLUMNS FROM mesas LIKE '{$col}'");
         if ($result && $result->num_rows === 0) {
             $conn->query("ALTER TABLE mesas ADD COLUMN {$col} {$definition}");
         }
-        $stmt->close();
     }
 }
 

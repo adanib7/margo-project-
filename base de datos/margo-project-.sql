@@ -26,9 +26,13 @@ SET time_zone = "+00:00";
 --
 -- Table structure for table `inventario`
 --
+-- Autocontenida a propósito: la clave primaria y el AUTO_INCREMENT van dentro
+-- del CREATE (no en ALTER aparte) para que el import no dependa del orden ni
+-- falle con #1075 si la tabla ya la creó la app (includes/inventario_db.php).
+--
 
-CREATE TABLE `inventario` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `inventario` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` varchar(120) NOT NULL,
   `categoria` varchar(30) NOT NULL DEFAULT 'general',
   `unidad` varchar(20) NOT NULL DEFAULT 'unidad',
@@ -37,14 +41,16 @@ CREATE TABLE `inventario` (
   `precio_unitario` decimal(10,2) NOT NULL DEFAULT 0.00,
   `proveedor` varchar(120) DEFAULT NULL,
   `creado_en` timestamp NOT NULL DEFAULT current_timestamp(),
-  `actualizado_en` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `actualizado_en` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `nombre` (`nombre`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `inventario`
 --
 
-INSERT INTO `inventario` (`id`, `nombre`, `categoria`, `unidad`, `stock`, `stock_minimo`, `precio_unitario`, `proveedor`) VALUES
+INSERT IGNORE INTO `inventario` (`id`, `nombre`, `categoria`, `unidad`, `stock`, `stock_minimo`, `precio_unitario`, `proveedor`) VALUES
 (1, 'Faba de la Granja', 'seco', 'kg', 18.00, 8.00, 6.50, 'Legumbres del Nalón'),
 (2, 'Ternera asturiana', 'carne', 'kg', 12.50, 6.00, 14.90, 'Carnicería Cué'),
 (3, 'Queso Afuega\'l Pitu', 'lacteo', 'kg', 3.20, 2.00, 19.00, 'Quesería La Peral'),
@@ -87,13 +93,6 @@ INSERT INTO `usuarios` (`id`, `google_id`, `email`, `nombre`, `foto`, `password`
 --
 
 --
--- Indexes for table `inventario`
---
-ALTER TABLE `inventario`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `nombre` (`nombre`);
-
---
 -- Indexes for table `usuarios`
 --
 ALTER TABLE `usuarios`
@@ -104,12 +103,6 @@ ALTER TABLE `usuarios`
 --
 -- AUTO_INCREMENT for dumped tables
 --
-
---
--- AUTO_INCREMENT for table `inventario`
---
-ALTER TABLE `inventario`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `usuarios`
