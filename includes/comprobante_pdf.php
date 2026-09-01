@@ -10,16 +10,84 @@ session_start();
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/check_auth.php';
 require_once __DIR__ . '/plano_db.php';
-require_once __DIR__ . '/lib/fpdf/fpdf.php';
 requireLogin();
 
-date_default_timezone_set('Europe/Madrid');
+if (!is_file(__DIR__ . '/lib/fpdf/fpdf.php')) {
+    http_response_code(500);
+    header('Content-Type: text/plain; charset=utf-8');
+    echo 'Falta la librería FPDF en includes/lib/fpdf/. Subí esa carpeta al servidor.';
+    exit;
+}
+require_once __DIR__ . '/lib/fpdf/fpdf.php';
 
-/* FPDF (fuentes base) trabaja en Latin-1; convertimos desde UTF-8. CP1252
-   mantiene los acentos, la ñ, el · y el € que usa el texto. */
+if (function_exists('date_default_timezone_set')) {
+    date_default_timezone_set('Europe/Madrid');
+}
+
+/**
+ * UTF-8 -> Windows-1252 (lo que esperan las fuentes base de FPDF).
+ * Sin depender de iconv/mbstring: algunos hostings compartidos (InfinityFree)
+ * no traen iconv y el script moría con error 500.
+ */
 function t(string $s): string
 {
-    return iconv('UTF-8', 'CP1252//TRANSLIT', $s);
+    if (function_exists('iconv')) {
+        $r = @iconv('UTF-8', 'Windows-1252//TRANSLIT', $s);
+        if ($r !== false) {
+            return $r;
+        }
+    }
+    if (function_exists('mb_convert_encoding')) {
+        return mb_convert_encoding($s, 'Windows-1252', 'UTF-8');
+    }
+    return utf8ToWin1252($s);
+}
+
+/**
+ * Conversión manual UTF-8 -> Windows-1252 (fallback puro PHP).
+ */
+function utf8ToWin1252(string $s): string
+{
+    // Codepoints de 0x80-0x9F que Windows-1252 coloca distinto a Latin-1.
+    static $especiales = [
+        0x20AC => 0x80, 0x201A => 0x82, 0x0192 => 0x83, 0x201E => 0x84, 0x2026 => 0x85,
+        0x2020 => 0x86, 0x2021 => 0x87, 0x02C6 => 0x88, 0x2030 => 0x89, 0x0160 => 0x8A,
+        0x2039 => 0x8B, 0x0152 => 0x8C, 0x017D => 0x8E, 0x2018 => 0x91, 0x2019 => 0x92,
+        0x201C => 0x93, 0x201D => 0x94, 0x2022 => 0x95, 0x2013 => 0x96, 0x2014 => 0x97,
+        0x02DC => 0x98, 0x2122 => 0x99, 0x0161 => 0x9A, 0x203A => 0x9B, 0x0153 => 0x9C,
+        0x017E => 0x9E, 0x0178 => 0x9F,
+    ];
+    $out = '';
+    $len = strlen($s);
+    for ($i = 0; $i < $len; $i++) {
+        $c = ord($s[$i]);
+        if ($c < 0x80) {
+            $out .= chr($c);
+            continue;
+        }
+        // decodificar el codepoint UTF-8
+        if ($c >= 0xF0 && $i + 3 < $len) {
+            $cp = (($c & 0x07) << 18) | ((ord($s[$i + 1]) & 0x3F) << 12) | ((ord($s[$i + 2]) & 0x3F) << 6) | (ord($s[$i + 3]) & 0x3F);
+            $i += 3;
+        } elseif ($c >= 0xE0 && $i + 2 < $len) {
+            $cp = (($c & 0x0F) << 12) | ((ord($s[$i + 1]) & 0x3F) << 6) | (ord($s[$i + 2]) & 0x3F);
+            $i += 2;
+        } elseif ($c >= 0xC0 && $i + 1 < $len) {
+            $cp = (($c & 0x1F) << 6) | (ord($s[$i + 1]) & 0x3F);
+            $i += 1;
+        } else {
+            $out .= '?';
+            continue;
+        }
+        if ($cp <= 0xFF) {
+            $out .= chr($cp);              // Latin-1 directo
+        } elseif (isset($especiales[$cp])) {
+            $out .= chr($especiales[$cp]); // €, comillas tipográficas, guiones…
+        } else {
+            $out .= '?';
+        }
+    }
+    return $out;
 }
 
 /**
@@ -27,9 +95,9 @@ function t(string $s): string
  */
 class ComprobantePDF extends FPDF
 {
-    public string $pieCodigo = '';
+    public $pieCodigo = '';
 
-    public function Footer(): void
+    public function Footer()
     {
         $this->SetY(-20);
         $this->SetDrawColor(210, 205, 190);
@@ -101,6 +169,8 @@ $GRIS    = [110, 110, 105];
 $TINTA   = [38, 38, 33];
 $BURDEOS = [140, 47, 57];
 $X_FIN   = 185;
+
+try {
 
 $pdf = new ComprobantePDF('P', 'mm', 'A4');
 $pdf->pieCodigo = $reserva['codigo'];
@@ -194,4 +264,25 @@ $pdf->SetFont('Times', 'B', 11);
 $pdf->SetTextColor(...$VERDE);
 $pdf->Cell(0, 6, t('El Corralín de Campanal'), 0, 1);
 
-$pdf->Output('D', 'reserva-' . $reserva['codigo'] . '.pdf');
+$salida = $pdf->Output('S');
+
+} catch (\Throwable $e) {
+    if (!headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: text/plain; charset=utf-8');
+    }
+    echo 'No se pudo generar el PDF: ' . $e->getMessage();
+    exit;
+}
+
+/* Descartar cualquier salida accidental previa (algunos hostings compartidos
+   inyectan un script, o un warning se cuela) para no corromper el binario. */
+while (ob_get_level() > 0) {
+    ob_end_clean();
+}
+
+header('Content-Type: application/pdf');
+header('Content-Disposition: attachment; filename="reserva-' . $reserva['codigo'] . '.pdf"');
+header('Cache-Control: private, max-age=0, must-revalidate');
+header('Pragma: public');
+echo $salida;
