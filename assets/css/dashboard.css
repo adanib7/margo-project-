@@ -1589,3 +1589,103 @@ body {
     display: none;
   }
 }
+
+/* ===== SELECTOR DE MESA EN LA RESERVA (paso 2 del modal) ===== */
+.modal-contenedor-reserva.modal-plano-activo {
+  max-width: 660px;
+  transition: max-width 0.2s ease;
+}
+
+.plano-reserva-leyenda {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: #434840;
+  margin-bottom: 0.6rem;
+}
+.pr-lg { display: inline-flex; align-items: center; gap: 0.35rem; }
+.pr-lg::before {
+  content: '';
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 0.2rem;
+  display: inline-block;
+}
+.pr-libre::before   { background: #2d5f3f; }
+.pr-ocupada::before { background: #c3c8bd; }
+.pr-elegida::before { background: #c9962e; }
+
+.plano-reserva-wrap {
+  position: relative;
+  width: 100%;
+  min-height: 180px;
+  background: #fff;
+  border: 1.5px solid rgba(115, 121, 111, 0.35);
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+.plano-reserva-lienzo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 900px;
+  height: 560px;
+  transform-origin: top left;
+  background-color: #fbf7ec;
+  background-image:
+    linear-gradient(#efe7d0 1px, transparent 1px),
+    linear-gradient(90deg, #efe7d0 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.plano-reserva-estado {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.85rem;
+  color: #73796f;
+  background: #fff;
+}
+.plano-reserva-estado[hidden] { display: none; }
+
+.pr-mesa {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-family: 'Noto Serif', Georgia, serif;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1;
+  color: #fafaf4;
+  background: #2d5f3f;
+  border: 3px solid #c9962e;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: filter 0.12s ease, box-shadow 0.12s ease;
+}
+.pr-mesa.cuadrada { border-radius: 8px; }
+.pr-mesa.redonda  { border-radius: 50%; }
+.pr-mesa:not(.ocupada):hover { filter: brightness(1.12); }
+.pr-mesa.ocupada {
+  background: #c3c8bd;
+  border-color: #a9afa2;
+  color: #6b6f66;
+  cursor: not-allowed;
+}
+.pr-mesa.elegida {
+  background: #c9962e;
+  border-color: #244c33;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 5px #c9962e;
+}
+
+.plano-reserva-hint {
+  font-size: 0.8rem;
+  color: #434840;
+  margin-top: 0.5rem;
+}

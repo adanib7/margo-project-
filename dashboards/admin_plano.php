@@ -1,62 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../includes/config.php';
-
-function ensureMesaTable($conn): void
-{
-    $conn->query("
-        CREATE TABLE IF NOT EXISTS mesas (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            numero INT NOT NULL DEFAULT 1,
-            capacidad INT NOT NULL DEFAULT 4,
-            forma VARCHAR(20) NOT NULL DEFAULT 'cuadrada',
-            pos_x DOUBLE NOT NULL DEFAULT 100,
-            pos_y DOUBLE NOT NULL DEFAULT 100,
-            ancho DOUBLE NOT NULL DEFAULT 70,
-            alto DOUBLE NOT NULL DEFAULT 70,
-            rotacion DOUBLE NOT NULL DEFAULT 0
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-    ");
-
-    $columns = [
-        ['numero', 'INT NOT NULL DEFAULT 1'],
-        ['capacidad', 'INT NOT NULL DEFAULT 4'],
-        ['forma', "VARCHAR(20) NOT NULL DEFAULT 'cuadrada'"],
-        ['pos_x', 'DOUBLE NOT NULL DEFAULT 100'],
-        ['pos_y', 'DOUBLE NOT NULL DEFAULT 100'],
-        ['ancho', 'DOUBLE NOT NULL DEFAULT 70'],
-        ['alto', 'DOUBLE NOT NULL DEFAULT 70'],
-        ['rotacion', 'DOUBLE NOT NULL DEFAULT 0'],
-    ];
-
-    foreach ($columns as [$col, $definition]) {
-        $stmt = $conn->prepare("SHOW COLUMNS FROM mesas LIKE ?");
-        if (!$stmt) {
-            continue;
-        }
-        $stmt->bind_param('s', $col);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($result && $result->num_rows === 0) {
-            $conn->query("ALTER TABLE mesas ADD COLUMN {$col} {$definition}");
-        }
-        $stmt->close();
-    }
-}
-
-function hasReservation($conn, int $mesaId): bool
-{
-    $stmt = $conn->prepare("SELECT 1 FROM reservas WHERE mesa_id = ? LIMIT 1");
-    if (!$stmt) {
-        return false;
-    }
-    $stmt->bind_param('i', $mesaId);
-    $stmt->execute();
-    $stmt->store_result();
-    $has = $stmt->num_rows > 0;
-    $stmt->close();
-    return $has;
-}
+require_once __DIR__ . '/../includes/plano_db.php';
 
 function sendJson(array $data): void
 {
@@ -71,6 +16,7 @@ if (!isset($conn) || $conn === null) {
 }
 
 ensureMesaTable($conn);
+ensureReservaMesaColumn($conn);
 
 $action = $_GET['action'] ?? '';
 
@@ -131,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $noEliminadas = [];
         foreach ($eliminadas as $mesaId) {
             $id = (int) $mesaId;
-            if ($id > 0 && hasReservation($conn, $id)) {
+            if ($id > 0 && mesaTieneReservas($conn, $id)) {
                 $noEliminadas[] = $id;
             } else {
                 $stmt = $conn->prepare("DELETE FROM mesas WHERE id = ?");

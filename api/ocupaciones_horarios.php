@@ -30,16 +30,32 @@ if ($conn === null) {
     exit;
 }
 
-$stmt = $conn->prepare(
-    "SELECT hora FROM reservas WHERE fecha = ? AND estado != 'cancelada'"
-);
-$stmt->bind_param('s', $fecha);
-$stmt->execute();
-$result = $stmt->get_result();
-$horarios = [];
-while ($row = $result->fetch_assoc()) {
-    $horarios[] = substr($row['hora'], 0, 5);
+// Total de mesas del plano: una franja horaria solo se considera "completa"
+// cuando ya no queda ninguna mesa libre.
+$totalMesas = 0;
+$resMesas = $conn->query("SHOW TABLES LIKE 'mesas'");
+if ($resMesas && $resMesas->num_rows > 0) {
+    $row = $conn->query("SELECT COUNT(*) AS total FROM mesas")->fetch_assoc();
+    $totalMesas = (int) ($row['total'] ?? 0);
 }
-$stmt->close();
+
+$horarios = [];
+
+if ($totalMesas > 0) {
+    $stmt = $conn->prepare(
+        "SELECT hora, COUNT(DISTINCT mesa_id) AS reservadas
+         FROM reservas
+         WHERE fecha = ? AND estado != 'cancelada' AND mesa_id IS NOT NULL
+         GROUP BY hora
+         HAVING reservadas >= ?"
+    );
+    $stmt->bind_param('si', $fecha, $totalMesas);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $horarios[] = substr($row['hora'], 0, 5);
+    }
+    $stmt->close();
+}
 
 echo json_encode(['ok' => true, 'horarios' => array_values(array_unique($horarios))]);

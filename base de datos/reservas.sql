@@ -4,6 +4,7 @@ CREATE TABLE `reservas` (
   `id` int(11) NOT NULL,
   `codigo` varchar(20) NOT NULL,
   `usuario_id` int(11) NOT NULL,
+  `mesa_id` int(11) DEFAULT NULL,
   `nombre` varchar(255) NOT NULL,
   `fecha` date NOT NULL,
   `hora` time NOT NULL,
@@ -17,7 +18,12 @@ CREATE TABLE `reservas` (
 ALTER TABLE `reservas`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `codigo` (`codigo`),
-  ADD KEY `usuario_id` (`usuario_id`);
+  ADD KEY `usuario_id` (`usuario_id`),
+  ADD KEY `idx_mesa_franja` (`mesa_id`, `fecha`, `hora`);
+
+-- Si la tabla `reservas` ya existía sin la columna de mesa, ejecutar:
+-- ALTER TABLE `reservas` ADD COLUMN `mesa_id` int(11) DEFAULT NULL AFTER `usuario_id`;
+-- ALTER TABLE `reservas` ADD INDEX `idx_mesa_franja` (`mesa_id`, `fecha`, `hora`);
 
 ALTER TABLE `reservas`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;

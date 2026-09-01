@@ -81,8 +81,10 @@ $franjasHorarias = [
         <div class="paso-dot" data-paso-dot="2"><span>2</span></div>
         <div class="paso-linea" data-paso-linea="2"></div>
         <div class="paso-dot" data-paso-dot="3"><span>3</span></div>
+        <div class="paso-linea" data-paso-linea="3"></div>
+        <div class="paso-dot" data-paso-dot="4"><span>4</span></div>
       </div>
-      <p class="paso-contador" id="pasoContador">Paso 1 de 3</p>
+      <p class="paso-contador" id="pasoContador">Paso 1 de 4</p>
     </div>
 
     <form class="modal-form modal-form-pasos" id="formReserva" novalidate>
@@ -117,8 +119,28 @@ $franjasHorarias = [
         </div>
       </div>
 
-      <!-- Paso 2: Cuántos -->
+      <!-- Paso 2: Elegí tu mesa -->
       <div class="modal-paso" data-paso="2">
+        <h3 class="paso-titulo">Elegí tu mesa</h3>
+
+        <div class="campo-grupo">
+          <input type="hidden" id="rMesa" name="mesa_id" required>
+          <div class="plano-reserva-leyenda">
+            <span class="pr-lg pr-libre">Libre</span>
+            <span class="pr-lg pr-ocupada">Ocupada</span>
+            <span class="pr-lg pr-elegida">Tu mesa</span>
+          </div>
+          <div class="plano-reserva-wrap" id="planoReservaWrap">
+            <div class="plano-reserva-lienzo" id="planoReservaLienzo"></div>
+            <div class="plano-reserva-estado" id="planoReservaEstado">Cargando plano…</div>
+          </div>
+          <p class="plano-reserva-hint" id="planoReservaHint">Tocá una mesa libre para elegirla.</p>
+          <span class="campo-error" id="rErrorMesa"></span>
+        </div>
+      </div>
+
+      <!-- Paso 3: Cuántos -->
+      <div class="modal-paso" data-paso="3">
         <h3 class="paso-titulo">¿Cuántos son?</h3>
 
         <div class="campo-grupo">
@@ -136,6 +158,7 @@ $franjasHorarias = [
               <span class="material-symbols-outlined">add</span>
             </button>
           </div>
+          <p class="campo-opcional" id="mesaCapacidadHint" style="margin-top:.5rem"></p>
           <span class="campo-error" id="rErrorPersonas"></span>
         </div>
 
@@ -148,8 +171,8 @@ $franjasHorarias = [
         </div>
       </div>
 
-      <!-- Paso 3: Confirmá -->
-      <div class="modal-paso" data-paso="3">
+      <!-- Paso 4: Confirmá -->
+      <div class="modal-paso" data-paso="4">
         <h3 class="paso-titulo">Confirmá tu reserva</h3>
 
         <div class="campo-grupo">
@@ -174,6 +197,7 @@ $franjasHorarias = [
         <div class="resumen-reserva">
           <div class="resumen-fila"><span>Fecha</span><strong id="resumenFecha">—</strong></div>
           <div class="resumen-fila"><span>Hora</span><strong id="resumenHora">—</strong></div>
+          <div class="resumen-fila"><span>Mesa</span><strong id="resumenMesa">—</strong></div>
           <div class="resumen-fila"><span>Personas</span><strong id="resumenPersonas">—</strong></div>
           <div class="resumen-fila"><span>Teléfono</span><strong id="resumenTelefono">—</strong></div>
         </div>
@@ -199,6 +223,7 @@ $franjasHorarias = [
       <div class="modal-exito-datos">
         <div class="dato"><span class="etiqueta">Fecha</span><span class="valor" id="exitoFecha"></span></div>
         <div class="dato"><span class="etiqueta">Hora</span><span class="valor" id="exitoHora"></span></div>
+        <div class="dato"><span class="etiqueta">Mesa</span><span class="valor" id="exitoMesa"></span></div>
         <div class="dato"><span class="etiqueta">Personas</span><span class="valor" id="exitoPersonas"></span></div>
         <div class="dato"><span class="etiqueta">Teléfono</span><span class="valor" id="exitoTelefono"></span></div>
       </div>
@@ -235,16 +260,27 @@ $franjasHorarias = [
   const inputTelefono = document.getElementById('rTelefono');
   const personasValor = document.getElementById('personasValor');
   const horarioChips  = Array.from(document.querySelectorAll('.horario-chip'));
+  const inputMesa     = document.getElementById('rMesa');
+  const planoWrap     = document.getElementById('planoReservaWrap');
+  const planoLienzo   = document.getElementById('planoReservaLienzo');
+  const planoEstado   = document.getElementById('planoReservaEstado');
+  const planoHint     = document.getElementById('planoReservaHint');
+  const modalContenedor = modal.querySelector('.modal-contenedor-reserva');
   const PERSONAS_MIN = 1;
   const PERSONAS_MAX = 20;
-  const TOTAL_PASOS = 3;
+  const PLANO_W = 900, PLANO_H = 560;
+  const TOTAL_PASOS = 4;
   let pasoActual = 1;
+  let planoData = null;
+  let mesaCapacidad = PERSONAS_MAX;
+  let personasMax = PERSONAS_MAX;
 
   const PASO_DE_CAMPO = {
     fecha: 1, hora: 1,
-    personas: 2,
-    telefono: 3,
-    nombre: 3,
+    mesa: 2,
+    personas: 3,
+    telefono: 4,
+    nombre: 4,
   };
 
   inputFecha.min = new Date().toISOString().split('T')[0];
@@ -260,9 +296,109 @@ $franjasHorarias = [
   });
 
   function setPersonas(valor) {
-    valor = Math.min(PERSONAS_MAX, Math.max(PERSONAS_MIN, valor));
+    valor = Math.min(personasMax, Math.max(PERSONAS_MIN, valor));
     inputPersonas.value = valor;
     personasValor.textContent = valor;
+  }
+
+  // ── Plano de mesas (paso 2) ──────────────────────────────────────────────
+  function escalarPlano() {
+    const ancho = planoWrap.clientWidth;
+    if (!ancho) return;
+    const esc = ancho / PLANO_W;
+    planoLienzo.style.transform = `scale(${esc})`;
+    planoWrap.style.height = (PLANO_H * esc) + 'px';
+  }
+  window.addEventListener('resize', escalarPlano);
+
+  async function cargarPlano() {
+    inputMesa.value = '';
+    mesaCapacidad = PERSONAS_MAX;
+    planoLienzo.innerHTML = '';
+    planoEstado.hidden = false;
+    planoEstado.textContent = 'Cargando plano…';
+    planoHint.textContent = 'Tocá una mesa libre para elegirla.';
+    document.getElementById('rErrorMesa').textContent = '';
+
+    const fecha = inputFecha.value;
+    const hora  = inputHora.value;
+
+    try {
+      const res  = await fetch(BASE + '/api/plano_disponible.php?fecha=' + encodeURIComponent(fecha) + '&hora=' + encodeURIComponent(hora));
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.mensaje || 'No se pudo cargar el plano.');
+      planoData = data;
+      dibujarPlano(data.mesas);
+    } catch (e) {
+      planoEstado.hidden = false;
+      planoEstado.textContent = e.message;
+    }
+  }
+
+  function dibujarPlano(mesas) {
+    planoLienzo.innerHTML = '';
+
+    if (!mesas.length) {
+      planoEstado.hidden = false;
+      planoEstado.textContent = 'El restaurante todavía no cargó el plano de mesas.';
+      return;
+    }
+    planoEstado.hidden = true;
+
+    mesas.forEach(m => {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'pr-mesa ' + (m.forma === 'redonda' ? 'redonda' : 'cuadrada') + (m.ocupada ? ' ocupada' : '');
+      el.dataset.id = m.id;
+      el.style.width  = m.ancho + 'px';
+      el.style.height = m.alto + 'px';
+      el.style.left   = (m.pos_x - m.ancho / 2) + 'px';
+      el.style.top    = (m.pos_y - m.alto / 2) + 'px';
+      el.style.transform = 'rotate(' + m.rotacion + 'deg)';
+      el.textContent = m.numero;
+      el.title = m.ocupada
+        ? `Mesa ${m.numero} · ocupada en esta franja`
+        : `Mesa ${m.numero} · hasta ${m.capacidad} personas`;
+      if (m.ocupada) {
+        el.disabled = true;
+      } else {
+        el.addEventListener('click', () => elegirMesa(m, el));
+      }
+      planoLienzo.appendChild(el);
+    });
+
+    requestAnimationFrame(escalarPlano);
+  }
+
+  function elegirMesa(m, el) {
+    planoLienzo.querySelectorAll('.pr-mesa.elegida').forEach(x => x.classList.remove('elegida'));
+    el.classList.add('elegida');
+    inputMesa.value = m.id;
+    mesaCapacidad = m.capacidad;
+    document.getElementById('rErrorMesa').textContent = '';
+    planoHint.textContent = `Elegiste la mesa ${m.numero} (hasta ${m.capacidad} personas).`;
+  }
+
+  function mesaSeleccionada() {
+    if (!inputMesa.value || !planoData) return null;
+    return planoData.mesas.find(x => String(x.id) === String(inputMesa.value)) || null;
+  }
+
+  function actualizarCapacidadHint() {
+    personasMax = Math.max(PERSONAS_MIN, Math.min(PERSONAS_MAX, mesaCapacidad || PERSONAS_MAX));
+    setPersonas(parseInt(inputPersonas.value, 10) || 2);
+    const hint = document.getElementById('mesaCapacidadHint');
+    hint.textContent = (mesaCapacidad && mesaCapacidad < PERSONAS_MAX)
+      ? `Esta mesa admite hasta ${mesaCapacidad} personas.`
+      : '';
+  }
+
+  function aplicarAnchoModal() {
+    modalContenedor.classList.toggle('modal-plano-activo', pasoActual === 2);
+    if (pasoActual === 2) {
+      requestAnimationFrame(escalarPlano);
+      setTimeout(escalarPlano, 240);
+    }
   }
 
   async function onFechaChange() {
@@ -352,8 +488,14 @@ $franjasHorarias = [
     });
     document.querySelector('.modal-paso[data-paso="1"]').classList.add('modal-paso-activo');
     pasoActual = 1;
+    inputMesa.value = '';
+    planoData = null;
+    mesaCapacidad = PERSONAS_MAX;
+    personasMax = PERSONAS_MAX;
+    document.getElementById('mesaCapacidadHint').textContent = '';
     actualizarIndicador();
     actualizarBotones();
+    aplicarAnchoModal();
   }
 
   function irAPaso(nuevo) {
@@ -374,7 +516,10 @@ $franjasHorarias = [
     pasoActual = nuevo;
     actualizarIndicador();
     actualizarBotones();
-    if (pasoActual === 3) actualizarResumen();
+    aplicarAnchoModal();
+    if (pasoActual === 2) cargarPlano();
+    if (pasoActual === 3) actualizarCapacidadHint();
+    if (pasoActual === 4) actualizarResumen();
 
     const primerCampo = panelNuevo.querySelector('input:not([type="hidden"]), textarea');
     if (primerCampo) primerCampo.focus({ preventScroll: true });
@@ -410,8 +555,11 @@ $franjasHorarias = [
     const personas = document.getElementById('rPersonas').value;
     const telefono = document.getElementById('rTelefono').value.trim();
 
+    const mesa = mesaSeleccionada();
+
     document.getElementById('resumenFecha').textContent = formatearFecha(fecha);
     document.getElementById('resumenHora').textContent  = hora ? `${hora} hs` : '—';
+    document.getElementById('resumenMesa').textContent  = mesa ? `Mesa ${mesa.numero}` : '—';
     document.getElementById('resumenPersonas').textContent = personas;
     document.getElementById('resumenTelefono').textContent = telefono || '—';
   }
@@ -430,6 +578,7 @@ $franjasHorarias = [
     document.getElementById('exitoCodigo').textContent   = reserva.codigo;
     document.getElementById('exitoFecha').textContent    = `${dia}/${mes}/${anio}`;
     document.getElementById('exitoHora').textContent     = `${reserva.hora}hs`;
+    document.getElementById('exitoMesa').textContent     = reserva.mesa ? `Mesa ${reserva.mesa}` : '—';
     document.getElementById('exitoPersonas').textContent = reserva.personas;
     document.getElementById('exitoTelefono').textContent = reserva.telefono || '—';
     document.getElementById('exitoCalendario').href = BASE + '/api/reserva_ics.php?codigo=' + encodeURIComponent(reserva.codigo);
@@ -437,7 +586,7 @@ $franjasHorarias = [
   }
 
   function limpiarErrores() {
-    ['rErrorNombre', 'rErrorFecha', 'rErrorHora', 'rErrorPersonas', 'rErrorTelefono'].forEach(id => {
+    ['rErrorNombre', 'rErrorFecha', 'rErrorHora', 'rErrorMesa', 'rErrorPersonas', 'rErrorTelefono'].forEach(id => {
       document.getElementById(id).textContent = '';
     });
     form.querySelectorAll('.campo-wrapper-error').forEach(el => el.classList.remove('campo-wrapper-error'));
@@ -477,8 +626,12 @@ $franjasHorarias = [
       marcarError('rHora', 'rErrorHora', 'Elegí un horario.');
       ok = false;
     }
-    if (!personas || personas < 1 || personas > 20) {
-      marcarError('rPersonas', 'rErrorPersonas', 'Ingresá entre 1 y 20 personas.');
+    if (!inputMesa.value) {
+      marcarError('rMesa', 'rErrorMesa', 'Elegí una mesa del plano.');
+      ok = false;
+    }
+    if (!personas || personas < 1 || personas > personasMax) {
+      marcarError('rPersonas', 'rErrorPersonas', `Ingresá entre 1 y ${personasMax} personas.`);
       ok = false;
     }
     if (!telefono) {
@@ -504,9 +657,9 @@ $franjasHorarias = [
         marcarError('rHora', 'rErrorHora', 'Elegí un horario.');
         ok = false;
       }
-    } else if (paso === 3) {
-      if (!document.getElementById('rNombre').value.trim()) {
-        marcarError('rNombre', 'rErrorNombre', 'El nombre es obligatorio.');
+    } else if (paso === 2) {
+      if (!inputMesa.value) {
+        marcarError('rMesa', 'rErrorMesa', 'Elegí una mesa del plano.');
         ok = false;
       }
     }
@@ -530,6 +683,7 @@ $franjasHorarias = [
       nombre:     document.getElementById('rNombre').value.trim(),
       fecha:      document.getElementById('rFecha').value,
       hora:       document.getElementById('rHora').value,
+      mesa_id:    parseInt(inputMesa.value, 10) || 0,
       personas:   parseInt(document.getElementById('rPersonas').value, 10),
       comentario: document.getElementById('rComentario').value.trim(),
       telefono:   document.getElementById('rTelefono').value.trim(),
@@ -552,12 +706,17 @@ $franjasHorarias = [
         document.getElementById('rNombre').value = <?= json_encode($_SESSION['usuario_logueado']) ?>;
         document.getElementById('rTelefono').value = '';
         document.querySelectorAll('.horario-chip').forEach(c => c.classList.remove('horario-chip-activo'));
+        inputMesa.value = '';
+        planoData = null;
+        mesaCapacidad = PERSONAS_MAX;
+        personasMax = PERSONAS_MAX;
         setPersonas(2);
       } else if (data.errores) {
         const map = {
           nombre:   ['rNombre',   'rErrorNombre'],
           fecha:    ['rFecha',    'rErrorFecha'],
           hora:     ['rHora',     'rErrorHora'],
+          mesa:     ['rMesa',     'rErrorMesa'],
           personas: ['rPersonas', 'rErrorPersonas'],
           telefono: ['rTelefono', 'rErrorTelefono'],
         };

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../includes/config.php';
+require_once '../includes/plano_db.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -22,6 +23,9 @@ if ($conn === null) {
     exit;
 }
 
+ensureMesaTable($conn);
+ensureReservaMesaColumn($conn);
+
 $body       = json_decode(file_get_contents('php://input'), true);
 $nombre     = trim($body['nombre']     ?? '');
 $fecha      = trim($body['fecha']      ?? '');
@@ -29,9 +33,11 @@ $hora       = trim($body['hora']       ?? '');
 $personas   = (int) ($body['personas'] ?? 0);
 $comentario = trim($body['comentario'] ?? '');
 $telefono   = trim($body['telefono'] ?? '');
+$mesaId     = (int) ($body['mesa_id'] ?? 0);
 $usuarioId  = (int) $_SESSION['usuario_id'];
 
 $errores = [];
+$mesaNumero = null;
 
 if ($nombre === '') {
     $errores['nombre'] = 'El nombre es obligatorio.';
@@ -58,18 +64,37 @@ if ($personas < 1 || $personas > 20) {
     $errores['personas'] = 'Ingresá entre 1 y 20 personas.';
 }
 
+if ($mesaId <= 0) {
+    $errores['mesa'] = 'Elegí una mesa del plano.';
+} else {
+    $stmt = $conn->prepare("SELECT numero, capacidad FROM mesas WHERE id = ?");
+    $stmt->bind_param('i', $mesaId);
+    $stmt->execute();
+    $mesa = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if (!$mesa) {
+        $errores['mesa'] = 'La mesa elegida ya no está disponible. Actualizá el plano.';
+    } else {
+        $mesaNumero = (int) $mesa['numero'];
+        if ($personas > (int) $mesa['capacidad']) {
+            $errores['personas'] = "La mesa {$mesaNumero} admite hasta {$mesa['capacidad']} personas.";
+        }
+    }
+}
+
 if (!empty($errores)) {
     http_response_code(422);
     echo json_encode(['ok' => false, 'errores' => $errores]);
     exit;
 }
 
-$stmt = $conn->prepare("SELECT id FROM reservas WHERE fecha = ? AND hora = ? AND estado != 'cancelada' LIMIT 1");
-$stmt->bind_param('ss', $fecha, $hora);
+$stmt = $conn->prepare("SELECT id FROM reservas WHERE mesa_id = ? AND fecha = ? AND hora = ? AND estado != 'cancelada' LIMIT 1");
+$stmt->bind_param('iss', $mesaId, $fecha, $hora);
 $stmt->execute();
 $stmt->store_result();
 if ($stmt->num_rows > 0) {
-    $errores['hora'] = 'Ese horario ya fue reservado. Elegí otro.';
+    $errores['mesa'] = "La mesa {$mesaNumero} ya está reservada en esa franja. Elegí otra mesa u otro horario.";
 }
 $stmt->close();
 
@@ -86,28 +111,29 @@ for ($i = 0; $i < 6; $i++) {
 }
 
 $stmt = $conn->prepare(
-    "INSERT INTO reservas (codigo, usuario_id, nombre, fecha, hora, personas, comentario, telefono, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmada')"
+    "INSERT INTO reservas (codigo, usuario_id, mesa_id, nombre, fecha, hora, personas, comentario, telefono, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmada')"
 );
 
 if ($stmt === false) {
     $errorMsg = $conn->error;
     if (stripos($errorMsg, 'unknown column') !== false) {
+        // Base sin columna `telefono` (deploy viejo): insertamos sin ese campo.
         $stmt = $conn->prepare(
-            "INSERT INTO reservas (codigo, usuario_id, nombre, fecha, hora, personas, comentario, estado) VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmada')"
+            "INSERT INTO reservas (codigo, usuario_id, mesa_id, nombre, fecha, hora, personas, comentario, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmada')"
         );
         if ($stmt === false) {
             http_response_code(500);
             echo json_encode(['ok' => false, 'mensaje' => 'No se pudo preparar la inserción de reserva.']);
             exit;
         }
-        $stmt->bind_param('sisssis', $codigo, $usuarioId, $nombre, $fecha, $hora, $personas, $comentario);
+        $stmt->bind_param('siisssis', $codigo, $usuarioId, $mesaId, $nombre, $fecha, $hora, $personas, $comentario);
     } else {
         http_response_code(500);
         echo json_encode(['ok' => false, 'mensaje' => 'La tabla de reservas no existe todavía en la base de datos.']);
         exit;
     }
 } else {
-    $stmt->bind_param('sisssiss', $codigo, $usuarioId, $nombre, $fecha, $hora, $personas, $comentario, $telefono);
+    $stmt->bind_param('siisssiss', $codigo, $usuarioId, $mesaId, $nombre, $fecha, $hora, $personas, $comentario, $telefono);
 }
 
 if ($stmt->execute()) {
@@ -121,6 +147,7 @@ if ($stmt->execute()) {
         'hora'     => $hora,
         'personas' => $personas,
         'telefono' => $telefono,
+        'mesa'     => $mesaNumero,
     ]);
 } else {
     $stmt->close();

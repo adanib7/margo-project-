@@ -2,14 +2,21 @@
 session_start();
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/check_auth.php';
+require_once __DIR__ . '/plano_db.php';
 requireLogin();
 
 $codigo  = trim($_GET['codigo'] ?? '');
 $reserva = null;
 
 if ($codigo !== '' && $conn !== null) {
+    ensureMesaTable($conn);
+    ensureReservaMesaColumn($conn);
+
     $stmt = $conn->prepare(
-        "SELECT codigo, nombre, fecha, hora, personas, comentario, telefono, estado FROM reservas WHERE codigo = ? AND usuario_id = ?"
+        "SELECT r.codigo, r.nombre, r.fecha, r.hora, r.personas, r.comentario, r.telefono, r.estado, m.numero AS mesa_numero
+         FROM reservas r
+         LEFT JOIN mesas m ON m.id = r.mesa_id
+         WHERE r.codigo = ? AND r.usuario_id = ?"
     );
     $stmt->bind_param('si', $codigo, $_SESSION['usuario_id']);
     $stmt->execute();
@@ -206,6 +213,12 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
         <span class="etiqueta">Hora</span>
         <span class="valor"><?= htmlspecialchars(substr($reserva['hora'], 0, 5), ENT_QUOTES, 'UTF-8') ?>hs</span>
       </div>
+      <?php if (!empty($reserva['mesa_numero'])): ?>
+      <div class="dato">
+        <span class="etiqueta">Mesa</span>
+        <span class="valor">Mesa <?= (int) $reserva['mesa_numero'] ?></span>
+      </div>
+      <?php endif; ?>
       <div class="dato">
         <span class="etiqueta">Personas</span>
         <span class="valor"><?= (int) $reserva['personas'] ?></span>
