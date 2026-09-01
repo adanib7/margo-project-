@@ -137,16 +137,15 @@ $codigo  = trim($_GET['codigo'] ?? '');
 $reserva = null;
 
 if ($codigo !== '' && $conn !== null) {
-    ensureMesaTable($conn);
-    ensureReservaMesaColumn($conn);
-
-    $stmt = $conn->prepare(
-        "SELECT r.codigo, r.nombre, r.fecha, r.hora, r.personas, r.comentario, r.telefono, r.estado,
-                m.numero AS mesa_numero
-         FROM reservas r
-         LEFT JOIN mesas m ON m.id = r.mesa_id
-         WHERE r.codigo = ? AND r.usuario_id = ?"
-    );
+    // SELECT * : así no depende de qué columnas tenga `reservas` en cada
+    // servidor (telefono / mesa_id pueden no existir todavía).
+    $stmt = $conn->prepare("SELECT * FROM reservas WHERE codigo = ? AND usuario_id = ? LIMIT 1");
+    if ($stmt === false) {
+        http_response_code(500);
+        header('Content-Type: text/plain; charset=utf-8');
+        echo 'No se pudo consultar la reserva: ' . $conn->error;
+        exit;
+    }
     $stmt->bind_param('si', $codigo, $_SESSION['usuario_id']);
     $stmt->execute();
     $reserva = $stmt->get_result()->fetch_assoc();
@@ -159,6 +158,24 @@ if (!$reserva) {
     echo 'No existe una reserva con ese código a tu nombre.';
     exit;
 }
+
+/* La mesa se busca aparte y solo si corresponde, para que el comprobante
+   funcione aunque el plano no esté montado en este servidor. */
+$reserva['mesa_numero'] = null;
+if (!empty($reserva['mesa_id']) && planoLigadoAReservas($conn)) {
+    $qm = $conn->prepare("SELECT numero FROM mesas WHERE id = ?");
+    if ($qm !== false) {
+        $qm->bind_param('i', $reserva['mesa_id']);
+        $qm->execute();
+        $rowm = $qm->get_result()->fetch_assoc();
+        $qm->close();
+        if ($rowm) {
+            $reserva['mesa_numero'] = (int) $rowm['numero'];
+        }
+    }
+}
+$reserva['telefono']   = $reserva['telefono']   ?? '';
+$reserva['comentario'] = $reserva['comentario'] ?? '';
 
 /* ---- fechas en castellano, sin depender de intl/strftime ---- */
 $DIAS = [

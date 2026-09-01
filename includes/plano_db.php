@@ -70,6 +70,24 @@ function ensureReservaMesaColumn(mysqli $conn): void
 }
 
 /**
+ * ¿Se puede consultar la mesa de una reserva? Es decir: existe la tabla `mesas`
+ * y la columna `reservas.mesa_id`.
+ *
+ * Sirve para que el comprobante y "Mis reservas" sigan funcionando aunque el
+ * plano todavía no se haya montado en ese servidor (p. ej. si el hosting no
+ * dejó crear las tablas desde PHP).
+ */
+function planoLigadoAReservas(mysqli $conn): bool
+{
+    $t = $conn->query("SHOW TABLES LIKE 'mesas'");
+    if (!$t || $t->num_rows === 0) {
+        return false;
+    }
+    $c = $conn->query("SHOW COLUMNS FROM reservas LIKE 'mesa_id'");
+    return (bool) ($c && $c->num_rows > 0);
+}
+
+/**
  * ¿La mesa tiene al menos una reserva asociada? (para no borrarla en el editor)
  */
 function mesaTieneReservas(mysqli $conn, int $mesaId): bool

@@ -13,20 +13,28 @@ $reservas   = [];
 $errorCarga = ($conn === null);
 
 if ($conn !== null) {
-    ensureMesaTable($conn);
-    ensureReservaMesaColumn($conn);
+    $conMesa = planoLigadoAReservas($conn);
 
-    $stmt = $conn->prepare(
-        "SELECT r.codigo, r.fecha, r.hora, r.personas, r.comentario, r.estado, m.numero AS mesa_numero
-         FROM reservas r
-         LEFT JOIN mesas m ON m.id = r.mesa_id
-         WHERE r.usuario_id = ?
-         ORDER BY r.fecha ASC, r.hora ASC"
-    );
-    $stmt->bind_param('i', $_SESSION['usuario_id']);
-    $stmt->execute();
-    $reservas = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
+    $sql = $conMesa
+        ? "SELECT r.*, m.numero AS mesa_numero
+           FROM reservas r
+           LEFT JOIN mesas m ON m.id = r.mesa_id
+           WHERE r.usuario_id = ?
+           ORDER BY r.fecha ASC, r.hora ASC"
+        : "SELECT r.*, NULL AS mesa_numero
+           FROM reservas r
+           WHERE r.usuario_id = ?
+           ORDER BY r.fecha ASC, r.hora ASC";
+
+    $stmt = $conn->prepare($sql);
+    if ($stmt !== false) {
+        $stmt->bind_param('i', $_SESSION['usuario_id']);
+        $stmt->execute();
+        $reservas = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+    } else {
+        $errorCarga = true;
+    }
 }
 
 $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cancelada' => 'Cancelada'];

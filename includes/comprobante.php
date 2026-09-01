@@ -9,19 +9,33 @@ $codigo  = trim($_GET['codigo'] ?? '');
 $reserva = null;
 
 if ($codigo !== '' && $conn !== null) {
-    ensureMesaTable($conn);
-    ensureReservaMesaColumn($conn);
+    // SELECT * : no depende de qué columnas tenga `reservas` en cada servidor.
+    $stmt = $conn->prepare("SELECT * FROM reservas WHERE codigo = ? AND usuario_id = ? LIMIT 1");
+    if ($stmt !== false) {
+        $stmt->bind_param('si', $codigo, $_SESSION['usuario_id']);
+        $stmt->execute();
+        $reserva = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+    }
 
-    $stmt = $conn->prepare(
-        "SELECT r.codigo, r.nombre, r.fecha, r.hora, r.personas, r.comentario, r.telefono, r.estado, m.numero AS mesa_numero
-         FROM reservas r
-         LEFT JOIN mesas m ON m.id = r.mesa_id
-         WHERE r.codigo = ? AND r.usuario_id = ?"
-    );
-    $stmt->bind_param('si', $codigo, $_SESSION['usuario_id']);
-    $stmt->execute();
-    $reserva = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
+    if ($reserva) {
+        $reserva['mesa_numero'] = null;
+        $reserva['telefono']    = $reserva['telefono']   ?? '';
+        $reserva['comentario']  = $reserva['comentario'] ?? '';
+
+        if (!empty($reserva['mesa_id']) && planoLigadoAReservas($conn)) {
+            $qm = $conn->prepare("SELECT numero FROM mesas WHERE id = ?");
+            if ($qm !== false) {
+                $qm->bind_param('i', $reserva['mesa_id']);
+                $qm->execute();
+                $rowm = $qm->get_result()->fetch_assoc();
+                $qm->close();
+                if ($rowm) {
+                    $reserva['mesa_numero'] = (int) $rowm['numero'];
+                }
+            }
+        }
+    }
 }
 
 $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cancelada' => 'Cancelada'];
