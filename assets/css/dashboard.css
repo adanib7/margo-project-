@@ -1499,6 +1499,22 @@ body {
 
 /* ===== INVENTARIO ===== */
 
+/* --- El modal nunca debe provocar scroll horizontal --- */
+.modal-contenedor { overflow-x: hidden; }
+.modal-form,
+.campo-grupo { min-width: 0; }
+/* Sin esto, el wrapper flex no baja de su ancho intrínseco (ícono + input)
+   y en 2 columnas se desborda unos píxeles -> aparece la barra horizontal. */
+.campo-input-wrapper { min-width: 0; }
+.campo-error { overflow-wrap: anywhere; }
+.modal-acciones { flex-wrap: wrap; }
+@media (max-width: 400px) {
+  .modal-acciones .boton-secundario,
+  .modal-acciones .boton-modal-submit,
+  .modal-acciones .boton-accion,
+  .modal-acciones .boton-peligro { flex: 1 1 100%; justify-content: center; }
+}
+
 /* Filtro "bajo stock" */
 .filtro-bajo {
   display: inline-flex;
@@ -1512,12 +1528,14 @@ body {
 .filtro-bajo.filtro-activo:hover { background-color: #96691a; }
 
 /* Formulario en 2 columnas dentro del modal */
+#formItem { gap: 1rem; }
 .inv-form-fila {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0 1rem;
+  gap: 1rem 1rem;
 }
-@media (min-width: 520px) {
+.inv-form-fila > * { min-width: 0; }
+@media (min-width: 560px) {
   .inv-form-fila { grid-template-columns: 1fr 1fr; }
 }
 

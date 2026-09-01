@@ -134,6 +134,21 @@ function ensureInventarioTable(mysqli $conn): void
         $stmt->close();
     }
 
+    // Reparar la clave primaria si `id` quedó sin AUTO_INCREMENT (pasa cuando se
+    // importa el .sql a medias): sin esto cada alta intenta insertar id = 0 y la
+    // segunda falla con "Duplicate entry '0' for key 'PRIMARY'".
+    $idInfo = $conn->query("SHOW COLUMNS FROM inventario LIKE 'id'");
+    $idCol  = $idInfo ? $idInfo->fetch_assoc() : null;
+    if ($idCol && stripos((string) ($idCol['Extra'] ?? ''), 'auto_increment') === false) {
+        $pk = $conn->query("SHOW KEYS FROM inventario WHERE Key_name = 'PRIMARY'");
+        if ($pk && $pk->num_rows === 0) {
+            $conn->query("ALTER TABLE inventario ADD PRIMARY KEY (id)");
+        }
+        // Mover cualquier fila que ya haya quedado con id = 0 al final de la secuencia.
+        $conn->query("UPDATE inventario SET id = (SELECT n FROM (SELECT COALESCE(MAX(id),0)+1 AS n FROM inventario) t) WHERE id = 0");
+        $conn->query("ALTER TABLE inventario MODIFY `id` INT NOT NULL AUTO_INCREMENT");
+    }
+
     // Semilla: solo si la tabla está vacía, para que el CRUD no arranque en blanco.
     $vacia = $conn->query("SELECT 1 FROM inventario LIMIT 1");
     if ($vacia && $vacia->num_rows === 0) {
