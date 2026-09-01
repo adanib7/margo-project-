@@ -219,10 +219,19 @@ $pdf->SetAutoPageBreak(true, 26);
 $pdf->AddPage();
 
 /* ───────── Membrete ───────── */
-$pdf->SetTextColor(...$VERDE);
-$pdf->SetFont('Times', 'B', 21);
-$pdf->Cell(0, 10, t('El Corralín de Campanal'), 0, 1);
+$logo = __DIR__ . '/../assets/img/logo-horizontal-verde.png';
+if (is_file($logo)) {
+    // 1040 x 276 px  ->  a 56 mm de ancho ≈ 14,9 mm de alto
+    $pdf->Image($logo, 25, 19, 56);
+    $pdf->SetY(19 + 16);
+} else {
+    // Sin el archivo: título en texto como respaldo.
+    $pdf->SetTextColor(...$VERDE);
+    $pdf->SetFont('Times', 'B', 21);
+    $pdf->Cell(0, 10, t('El Corralín de Campanal'), 0, 1);
+}
 
+$pdf->SetX(25);
 $pdf->SetTextColor(...$GRIS);
 $pdf->SetFont('Times', 'I', 10.5);
 $pdf->Cell(0, 5, t('Cocina asturiana y sidra de llagar'), 0, 1);
