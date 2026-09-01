@@ -65,6 +65,7 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
     font-size: 0.9rem;
   }
   .boton-imprimir {
+    display: inline-block;
     background: var(--verde);
     color: #fff;
     border: none;
@@ -72,6 +73,7 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
     padding: 0.6rem 1.1rem;
     font-weight: 600;
     font-size: 0.85rem;
+    text-decoration: none;
     cursor: pointer;
   }
   .boton-imprimir:hover { background: var(--verde-claro); }
@@ -173,7 +175,7 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
 <div class="pagina-acciones">
   <a href="<?= buildUrl('/dashboards/mis-reservas.php') ?>" class="enlace-volver">← Mis reservas</a>
   <?php if ($reserva): ?>
-    <button class="boton-imprimir" onclick="window.print()">Imprimir / Guardar PDF</button>
+    <a class="boton-imprimir" href="<?= buildUrl('/includes/comprobante_pdf.php?codigo=' . urlencode($reserva['codigo'])) ?>">Descargar PDF</a>
   <?php endif; ?>
 </div>
 

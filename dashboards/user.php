@@ -229,10 +229,13 @@ $franjasHorarias = [
       </div>
 
       <div class="modal-exito-acciones">
+        <a class="boton-accion" id="exitoPdf" href="#" target="_blank" rel="noopener">
+          <span class="material-symbols-outlined">picture_as_pdf</span> Descargar comprobante (PDF)
+        </a>
         <a class="boton-secundario" id="exitoCalendario" href="#" target="_blank" rel="noopener">
           <span class="material-symbols-outlined">event</span> Agregar al calendario
         </a>
-        <a class="boton-accion" id="exitoComprobante" href="#" target="_blank" rel="noopener">
+        <a class="boton-secundario" id="exitoComprobante" href="#" target="_blank" rel="noopener">
           <span class="material-symbols-outlined">receipt_long</span> Ver comprobante
         </a>
       </div>
@@ -581,8 +584,10 @@ $franjasHorarias = [
     document.getElementById('exitoMesa').textContent     = reserva.mesa ? `Mesa ${reserva.mesa}` : '—';
     document.getElementById('exitoPersonas').textContent = reserva.personas;
     document.getElementById('exitoTelefono').textContent = reserva.telefono || '—';
-    document.getElementById('exitoCalendario').href = BASE + '/api/reserva_ics.php?codigo=' + encodeURIComponent(reserva.codigo);
-    document.getElementById('exitoComprobante').href = BASE + '/includes/comprobante.php?codigo=' + encodeURIComponent(reserva.codigo);
+    const cod = encodeURIComponent(reserva.codigo);
+    document.getElementById('exitoPdf').href         = BASE + '/includes/comprobante_pdf.php?codigo=' + cod;
+    document.getElementById('exitoCalendario').href  = BASE + '/api/reserva_ics.php?codigo=' + cod;
+    document.getElementById('exitoComprobante').href = BASE + '/includes/comprobante.php?codigo=' + cod;
   }
 
   function limpiarErrores() {
