@@ -4,7 +4,28 @@
  *
  * Se llega desde la pantalla de "reserva confirmada" y desde "Mis reservas".
  * Descarga un archivo  reserva-COR-XXXXXX.pdf.
+ *
+ * Si algo falla, abrir con  ?debug=1  para ver el motivo en texto.
  */
+
+$DEBUG_PDF = isset($_GET['debug']);
+if ($DEBUG_PDF) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', '1');
+}
+
+// Cazar errores fatales que ocurran fuera del try/catch de más abajo
+// (así el hosting no devuelve un 500 en blanco).
+register_shutdown_function(function () {
+    $e = error_get_last();
+    if ($e && in_array($e['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+        if (!headers_sent()) {
+            http_response_code(500);
+            header('Content-Type: text/plain; charset=utf-8');
+        }
+        echo "\nNo se pudo generar el PDF.\nError: {$e['message']}\n  en {$e['file']} línea {$e['line']}\n";
+    }
+});
 
 session_start();
 require_once __DIR__ . '/config.php';
