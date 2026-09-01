@@ -2,6 +2,7 @@
 session_start();
 require_once '../includes/config.php';
 require_once '../includes/plano_db.php';
+require_once '../includes/mailer.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -138,16 +139,44 @@ if ($stmt === false) {
 
 if ($stmt->execute()) {
     $stmt->close();
+
+    // Correo de confirmación al cliente. Si falla, la reserva ya está hecha:
+    // no se corta ni se devuelve error, solo se informa en 'email_enviado'.
+    $emailEnviado = false;
+    if (mailHabilitado()) {
+        $u = $conn->prepare("SELECT email FROM usuarios WHERE id = ?");
+        if ($u !== false) {
+            $u->bind_param('i', $usuarioId);
+            $u->execute();
+            $emailUsuario = trim((string) ($u->get_result()->fetch_assoc()['email'] ?? ''));
+            $u->close();
+
+            if ($emailUsuario !== '') {
+                [$asunto, $html] = correoConfirmacionReserva([
+                    'codigo'      => $codigo,
+                    'nombre'      => $nombre,
+                    'fecha'       => $fecha,
+                    'hora'        => $hora,
+                    'personas'    => $personas,
+                    'mesa_numero' => $mesaNumero,
+                    'comentario'  => $comentario,
+                ]);
+                [$emailEnviado] = enviarCorreoBrevo($emailUsuario, $nombre, $asunto, $html);
+            }
+        }
+    }
+
     echo json_encode([
-        'ok'       => true,
-        'mensaje'  => "¡Reserva confirmada para el {$fecha} a las {$hora}hs!",
-        'codigo'   => $codigo,
-        'nombre'   => $nombre,
-        'fecha'    => $fecha,
-        'hora'     => $hora,
-        'personas' => $personas,
-        'telefono' => $telefono,
-        'mesa'     => $mesaNumero,
+        'ok'            => true,
+        'mensaje'       => "¡Reserva confirmada para el {$fecha} a las {$hora}hs!",
+        'codigo'        => $codigo,
+        'nombre'        => $nombre,
+        'fecha'         => $fecha,
+        'hora'          => $hora,
+        'personas'      => $personas,
+        'telefono'      => $telefono,
+        'mesa'          => $mesaNumero,
+        'email_enviado' => $emailEnviado,
     ]);
 } else {
     $stmt->close();

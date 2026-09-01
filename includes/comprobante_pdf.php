@@ -231,10 +231,6 @@ if (is_file($logo)) {
     $pdf->Cell(0, 10, t('El Corralín de Campanal'), 0, 1);
 }
 
-$pdf->SetX(25);
-$pdf->SetTextColor(...$GRIS);
-$pdf->SetFont('Times', 'I', 10.5);
-$pdf->Cell(0, 5, t('Cocina asturiana y sidra de llagar'), 0, 1);
 
 $pdf->SetFont('Times', '', 9);
 $pdf->Cell(0, 5, t('Plaza Manuel Uría, 4 · 33520 Nava (Asturias) · Tel. 985 71 60 42'), 0, 1);
