@@ -1972,3 +1972,12 @@ body {
   .cfg-acciones { justify-content: stretch; }
   .cfg-acciones .boton-accion { width: 100%; justify-content: center; }
 }
+
+/* Bloque "Datos del local" */
+.cfg-col-entera { grid-column: 1 / -1; }
+.cfg-dir-preview {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #264220;
+  font-weight: 600;
+}

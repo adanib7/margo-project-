@@ -1,9 +1,20 @@
+<?php
+// Los datos del local salen del panel de Configuracion.
+require_once __DIR__ . '/includes/config.php';
+$LOC_NOMBRE = (string) cfg('local.nombre');
+$LOC_TEL    = (string) cfg('local.telefono');
+$LOC_EMAIL  = (string) cfg('local.email');
+$LOC_CALLE  = (string) cfg('local.direccion');
+$LOC_LOCAL  = trim(cfg('local.cp') . ' ' . cfg('local.ciudad') . (cfg('local.provincia') !== '' ? ', ' . cfg('local.provincia') : ''));
+$LOC_CIUPRO = trim(cfg('local.ciudad') . (cfg('local.provincia') !== '' ? ', ' . cfg('local.provincia') : ''));
+$h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>El Corralín del Campanal · Restaurante y llagar en Nava, Asturias</title>
+<title><?= $h($LOC_NOMBRE) ?> · Restaurante y llagar en <?= $h($LOC_CIUPRO) ?></title>
 <link rel="stylesheet" href="assets/css/colors_and_type.css">
 <script src="assets/js/lucide.min.js" defer></script>
 <style>
@@ -215,7 +226,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
 <header id="site-header">
   <div class="wrap">
     <a href="#top" class="logo-link">
-      <img src="assets/img/logo-horizontal-verde.png" alt="El Corralín de Campanal" class="logo-img">
+      <img src="assets/img/logo-horizontal-verde.png" alt="<?= $h($LOC_NOMBRE) ?>" class="logo-img">
     </a>
     <nav class="main">
       <a href="#cocina" data-i18n="nav_cocina">La cocina</a>
@@ -274,16 +285,16 @@ footer .bottom a{color:rgba(245,239,224,.7)}
   <div class="bg" data-note="foto: comedor / llagar en hora dorada"><img src="assets/img/hero.jpg" alt="" width="1798" height="1354" fetchpriority="high"></div>
   <div class="overlay"></div>
   <div class="wrap">
-    <span class="hero-eyebrow" data-i18n="hero_eyebrow">El Corralín de Campanal · Nava, Asturias</span>
+    <span class="hero-eyebrow" data-i18n="hero_eyebrow"><?= $h($LOC_NOMBRE) ?> · <?= $h($LOC_CIUPRO) ?></span>
     <h1 data-i18n="hero_title">Conoce nuestra restaurante</h1>
     <p class="lede" data-i18n="hero_lede">Cocina asturiana de siempre en la villa de Nava. Elige día y hora — te esperamos.</p>
     <div class="hero-cta">
       <a href="public/login.php" class="btn btn-accent btn-lg"><i data-lucide="calendar-check"></i><span data-i18n="cta_reservar_mesa">Reservar mesa</span></a>
     </div>
     <div class="hero-meta">
-      <div class="item"><i data-lucide="map-pin"></i><div><div class="k">Nava, Asturias</div><div class="s" data-i18n="meta_dir">Plaza Manuel Uría, 4</div></div></div>
+      <div class="item"><i data-lucide="map-pin"></i><div><div class="k"><?= $h($LOC_CIUPRO) ?></div><div class="s" data-i18n="meta_dir"><?= $h($LOC_CALLE) ?></div></div></div>
       <div class="item"><i data-lucide="clock"></i><div><div class="k" data-i18n="meta_horario_k">Cocina 13:00–16:00</div><div class="s" data-i18n="meta_horario_s">y 20:30–23:30</div></div></div>
-      <div class="item"><i data-lucide="phone"></i><div><div class="k">985 71 60 42</div><div class="s" data-i18n="meta_tel_s">Reservar por teléfono</div></div></div>
+      <div class="item"><i data-lucide="phone"></i><div><div class="k"><?= $h($LOC_TEL) ?></div><div class="s" data-i18n="meta_tel_s">Reservar por teléfono</div></div></div>
     </div>
   </div>
 </section>
@@ -371,8 +382,8 @@ footer .bottom a{color:rgba(245,239,224,.7)}
         <div class="hrow"><span class="day" data-i18n="d_sab">Sábado</span><span class="time">13:00–16:30 · 20:30–00:00</span></div>
         <div class="hrow"><span class="day" data-i18n="d_dom">Domingo</span><span class="time">13:00–16:30</span></div>
         <div class="addr">
-          <div class="line"><i data-lucide="map-pin"></i><span class="t">Plaza Manuel Uría, 4<br>33520 Nava, Asturias</span></div>
-          <div class="line"><i data-lucide="phone"></i><span class="t">985 71 60 42</span></div>
+          <div class="line"><i data-lucide="map-pin"></i><span class="t"><?= $h($LOC_CALLE) ?><br><?= $h($LOC_LOCAL) ?></span></div>
+          <div class="line"><i data-lucide="phone"></i><span class="t"><?= $h($LOC_TEL) ?></span></div>
         </div>
       </div>
       <div class="map"><div class="ph" data-note="mapa: ubicación en Nava (embed)"><img src="https://picsum.photos/seed/corralin-map/800/600" alt=""></div></div>
@@ -389,9 +400,9 @@ footer .bottom a{color:rgba(245,239,224,.7)}
         <h2 data-i18n="cont_title">Reserva tu mesa</h2>
         <p data-i18n="cont_sub">Elige mesa, día y hora desde tu cuenta. Para grupos de más de 8 personas, llámanos y lo organizamos.</p>
         <div class="contact-lines">
-          <div class="cl"><div class="ci"><i data-lucide="phone"></i></div><div><div class="ck">985 71 60 42</div><div class="cv" data-i18n="cont_tel">Martes a domingo, en horario de cocina</div></div></div>
-          <div class="cl"><div class="ci"><i data-lucide="mail"></i></div><div><div class="ck"><a href="mailto:reservas@elcorralindelcampanal.com">reservas@elcorralindelcampanal.com</a></div><div class="cv" data-i18n="cont_mail">Te respondemos en el día</div></div></div>
-          <div class="cl"><div class="ci"><i data-lucide="map-pin"></i></div><div><div class="ck">Plaza Manuel Uría, 4</div><div class="cv">33520 Nava, Asturias</div></div></div>
+          <div class="cl"><div class="ci"><i data-lucide="phone"></i></div><div><div class="ck"><?= $h($LOC_TEL) ?></div><div class="cv" data-i18n="cont_tel">Martes a domingo, en horario de cocina</div></div></div>
+          <div class="cl"><div class="ci"><i data-lucide="mail"></i></div><div><div class="ck"><a href="mailto:<?= $h($LOC_EMAIL) ?>"><?= $h($LOC_EMAIL) ?></a></div><div class="cv" data-i18n="cont_mail">Te respondemos en el día</div></div></div>
+          <div class="cl"><div class="ci"><i data-lucide="map-pin"></i></div><div><div class="ck"><?= $h($LOC_CALLE) ?></div><div class="cv"><?= $h($LOC_LOCAL) ?></div></div></div>
         </div>
       </div>
       <div class="form-card" style="display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;gap:16px">
@@ -410,16 +421,16 @@ footer .bottom a{color:rgba(245,239,224,.7)}
   <div class="wrap">
     <div class="cols">
       <div>
-        <img src="assets/img/logo-horizontal-verde.png" alt="El Corralín de Campanal" class="logo-img">
+        <img src="assets/img/logo-horizontal-verde.png" alt="<?= $h($LOC_NOMBRE) ?>" class="logo-img">
         <p class="about" data-i18n="foot_about">Cocina asturiana tradicional y sidra de llagar en la villa de Nava, Principado de Asturias.</p>
       </div>
       <div>
         <h4 data-i18n="foot_visita">Visítanos</h4>
         <ul>
-          <li><span style="color:rgba(245,239,224,.8)">Plaza Manuel Uría, 4</span></li>
-          <li><span style="color:rgba(245,239,224,.8)">33520 Nava, Asturias</span></li>
-          <li><a href="tel:+34985716042">985 71 60 42</a></li>
-          <li><a href="mailto:reservas@elcorralindelcampanal.com">reservas@elcorralindelcampanal.com</a></li>
+          <li><span style="color:rgba(245,239,224,.8)"><?= $h($LOC_CALLE) ?></span></li>
+          <li><span style="color:rgba(245,239,224,.8)"><?= $h($LOC_LOCAL) ?></span></li>
+          <li><a href="tel:<?= $h(localTelefonoLink()) ?>"><?= $h($LOC_TEL) ?></a></li>
+          <li><a href="mailto:<?= $h($LOC_EMAIL) ?>"><?= $h($LOC_EMAIL) ?></a></li>
         </ul>
       </div>
       <div>
@@ -432,7 +443,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
       </div>
     </div>
     <div class="bottom">
-      <span>© 2026 El Corralín del Campanal · Nava, Asturias</span>
+      <span>© <?= date('Y') ?> <?= $h($LOC_NOMBRE) ?> · <?= $h($LOC_CIUPRO) ?></span>
       <span><a href="#top" data-i18n="foot_top">Volver arriba</a></span>
     </div>
   </div>
@@ -442,7 +453,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
 const I18N={
   en:{nav_cocina:"The kitchen",nav_galeria:"Gallery",nav_historia:"Our story",nav_contacto:"Contact",cta_reservar:"Book",cta_reservar_mesa:"Book a table",
     hero_eyebrow:"El Corralín del Campanal · Nava, Asturias",hero_title:"Book your table at El Corralín",hero_lede:"Time-honoured Asturian cooking in the village of Nava: cider from the press, sliced cachopo and grandma's fabada. Pick a table, day and time — we'll be waiting.",
-    meta_dir:"Plaza Manuel Uría, 4",meta_horario_k:"Kitchen 1–4pm",meta_horario_s:"and 8:30–11:30pm",meta_tel_s:"Reservations by phone",
+    meta_dir:<?= json_encode($LOC_CALLE, JSON_UNESCAPED_UNICODE) ?>,meta_horario_k:"Kitchen 1–4pm",meta_horario_s:"and 8:30–11:30pm",meta_tel_s:"Reservations by phone",
     cocina_eyebrow:"The kitchen",cocina_title:"Local produce, home recipes",cocina_sub:"Three things we do like nowhere else. The rest, also delicious.",
     dish1_tag:"From the press",dish1_title:"Natural cider",dish1_desc:"Poured 'al culín', from presses in the region. The drink of Nava, capital of the apple.",
     dish2_tag:"The star",dish2_title:"Sliced cachopo",dish2_desc:"Asturian beef stuffed with ham and Afuega'l Pitu cheese. To share — almost.",
@@ -461,7 +472,7 @@ const I18N={
     foot_about:"Traditional Asturian cooking and press cider in the village of Nava, Principality of Asturias.",foot_visita:"Visit us",foot_explora:"Explore",foot_top:"Back to top"},
   fr:{nav_cocina:"La cuisine",nav_galeria:"Galerie",nav_historia:"Histoire",nav_contacto:"Contact",cta_reservar:"Réserver",cta_reservar_mesa:"Réserver une table",
     hero_eyebrow:"El Corralín del Campanal · Nava, Asturies",hero_title:"Réservez votre table à El Corralín",hero_lede:"Cuisine asturienne de toujours au village de Nava : cidre du pressoir, cachopo tranché et fabada de la grand-mère. Choisissez une table, un jour et une heure — on vous attend.",
-    meta_dir:"Plaza Manuel Uría, 4",meta_horario_k:"Cuisine 13h–16h",meta_horario_s:"et 20h30–23h30",meta_tel_s:"Réservations par téléphone",
+    meta_dir:<?= json_encode($LOC_CALLE, JSON_UNESCAPED_UNICODE) ?>,meta_horario_k:"Cuisine 13h–16h",meta_horario_s:"et 20h30–23h30",meta_tel_s:"Réservations par téléphone",
     cocina_eyebrow:"La cuisine",cocina_title:"Produits du terroir, recettes de maison",cocina_sub:"Trois choses qu'on fait comme nulle part ailleurs. Le reste, délicieux aussi.",
     dish1_tag:"Du pressoir",dish1_title:"Cidre naturel",dish1_desc:"Versé « al culín », des pressoirs de la région. La boisson de Nava, capitale de la pomme.",
     dish2_tag:"La vedette",dish2_title:"Cachopo tranché",dish2_desc:"Bœuf asturien farci de jambon et de fromage Afuega'l Pitu. À partager — ou presque.",
@@ -480,7 +491,7 @@ const I18N={
     foot_about:"Cuisine asturienne traditionnelle et cidre de pressoir au village de Nava, Principauté des Asturies.",foot_visita:"Nous trouver",foot_explora:"Explorer",foot_top:"Retour en haut"},
   pt:{nav_cocina:"A cozinha",nav_galeria:"Galeria",nav_historia:"História",nav_contacto:"Contacto",cta_reservar:"Reservar",cta_reservar_mesa:"Reservar mesa",
     hero_eyebrow:"El Corralín del Campanal · Nava, Astúrias",hero_title:"Reserva a tua mesa no Corralín",hero_lede:"Cozinha asturiana de sempre na vila de Nava: sidra do lagar, cachopo às fatias e fabada da avó. Escolhe mesa, dia e hora — estamos à tua espera.",
-    meta_dir:"Plaza Manuel Uría, 4",meta_horario_k:"Cozinha 13h–16h",meta_horario_s:"e 20h30–23h30",meta_tel_s:"Reservas por telefone",
+    meta_dir:<?= json_encode($LOC_CALLE, JSON_UNESCAPED_UNICODE) ?>,meta_horario_k:"Cozinha 13h–16h",meta_horario_s:"e 20h30–23h30",meta_tel_s:"Reservas por telefone",
     cocina_eyebrow:"A cozinha",cocina_title:"Produto da terra, receitas de casa",cocina_sub:"Três coisas fazemos como em nenhum outro sítio. O resto, também é bom.",
     dish1_tag:"Do lagar",dish1_title:"Sidra natural",dish1_desc:"Servida «al culín», de lagares da região. A bebida de Nava, capital da maçã.",
     dish2_tag:"A estrela",dish2_title:"Cachopo às fatias",dish2_desc:"Vitela asturiana recheada com fiambre e queijo Afuega'l Pitu. Para partilhar — quase.",

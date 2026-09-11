@@ -21,8 +21,8 @@
 
 <footer class="pie-pagina">
   <div>
-    <img src="<?= buildUrl('/assets/img/logo-horizontal-verde.png') ?>" alt="El Corralín de Campanal" class="footer-logo">
-    <p class="texto-pie">© 2026 El Corralín de Campanal. Todos los derechos reservados.</p>
+    <img src="<?= buildUrl('/assets/img/logo-horizontal-verde.png') ?>" alt="<?= htmlspecialchars(cfg('local.nombre'), ENT_QUOTES, 'UTF-8') ?>" class="footer-logo">
+    <p class="texto-pie">© <?= date('Y') ?> <?= htmlspecialchars(cfg('local.nombre'), ENT_QUOTES, 'UTF-8') ?>. Todos los derechos reservados.</p>
   </div>
   <div class="lista-pie">
     <a class="enlace-pie" href="#">Política de privacidad</a>

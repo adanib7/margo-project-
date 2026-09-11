@@ -29,6 +29,49 @@ $body = json_decode(file_get_contents('php://input'), true) ?: [];
 $errores = [];
 $pares   = [];
 
+/* ── Datos del local ── */
+$obligatorios = [
+    'local.nombre'    => 'El nombre es obligatorio.',
+    'local.direccion' => 'La calle es obligatoria.',
+    'local.cp'        => 'El código postal es obligatorio.',
+    'local.ciudad'    => 'La localidad es obligatoria.',
+    'local.telefono'  => 'El teléfono es obligatorio.',
+];
+foreach ($obligatorios as $clave => $msg) {
+    $v = trim((string) ($body[$clave] ?? ''));
+    if ($v === '') {
+        $errores[$clave] = $msg;
+    } else {
+        $pares[$clave] = $v;
+    }
+}
+
+// Opcionales: pueden quedar vacíos.
+foreach (['local.eslogan', 'local.provincia'] as $clave) {
+    $pares[$clave] = trim((string) ($body[$clave] ?? ''));
+}
+
+$email = trim((string) ($body['local.email'] ?? ''));
+if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $errores['local.email'] = 'Ingresá un correo válido.';
+} else {
+    $pares['local.email'] = $email;
+}
+
+$sitio = trim((string) ($body['local.sitio_url'] ?? ''));
+if ($sitio !== '') {
+    if (!preg_match('~^https?://~i', $sitio)) {
+        $sitio = 'https://' . $sitio;
+    }
+    if (!filter_var($sitio, FILTER_VALIDATE_URL)) {
+        $errores['local.sitio_url'] = 'Ingresá una dirección web válida.';
+    } else {
+        $pares['local.sitio_url'] = rtrim($sitio, '/');
+    }
+} else {
+    $errores['local.sitio_url'] = 'La dirección web es obligatoria.';
+}
+
 /* ── Horarios ── */
 $horaOk = static fn($h) => (bool) preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', (string) $h);
 

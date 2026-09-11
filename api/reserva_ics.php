@@ -39,20 +39,20 @@ function icsEscape(string $texto): string {
     return str_replace(["\\", ",", ";", "\n"], ["\\\\", "\\,", "\\;", "\\n"], $texto);
 }
 
-$resumen      = icsEscape('Reserva en El Corralín de Campanal');
+$resumen      = icsEscape('Reserva en ' . cfg('local.nombre'));
 $descripcion  = icsEscape("Reserva para {$reserva['personas']} personas a nombre de {$reserva['nombre']}. Código: {$reserva['codigo']}");
 if (!empty($reserva['telefono'])) {
     $descripcion .= icsEscape(" Teléfono: {$reserva['telefono']}");
 }
-$ubicacion    = icsEscape('Plaza Manuel Uría, 4, 33520 Nava, Asturias');
+$ubicacion    = icsEscape(localDireccion(', ', false));
 
 $lineas = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//El Corralin de Campanal//Reservas//ES',
+    'PRODID:-//' . preg_replace('/[^A-Za-z0-9 ]/', '', (string) cfg('local.nombre')) . '//Reservas//ES',
     'CALSCALE:GREGORIAN',
     'BEGIN:VEVENT',
-    'UID:' . $reserva['codigo'] . '@elcorralindelcampanal.com',
+    'UID:' . $reserva['codigo'] . '@' . localDominio(),
     'DTSTAMP:' . gmdate('Ymd\THis\Z'),
     'DTSTART:' . $inicio->format('Ymd\THis'),
     'DTEND:' . $fin->format('Ymd\THis'),

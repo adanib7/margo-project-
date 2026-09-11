@@ -16,6 +16,17 @@
 function cfgDefaults(): array
 {
     return [
+        // ── Datos del local ──
+        'local.nombre'    => 'El Corralín de Campanal',
+        'local.eslogan'   => 'Cocina asturiana y sidra de llagar',
+        'local.direccion' => 'Plaza Manuel Uría, 4',
+        'local.cp'        => '33520',
+        'local.ciudad'    => 'Nava',
+        'local.provincia' => 'Asturias',
+        'local.telefono'  => '985 71 60 42',
+        'local.email'     => 'reservas@elcorralindelcampanal.com',
+        'local.sitio_url' => 'https://corralin.kesug.com',
+
         // ── Horarios de servicio ──
         'horario.almuerzo_activo' => '1',
         'horario.almuerzo_inicio' => '12:00',
@@ -163,6 +174,46 @@ function cfgResetCache(): void
 {
     // cfgTodo() mira este flag y descarta su static en la próxima llamada.
     $GLOBALS['__cfg_dirty'] = true;
+}
+
+/* ══════════════════════ Datos del local ══════════════════════ */
+
+/**
+ * "Plaza Manuel Uría, 4 · 33520 Nava (Asturias)"
+ *
+ * @param string $sep         separador entre calle y localidad
+ * @param bool   $provParen   provincia entre paréntesis (si no, tras una coma)
+ */
+function localDireccion(string $sep = ' · ', bool $provParen = true): string
+{
+    $calle     = trim((string) cfg('local.direccion'));
+    $cp        = trim((string) cfg('local.cp'));
+    $ciudad    = trim((string) cfg('local.ciudad'));
+    $provincia = trim((string) cfg('local.provincia'));
+
+    $localidad = trim($cp . ' ' . $ciudad);
+    if ($provincia !== '') {
+        $localidad .= $provParen ? " ({$provincia})" : ", {$provincia}";
+    }
+
+    return trim($calle . ($calle !== '' && $localidad !== '' ? $sep : '') . $localidad);
+}
+
+/**
+ * Teléfono en formato `tel:` (sin espacios, con prefijo internacional).
+ */
+function localTelefonoLink(string $prefijo = '+34'): string
+{
+    $t = preg_replace('/[^0-9]/', '', (string) cfg('local.telefono'));
+    return $t === '' ? '' : $prefijo . $t;
+}
+
+/**
+ * Dominio del sitio, sin protocolo (para mostrar en textos).
+ */
+function localDominio(): string
+{
+    return preg_replace('~^https?://~', '', rtrim((string) cfg('local.sitio_url'), '/'));
 }
 
 /* ══════════════════════ Derivados de horarios ══════════════════════ */
