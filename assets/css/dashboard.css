@@ -1775,3 +1775,33 @@ body {
 @media (max-width: 700px) {
   .res-tabla th:nth-child(1), .res-tabla td:nth-child(1) { display: none; }
 }
+
+/* Aviso al cliente en el modal de cancelar reserva */
+.res-aviso-bloque {
+  margin-bottom: 0.25rem;
+  padding: 0.9rem 1rem;
+  background-color: #fafaf4;
+  border: 1px solid rgba(115, 121, 111, 0.25);
+  border-radius: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.res-check {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #264220;
+  cursor: pointer;
+}
+
+.res-check input {
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: #264220;
+  cursor: pointer;
+  flex-shrink: 0;
+}

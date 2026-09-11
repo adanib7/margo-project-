@@ -229,7 +229,7 @@ require_once '../includes/header.php';
      MODAL: Confirmar acción (cancelar / eliminar)
 ════════════════════════════════════════ -->
 <div class="modal-fondo" id="modalConfirmar" role="dialog" aria-modal="true" aria-labelledby="modalConfirmarTitulo">
-  <div class="modal-contenedor modal-contenedor-sm">
+  <div class="modal-contenedor">
     <div class="modal-encabezado">
       <div class="modal-icono modal-icono-danger" id="modalConfirmarIcono">
         <span class="material-symbols-outlined">event_busy</span>
@@ -244,6 +244,17 @@ require_once '../includes/header.php';
     </div>
 
     <p class="eliminar-descripcion" id="modalConfirmarTexto"></p>
+
+    <div class="res-aviso-bloque" id="bloqueAviso">
+      <label class="res-check">
+        <input type="checkbox" id="chkAvisar" checked>
+        <span>Avisar al cliente por correo</span>
+      </label>
+      <div class="campo-grupo" id="grupoMotivo">
+        <label class="campo-etiqueta" for="txtMotivo">Motivo <span class="campo-opcional">(opcional, se incluye en el correo)</span></label>
+        <textarea class="campo-textarea" id="txtMotivo" rows="2" maxlength="300" placeholder="Ej. cerramos por reforma ese día"></textarea>
+      </div>
+    </div>
 
     <div class="modal-acciones">
       <button type="button" class="boton-secundario" id="btnCancelarConfirmar">Volver</button>
@@ -597,8 +608,18 @@ require_once '../includes/header.php';
     document.getElementById('btnAceptarConfirmarTexto').textContent =
       esCancelar ? 'Cancelar reserva' : 'Eliminar';
 
+    // El aviso por correo solo tiene sentido al anular.
+    document.getElementById('bloqueAviso').style.display = esCancelar ? '' : 'none';
+    document.getElementById('chkAvisar').checked = true;
+    document.getElementById('txtMotivo').value = '';
+    document.getElementById('grupoMotivo').style.display = '';
+
     abrirModal(modalConf);
   }
+
+  document.getElementById('chkAvisar').addEventListener('change', e => {
+    document.getElementById('grupoMotivo').style.display = e.target.checked ? '' : 'none';
+  });
 
   function cerrarConfirmar() { cerrarModal(modalConf); accionPend = null; }
 
@@ -616,7 +637,12 @@ require_once '../includes/header.php';
     const esCancelar = accionPend.tipo === 'cancelar';
     const url  = BASE + (esCancelar ? '/api/cambiar_estado_reserva.php' : '/api/eliminar_reserva.php');
     const body = esCancelar
-      ? { id: accionPend.id, estado: 'cancelada' }
+      ? {
+          id: accionPend.id,
+          estado: 'cancelada',
+          avisar: document.getElementById('chkAvisar').checked,
+          motivo: document.getElementById('txtMotivo').value.trim(),
+        }
       : { id: accionPend.id };
 
     try {

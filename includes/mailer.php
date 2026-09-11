@@ -195,3 +195,62 @@ function correoConfirmacionReserva(array $r): array
 
     return [$asunto, correoLayout('Reserva confirmada para el ' . $fechaLarga . ' a las ' . $hora . ' h', $cuerpo)];
 }
+
+/**
+ * Fecha en castellano larga: "sábado, 12 de septiembre de 2026".
+ */
+function correoFechaLarga(string $fecha): string
+{
+    static $DIAS = ['Monday' => 'lunes', 'Tuesday' => 'martes', 'Wednesday' => 'miércoles', 'Thursday' => 'jueves',
+                    'Friday' => 'viernes', 'Saturday' => 'sábado', 'Sunday' => 'domingo'];
+    static $MESES = [1 => 'enero', 2 => 'febrero', 3 => 'marzo', 4 => 'abril', 5 => 'mayo', 6 => 'junio',
+                     7 => 'julio', 8 => 'agosto', 9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre'];
+
+    $f = new DateTime($fecha);
+    return $DIAS[$f->format('l')] . ', ' . (int) $f->format('j')
+         . ' de ' . $MESES[(int) $f->format('n')] . ' de ' . $f->format('Y');
+}
+
+/**
+ * Correo de "reserva anulada" que manda el restaurante desde el panel.
+ *
+ * @param array $r  codigo, nombre, fecha, hora, personas, mesa_numero, motivo
+ * @return array [asunto, html]
+ */
+function correoCancelacionReserva(array $r): array
+{
+    $fechaLarga = correoFechaLarga($r['fecha']);
+    $hora       = substr((string) $r['hora'], 0, 5);
+    $personas   = (int) $r['personas'];
+    $nombre     = trim((string) ($r['nombre'] ?? ''));
+    $motivo     = trim((string) ($r['motivo'] ?? ''));
+
+    $filas  = correoFila('Código', $r['codigo']);
+    $filas .= correoFila('Fecha', $fechaLarga);
+    $filas .= correoFila('Hora', $hora . ' h');
+    if (!empty($r['mesa_numero'])) {
+        $filas .= correoFila('Mesa', 'Mesa ' . (int) $r['mesa_numero']);
+    }
+    $filas .= correoFila('Comensales', $personas === 1 ? '1 persona' : $personas . ' personas');
+
+    $cuerpo = '<p style="margin:0 0 14px;font-size:16px;">' . e_($nombre !== '' ? "Hola, $nombre:" : 'Hola:') . '</p>'
+        . '<p style="margin:0 0 20px;font-size:15px;line-height:1.65;color:#4a4a42;">'
+        . 'Lamentamos avisarte de que tu reserva en El Corralín de Campanal ha sido '
+        . '<strong style="color:#8c2f39;">anulada</strong>. Estos eran los datos:</p>'
+        . '<table role="presentation" cellpadding="0" cellspacing="0" width="100%" '
+        . 'style="border-top:2px solid #8c2f39;border-bottom:1px solid #e4e1d9;margin:6px 0 20px;">' . $filas . '</table>';
+
+    if ($motivo !== '') {
+        $cuerpo .= '<p style="margin:0 0 18px;padding:12px 14px;background:#f5efe0;border-radius:8px;'
+            . 'font-size:14px;line-height:1.6;color:#4a4a42;"><strong>Motivo:</strong> ' . e_($motivo) . '</p>';
+    }
+
+    $cuerpo .= '<p style="margin:0 0 6px;font-size:14px;line-height:1.6;color:#4a4a42;">'
+        . 'Si se trata de un error o querés reservar otro día, escribinos respondiendo a este correo '
+        . 'o llamanos al 985 71 60 42. También podés reservar de nuevo desde la web.</p>'
+        . '<p style="margin:18px 0 0;font-size:15px;color:#2d5f3f;">Disculpá las molestias.</p>';
+
+    $asunto = 'Reserva anulada · ' . $r['codigo'] . ' · ' . $fechaLarga;
+
+    return [$asunto, correoLayout('Tu reserva del ' . $fechaLarga . ' ha sido anulada', $cuerpo)];
+}
