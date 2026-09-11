@@ -57,7 +57,7 @@ require_once '../includes/header.php';
       <p class="tarjeta-texto">Controla el stock de ingredientes, vinos y suministros esenciales.</p>
     </a>
 
-    <a class="tarjeta" href="#">
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/configuracion.php') ?>">
       <div class="tarjeta-overlay"></div>
       <div class="tarjeta-cabecera">
         <div class="icono">

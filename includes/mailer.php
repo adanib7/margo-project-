@@ -187,7 +187,7 @@ function correoConfirmacionReserva(array $r): array
         . '<table role="presentation" cellpadding="0" cellspacing="0" width="100%" '
         . 'style="border-top:2px solid #c9962e;border-bottom:1px solid #e4e1d9;margin:6px 0 20px;">' . $filas . '</table>'
         . '<p style="margin:0 0 6px;font-size:14px;line-height:1.6;color:#4a4a42;">'
-        . 'La mesa se mantiene durante 15 minutos a partir de la hora reservada. '
+        . 'La mesa se mantiene durante ' . (function_exists('cfgInt') ? cfgInt('reservas.cortesia_min') : 15) . ' minutos a partir de la hora reservada. '
         . 'Para cualquier cambio o anulación, respondé a este correo o llamanos al 985 71 60 42.</p>'
         . '<p style="margin:18px 0 0;font-size:15px;color:#2d5f3f;">Te esperamos.</p>';
 

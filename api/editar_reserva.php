@@ -3,6 +3,7 @@ session_start();
 require_once '../includes/config.php';
 require_once '../includes/check_auth.php';
 require_once '../includes/plano_db.php';
+require_once '../includes/config_app.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -75,8 +76,10 @@ if (!preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $hora)) {
     $errores['hora'] = 'Seleccioná un horario válido.';
 }
 
-if ($personas < 1 || $personas > 20) {
-    $errores['personas'] = 'Ingresá entre 1 y 20 personas.';
+// El admin puede pasarse del máximo público, pero no del tope absoluto.
+$maxPersonas = max(cfgInt('reservas.max_personas'), 1);
+if ($personas < 1 || $personas > $maxPersonas) {
+    $errores['personas'] = "Ingresá entre 1 y {$maxPersonas} personas.";
 }
 
 if (!in_array($estado, ['pendiente', 'confirmada', 'cancelada'], true)) {

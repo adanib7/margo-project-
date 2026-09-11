@@ -2,16 +2,14 @@
 session_start();
 require_once '../includes/config.php';
 require_once '../includes/check_auth.php';
+require_once '../includes/config_app.php';
 requireLogin();
 $pageTitle = 'Dashboard de Usuario';
 $pageCSS = '../assets/css/dashboard.css';
 $showDashboardBottomNav = true;
 require_once '../includes/header.php';
 
-$franjasHorarias = [
-    'Almuerzo' => ['12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00'],
-    'Cena'     => ['20:00', '20:30', '21:00', '21:30', '22:00', '22:30', '23:00'],
-];
+$franjasHorarias = horarioFranjas();
 ?>
 <?php require_once '../includes/nav.php'; ?>
 
@@ -270,7 +268,12 @@ $franjasHorarias = [
   const planoHint     = document.getElementById('planoReservaHint');
   const modalContenedor = modal.querySelector('.modal-contenedor-reserva');
   const PERSONAS_MIN = 1;
-  const PERSONAS_MAX = 20;
+  const PERSONAS_MAX = <?= cfgInt('reservas.max_personas') ?>;
+  // Reglas del panel de Configuración
+  const DIAS_CERRADOS   = <?= json_encode(array_map('intval', cfgArray('horario.dias_cerrados'))) ?>;
+  const FECHAS_CERRADAS = <?= json_encode(array_values(cfgArray('horario.fechas_cerradas'))) ?>;
+  const ANT_MIN_HORAS   = <?= cfgInt('reservas.antelacion_min_horas') ?>;
+  const ANT_MAX_DIAS    = <?= cfgInt('reservas.antelacion_max_dias') ?>;
   const PLANO_W = 900, PLANO_H = 560;
   const TOTAL_PASOS = 4;
   let pasoActual = 1;
@@ -286,7 +289,31 @@ $franjasHorarias = [
     nombre: 4,
   };
 
-  inputFecha.min = new Date().toISOString().split('T')[0];
+  // Rango del calendario según la antelación máxima configurada.
+  const hoyISO = new Date().toISOString().split('T')[0];
+  inputFecha.min = hoyISO;
+  if (ANT_MAX_DIAS > 0) {
+    const tope = new Date();
+    tope.setDate(tope.getDate() + ANT_MAX_DIAS);
+    inputFecha.max = tope.toISOString().split('T')[0];
+  }
+
+  /** ¿El restaurante cierra ese día? (día de la semana o fecha puntual) */
+  function diaCerrado(iso) {
+    if (FECHAS_CERRADAS.includes(iso)) return true;
+    const [a, m, d] = iso.split('-').map(Number);
+    const js = new Date(a, m - 1, d).getDay();   // 0 = domingo
+    const iso7 = js === 0 ? 7 : js;              // 1 = lunes … 7 = domingo
+    return DIAS_CERRADOS.includes(iso7);
+  }
+
+  /** ¿Ese horario respeta la antelación mínima? */
+  function horaConAntelacion(iso, hora) {
+    const [a, m, d] = iso.split('-').map(Number);
+    const [hh, mm]  = hora.split(':').map(Number);
+    const cuando = new Date(a, m - 1, d, hh, mm);
+    return cuando.getTime() >= Date.now() + ANT_MIN_HORAS * 3600 * 1000;
+  }
   inputFecha.addEventListener('change', onFechaChange);
 
   document.querySelectorAll('.horario-chip').forEach(chip => {
@@ -414,6 +441,22 @@ $franjasHorarias = [
     });
 
     if (!fecha) return;
+
+    // Día de cierre: no se muestra ningún horario.
+    if (diaCerrado(fecha)) {
+      horarioChips.forEach(chip => chip.style.display = 'none');
+      document.getElementById('rErrorFecha').textContent = 'Ese día el restaurante está cerrado. Elegí otro.';
+      return;
+    }
+    document.getElementById('rErrorFecha').textContent = '';
+
+    // Antelación mínima: escondo los horarios que ya no llegan.
+    horarioChips.forEach(chip => {
+      if (!horaConAntelacion(fecha, chip.dataset.hora)) {
+        chip.style.display = 'none';
+      }
+    });
+
     await cargarHorariosOcupados(fecha);
   }
 
