@@ -325,8 +325,8 @@ footer .bottom a{color:rgba(245,239,224,.7)}
     <div class="gallery">
       <div class="ph g1" data-note="foto: comedor principal"><img src="assets/img/imagen6.jpg" alt=""></div>
       <div class="ph g2" data-note="foto: barra de sidra"><<img src="assets/img/imagen7.jpeg" alt=""></div>
-      <div class="ph g3" data-note="foto: detalle mesa"><img src="assets/img/imagen8.jpg" alt=""></div>
-      <div class="ph g4" data-note="foto: terraza / patio"><img src="assets/img/imagen9.jpg" alt=""></div>
+      <div class="ph g3" data-note="foto: detalle mesa"><img src="assets/img/imagen8.jpeg" alt=""></div>
+      <div class="ph g4" data-note="foto: terraza / patio"><img src="assets/img/imagen9.jpeg" alt=""></div>
     </div>
   </div>
 </section>
@@ -346,7 +346,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
           <div><div class="n">100%</div><div class="l" data-i18n="stat3">Producto asturiano</div></div>
         </div>
       </div>
-      <div class="ph" data-note="foto: fachada / equipo del restaurante"><img src="https://picsum.photos/seed/corralin-fachada/800/900" alt=""></div>
+      <div class="ph" data-note="foto: fachada / equipo del restaurante"><img src="assets/img/imagenX.jpeg" alt=""></div>
     </div>
   </div>
 </section>
@@ -376,7 +376,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
           <div class="line"><i data-lucide="phone"></i><span class="t">985 71 60 42</span></div>
         </div>
       </div>
-      <div class="map"><div class="ph" data-note="mapa: ubicación en Nava (embed)"><img src="https://picsum.photos/seed/corralin-map/800/600" alt=""></div></div>
+      <div class="map"><div class="ph" data-note="mapa: ubicación en Nava (embed)"><<img src="assets/img/imagen11.jpeg" alt=""></div></div>
     </div>
   </div>
 </section>
