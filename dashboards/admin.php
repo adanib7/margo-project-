@@ -72,6 +72,17 @@ require_once '../includes/header.php';
       <p class="tarjeta-texto">Controla el stock de ingredientes, vinos y suministros esenciales.</p>
     </a>
 
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/reportes.php') ?>">
+      <div class="tarjeta-overlay"></div>
+      <div class="tarjeta-cabecera">
+        <div class="icono">
+          <span class="material-symbols-outlined">insights</span>
+        </div>
+        <h2>Reportes</h2>
+      </div>
+      <p class="tarjeta-texto">Reseña de reservas, horarios más pedidos y uso de las mesas.</p>
+    </a>
+
     <a class="tarjeta" href="<?= buildUrl('/dashboards/configuracion.php') ?>">
       <div class="tarjeta-overlay"></div>
       <div class="tarjeta-cabecera">

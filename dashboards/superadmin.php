@@ -61,16 +61,6 @@ require_once '../includes/header.php';
       <p class="tarjeta-texto">Controlar el stock de ingredientes, bebidas y suministros del local.</p>
     </a>
 
-    <a class="tarjeta" href="#">
-      <div class="tarjeta-cabecera">
-        <div class="icono">
-          <span class="material-symbols-outlined">shield</span>
-        </div>
-        <h2>Roles y Permisos</h2>
-      </div>
-      <p class="tarjeta-texto">Configuración de accesos y actualización de permisos en el sistema.</p>
-    </a>
-
     <a class="tarjeta" href="<?= buildUrl('/dashboards/configuracion.php') ?>">
       <div class="tarjeta-cabecera">
         <div class="icono">
@@ -81,7 +71,7 @@ require_once '../includes/header.php';
       <p class="tarjeta-texto">Ajustes globales del sistema y mantenimiento de la plataforma.</p>
     </a>
 
-    <a class="tarjeta" href="#">
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/reportes.php') ?>">
       <div class="tarjeta-cabecera">
         <div class="icono">
           <span class="material-symbols-outlined">insights</span>
