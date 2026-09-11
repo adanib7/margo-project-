@@ -2,6 +2,7 @@
 session_start();
 require_once '../includes/config.php';
 require_once '../includes/plano_db.php';
+require_once '../includes/config_app.php';
 require_once '../includes/mailer.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -55,14 +56,18 @@ if (!$fechaObj || $fechaObj->format('Y-m-d') !== $fecha) {
     $errores['fecha'] = 'Ingresá una fecha válida.';
 } elseif ($fecha < date('Y-m-d')) {
     $errores['fecha'] = 'La fecha no puede ser anterior a hoy.';
+} else {
+    // Días de cierre y antelación mínima/máxima (panel de Configuración).
+    $errores += validarMomentoReserva($fecha, $hora);
 }
 
 if (!preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $hora)) {
     $errores['hora'] = 'Seleccioná un horario válido.';
 }
 
-if ($personas < 1 || $personas > 20) {
-    $errores['personas'] = 'Ingresá entre 1 y 20 personas.';
+$maxPersonas = cfgInt('reservas.max_personas');
+if ($personas < 1 || $personas > $maxPersonas) {
+    $errores['personas'] = "Ingresá entre 1 y {$maxPersonas} personas.";
 }
 
 if ($mesaId <= 0) {
@@ -105,6 +110,9 @@ if (!empty($errores)) {
     exit;
 }
 
+// Según Configuración: la reserva entra ya confirmada o pendiente de aprobación.
+$estadoInicial = cfgBool('reservas.auto_confirmar') ? 'confirmada' : 'pendiente';
+
 $alfabetoCodigo = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 $codigo = 'COR-';
 for ($i = 0; $i < 6; $i++) {
@@ -112,7 +120,7 @@ for ($i = 0; $i < 6; $i++) {
 }
 
 $stmt = $conn->prepare(
-    "INSERT INTO reservas (codigo, usuario_id, mesa_id, nombre, fecha, hora, personas, comentario, telefono, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmada')"
+    "INSERT INTO reservas (codigo, usuario_id, mesa_id, nombre, fecha, hora, personas, comentario, telefono, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 );
 
 if ($stmt === false) {
@@ -120,21 +128,21 @@ if ($stmt === false) {
     if (stripos($errorMsg, 'unknown column') !== false) {
         // Base sin columna `telefono` (deploy viejo): insertamos sin ese campo.
         $stmt = $conn->prepare(
-            "INSERT INTO reservas (codigo, usuario_id, mesa_id, nombre, fecha, hora, personas, comentario, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmada')"
+            "INSERT INTO reservas (codigo, usuario_id, mesa_id, nombre, fecha, hora, personas, comentario, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
         if ($stmt === false) {
             http_response_code(500);
             echo json_encode(['ok' => false, 'mensaje' => 'No se pudo preparar la inserción de reserva.']);
             exit;
         }
-        $stmt->bind_param('siisssis', $codigo, $usuarioId, $mesaId, $nombre, $fecha, $hora, $personas, $comentario);
+        $stmt->bind_param('siisssiss', $codigo, $usuarioId, $mesaId, $nombre, $fecha, $hora, $personas, $comentario, $estadoInicial);
     } else {
         http_response_code(500);
         echo json_encode(['ok' => false, 'mensaje' => 'La tabla de reservas no existe todavía en la base de datos.']);
         exit;
     }
 } else {
-    $stmt->bind_param('siisssiss', $codigo, $usuarioId, $mesaId, $nombre, $fecha, $hora, $personas, $comentario, $telefono);
+    $stmt->bind_param('siisssisss', $codigo, $usuarioId, $mesaId, $nombre, $fecha, $hora, $personas, $comentario, $telefono, $estadoInicial);
 }
 
 if ($stmt->execute()) {
@@ -168,7 +176,10 @@ if ($stmt->execute()) {
 
     echo json_encode([
         'ok'            => true,
-        'mensaje'       => "¡Reserva confirmada para el {$fecha} a las {$hora}hs!",
+        'mensaje'       => $estadoInicial === 'confirmada'
+            ? "¡Reserva confirmada para el {$fecha} a las {$hora}hs!"
+            : "¡Reserva recibida para el {$fecha} a las {$hora}hs! Te avisamos en cuanto la confirmemos.",
+        'estado'        => $estadoInicial,
         'codigo'        => $codigo,
         'nombre'        => $nombre,
         'fecha'         => $fecha,

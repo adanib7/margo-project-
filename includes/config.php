@@ -1,4 +1,11 @@
 <?php
+// El local está en Nava (Asturias): fijamos la zona horaria para que todas las
+// páginas comparen fechas y horas contra el mismo reloj. Sin esto, el servidor
+// (que suele estar en UTC) puede adelantar el día y rechazar reservas válidas.
+if (function_exists('date_default_timezone_set')) {
+    date_default_timezone_set('Europe/Madrid');
+}
+
 // Detectar BASE_URL de forma simple y confiable
 $scriptPath = $_SERVER['SCRIPT_NAME'];
 // str_replace normaliza el separador '\' que dirname() devuelve en Windows (dev local)

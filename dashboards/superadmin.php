@@ -71,7 +71,7 @@ require_once '../includes/header.php';
       <p class="tarjeta-texto">Configuración de accesos y actualización de permisos en el sistema.</p>
     </a>
 
-    <a class="tarjeta" href="#">
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/configuracion.php') ?>">
       <div class="tarjeta-cabecera">
         <div class="icono">
           <span class="material-symbols-outlined">settings</span>

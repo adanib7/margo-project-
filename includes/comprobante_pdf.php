@@ -31,6 +31,7 @@ session_start();
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/check_auth.php';
 require_once __DIR__ . '/plano_db.php';
+require_once __DIR__ . '/config_app.php';
 requireLogin();
 
 if (!is_file(__DIR__ . '/lib/fpdf/fpdf.php')) {
@@ -296,7 +297,7 @@ if ($reserva['estado'] === 'cancelada') {
 $pdf->SetFont('Times', '', 11);
 $pdf->SetTextColor(...$TINTA);
 $pdf->MultiCell(0, 6, t(
-    'La mesa se mantiene reservada durante 15 minutos a partir de la hora indicada. '
+    'La mesa se mantiene reservada durante ' . cfgInt('reservas.cortesia_min') . ' minutos a partir de la hora indicada. '
     . 'Para cualquier cambio o anulación puede llamarnos al 985 71 60 42.'
 ), 0, 'J');
 $pdf->Ln(7);

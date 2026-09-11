@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../includes/config.php';
+require_once '../includes/config_app.php';
 
 if (!isset($_SESSION['usuario_id'])) {
     http_response_code(401);
@@ -31,7 +32,8 @@ if (!$reserva) {
 }
 
 $inicio = new DateTime($reserva['fecha'] . ' ' . $reserva['hora']);
-$fin    = (clone $inicio)->modify('+2 hours');
+$duracion = max(1, cfgInt('reservas.duracion_horas'));
+$fin      = (clone $inicio)->modify("+{$duracion} hours");
 
 function icsEscape(string $texto): string {
     return str_replace(["\\", ",", ";", "\n"], ["\\\\", "\\,", "\\;", "\\n"], $texto);

@@ -1805,3 +1805,170 @@ body {
   cursor: pointer;
   flex-shrink: 0;
 }
+
+/* ===== CONFIGURACIÓN ===== */
+
+.cfg-bloque {
+  background-color: #ffffff;
+  border: 1px solid rgba(115, 121, 111, 0.25);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.cfg-bloque-cab {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(115, 121, 111, 0.18);
+}
+.cfg-bloque-cab .icono { padding: 0.7rem; }
+.cfg-bloque-cab .icono .material-symbols-outlined { font-size: 1.5rem; }
+
+.cfg-bloque-titulo {
+  margin: 0 0 0.2rem;
+  font-family: 'Montserrat', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #264220;
+}
+.cfg-bloque-texto { margin: 0; font-size: 0.9rem; color: #73796f; }
+
+/* Turnos */
+.cfg-turno {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px dashed rgba(115, 121, 111, 0.22);
+}
+.cfg-turno-check { min-width: 8rem; padding-bottom: 0.6rem; }
+.cfg-turno-horas { display: flex; gap: 0.75rem; flex: 1; min-width: 0; }
+.cfg-turno-horas .campo-grupo { min-width: 0; flex: 1; max-width: 10rem; }
+
+.cfg-campo-corto { max-width: 20rem; margin-top: 1.25rem; }
+
+/* Vista previa de horarios */
+.cfg-preview {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #fafaf4;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(115, 121, 111, 0.2);
+}
+.cfg-preview-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #775a19;
+  margin-bottom: 0.75rem;
+}
+.cfg-preview-turno { margin-bottom: 0.9rem; }
+.cfg-preview-turno:last-child { margin-bottom: 0; }
+.cfg-preview-turno-nom {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #264220;
+  margin-bottom: 0.4rem;
+}
+.cfg-preview-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.cfg-chip {
+  font-size: 0.78rem;
+  background-color: #eef3ea;
+  color: #264220;
+  border-radius: 0.35rem;
+  padding: 0.2rem 0.5rem;
+}
+.cfg-preview-vacio { margin: 0; font-size: 0.85rem; color: #a09a8c; font-style: italic; }
+
+/* Días de la semana */
+.cfg-dias { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.cfg-dia {
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+}
+.cfg-dia input { position: absolute; opacity: 0; pointer-events: none; }
+.cfg-dia span {
+  display: block;
+  padding: 0.45rem 0.85rem;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(115, 121, 111, 0.35);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #434840;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+.cfg-dia:hover span { border-color: #264220; background-color: #f4f4ee; }
+.cfg-dia-on span {
+  background-color: #8c2f39;
+  border-color: #8c2f39;
+  color: #ffffff;
+}
+
+/* Cierres puntuales */
+.cfg-fecha-alta { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.cfg-fecha-alta .campo-input-wrapper { flex: 1; min-width: 10rem; max-width: 16rem; }
+.cfg-fechas { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+.cfg-fecha-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: #f5efe0;
+  border: 1px solid rgba(176, 127, 34, 0.35);
+  color: #785a1a;
+  border-radius: 9999px;
+  padding: 0.25rem 0.35rem 0.25rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.cfg-fecha-x {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #785a1a;
+  display: flex;
+  padding: 0.1rem;
+  border-radius: 9999px;
+}
+.cfg-fecha-x:hover { background-color: rgba(176, 127, 34, 0.2); }
+.cfg-fecha-x .material-symbols-outlined { font-size: 1rem; }
+
+/* Reglas */
+.cfg-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+@media (min-width: 620px) {
+  .cfg-grid { grid-template-columns: 1fr 1fr; }
+}
+.cfg-grid .campo-grupo { min-width: 0; }
+
+.campo-ayuda {
+  font-size: 0.78rem;
+  color: #73796f;
+  line-height: 1.5;
+}
+
+.cfg-check-suelto { margin-top: 1.5rem; }
+.cfg-ayuda-check { display: block; margin-top: 0.3rem; margin-left: 1.6rem; }
+
+.cfg-acciones {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 560px) {
+  .cfg-turno-horas { width: 100%; }
+  .cfg-acciones { justify-content: stretch; }
+  .cfg-acciones .boton-accion { width: 100%; justify-content: center; }
+}
