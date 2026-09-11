@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html class="light" lang="es">
 <head>
+  <link rel="icon" href="../image.ico" type="image/x-icon">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+ <link rel="icon" href="image.ico" type="image/x-icon">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>El Corralín del Campanal · Restaurante y llagar en Nava, Asturias</title>
