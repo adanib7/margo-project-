@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../includes/config.php';
+require_once '../includes/plano_db.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -42,20 +43,28 @@ if ($resMesas && $resMesas->num_rows > 0) {
 $horarios = [];
 
 if ($totalMesas > 0) {
+    // Una mesa sigue ocupada durante toda su duración, así que hay que contar
+    // por solapamiento y no por hora exacta: se revisa cada horario del turno.
     $stmt = $conn->prepare(
-        "SELECT hora, COUNT(DISTINCT mesa_id) AS reservadas
+        "SELECT COUNT(DISTINCT mesa_id) AS reservadas
          FROM reservas
          WHERE fecha = ? AND estado != 'cancelada' AND mesa_id IS NOT NULL
-         GROUP BY hora
-         HAVING reservadas >= ?"
+           AND hora < ? AND ADDTIME(hora, ?) > ?"
     );
-    $stmt->bind_param('si', $fecha, $totalMesas);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    while ($row = $result->fetch_assoc()) {
-        $horarios[] = substr($row['hora'], 0, 5);
+
+    if ($stmt !== false) {
+        foreach (horarioTodosLosSlots() as $slot) {
+            $f = franjaReserva($slot);
+            $stmt->bind_param('ssss', $fecha, $f['fin'], $f['duracion'], $f['inicio']);
+            $stmt->execute();
+            $row = $stmt->get_result()->fetch_assoc();
+
+            if ((int) ($row['reservadas'] ?? 0) >= $totalMesas) {
+                $horarios[] = $slot;
+            }
+        }
+        $stmt->close();
     }
-    $stmt->close();
 }
 
 echo json_encode(['ok' => true, 'horarios' => array_values(array_unique($horarios))]);

@@ -110,21 +110,15 @@ if ($errores) {
     exit;
 }
 
-// Choque con otra reserva activa en la misma mesa / franja.
+// Choque por solapamiento con otra reserva activa de la misma mesa.
 if ($conMesa && $mesaId > 0 && $estado !== 'cancelada') {
-    $q = $conn->prepare(
-        "SELECT codigo FROM reservas
-         WHERE mesa_id = ? AND fecha = ? AND hora = ? AND estado != 'cancelada' AND id <> ? LIMIT 1"
-    );
-    $q->bind_param('issi', $mesaId, $fecha, $hora, $id);
-    $q->execute();
-    $choque = $q->get_result()->fetch_assoc();
-    $q->close();
+    $choque = reservaSolapada($conn, $mesaId, $fecha, $hora, $id);
 
     if ($choque) {
+        $desde = substr((string) $choque['hora'], 0, 5);
         http_response_code(409);
         echo json_encode(['ok' => false, 'errores' => [
-            'mesa' => "La mesa {$mesaNumero} ya está ocupada en esa franja (reserva {$choque['codigo']}).",
+            'mesa' => "La mesa {$mesaNumero} ya está ocupada desde las {$desde} (reserva {$choque['codigo']}).",
         ]]);
         exit;
     }

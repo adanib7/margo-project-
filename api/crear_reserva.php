@@ -95,14 +95,13 @@ if (!empty($errores)) {
     exit;
 }
 
-$stmt = $conn->prepare("SELECT id FROM reservas WHERE mesa_id = ? AND fecha = ? AND hora = ? AND estado != 'cancelada' LIMIT 1");
-$stmt->bind_param('iss', $mesaId, $fecha, $hora);
-$stmt->execute();
-$stmt->store_result();
-if ($stmt->num_rows > 0) {
-    $errores['mesa'] = "La mesa {$mesaNumero} ya está reservada en esa franja. Elegí otra mesa u otro horario.";
+// Choque por solapamiento: la mesa queda tomada durante toda su duración,
+// no solo en la hora exacta de inicio.
+$choque = reservaSolapada($conn, $mesaId, $fecha, $hora);
+if ($choque) {
+    $desde = substr((string) $choque['hora'], 0, 5);
+    $errores['mesa'] = "La mesa {$mesaNumero} ya está ocupada desde las {$desde}. Elegí otra mesa u otro horario.";
 }
-$stmt->close();
 
 if (!empty($errores)) {
     http_response_code(409);

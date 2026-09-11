@@ -70,6 +70,28 @@ function ensureReservaMesaColumn(mysqli $conn): void
 }
 
 /**
+ * Permite que `reservas.usuario_id` quede en NULL.
+ *
+ * Hace falta para las reservas que carga el admin por teléfono o en el mostrador:
+ * el cliente no tiene cuenta, así que la reserva no cuelga de ningún usuario.
+ * La clave foránea sigue valiendo (un NULL no la viola).
+ */
+function ensureReservaUsuarioOpcional(mysqli $conn): void
+{
+    $tabla = $conn->query("SHOW TABLES LIKE 'reservas'");
+    if (!$tabla || $tabla->num_rows === 0) {
+        return;
+    }
+
+    $res = $conn->query("SHOW COLUMNS FROM reservas LIKE 'usuario_id'");
+    $col = $res ? $res->fetch_assoc() : null;
+
+    if ($col && strtoupper((string) ($col['Null'] ?? '')) === 'NO') {
+        $conn->query("ALTER TABLE reservas MODIFY `usuario_id` INT(11) NULL");
+    }
+}
+
+/**
  * ¿Se puede consultar la mesa de una reserva? Es decir: existe la tabla `mesas`
  * y la columna `reservas.mesa_id`.
  *
@@ -105,8 +127,72 @@ function mesaTieneReservas(mysqli $conn, int $mesaId): bool
 }
 
 /**
+ * Ventana que ocupa una reserva: desde su hora hasta hora + duración de mesa
+ * (Configuración → Reglas de reserva).
+ *
+ * El fin puede pasar de las 24:00 (ej. "24:30:00"): el tipo TIME de MySQL lo
+ * admite y así una reserva de las 23:00 no "vuelve" al principio del día.
+ *
+ * @return array{inicio:string, fin:string, duracion:string}
+ */
+function franjaReserva(string $hora): array
+{
+    $horas = function_exists('cfgInt') ? max(1, cfgInt('reservas.duracion_horas')) : 2;
+
+    [$h, $m] = array_map('intval', array_pad(explode(':', substr($hora, 0, 5)), 2, 0));
+    $iniMin = $h * 60 + $m;
+
+    $fmt = static function (int $min): string {
+        return sprintf('%02d:%02d:00', intdiv($min, 60), $min % 60);
+    };
+
+    return [
+        'inicio'   => $fmt($iniMin),
+        'fin'      => $fmt($iniMin + $horas * 60),
+        'duracion' => $fmt($horas * 60),
+    ];
+}
+
+/**
+ * ¿Hay otra reserva activa que se solape con esa mesa en esa fecha/hora?
+ *
+ * Dos reservas chocan si sus intervalos se pisan, no solo si empiezan a la
+ * misma hora: con mesas de 2 h, las 21:00 y las 21:30 son la misma mesa.
+ *
+ * @return array{codigo:string,hora:string}|null  la reserva en conflicto
+ */
+function reservaSolapada(mysqli $conn, int $mesaId, string $fecha, string $hora, ?int $excluirId = null): ?array
+{
+    $f = franjaReserva($hora);
+
+    $sql = "SELECT codigo, hora FROM reservas
+            WHERE mesa_id = ? AND fecha = ? AND estado != 'cancelada'
+              AND hora < ? AND ADDTIME(hora, ?) > ?";
+    $tipos  = 'issss';
+    $params = [$mesaId, $fecha, $f['fin'], $f['duracion'], $f['inicio']];
+
+    if ($excluirId !== null) {
+        $sql   .= ' AND id <> ?';
+        $tipos .= 'i';
+        $params[] = $excluirId;
+    }
+    $sql .= ' LIMIT 1';
+
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        return null;
+    }
+    $stmt->bind_param($tipos, ...$params);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    return $row ?: null;
+}
+
+/**
  * Devuelve todas las mesas del plano. Si se pasa fecha + hora, marca `ocupada`
- * según las reservas activas de esa franja.
+ * según las reservas activas que se solapen con esa franja.
  *
  * @return list<array<string,mixed>>
  */
@@ -117,11 +203,14 @@ function planoMesasConOcupacion(mysqli $conn, string $fecha = '', string $hora =
     if ($fecha !== '' && $hora !== '') {
         $tabla = $conn->query("SHOW TABLES LIKE 'reservas'");
         if ($tabla && $tabla->num_rows > 0) {
+            // Ocupada = su intervalo se pisa con el de la franja consultada.
+            $f = franjaReserva($hora);
             $stmt = $conn->prepare(
                 "SELECT mesa_id FROM reservas
-                 WHERE fecha = ? AND hora = ? AND estado != 'cancelada' AND mesa_id IS NOT NULL"
+                 WHERE fecha = ? AND estado != 'cancelada' AND mesa_id IS NOT NULL
+                   AND hora < ? AND ADDTIME(hora, ?) > ?"
             );
-            $stmt->bind_param('ss', $fecha, $hora);
+            $stmt->bind_param('ssss', $fecha, $f['fin'], $f['duracion'], $f['inicio']);
             $stmt->execute();
             $res = $stmt->get_result();
             while ($row = $res->fetch_assoc()) {
