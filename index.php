@@ -298,15 +298,15 @@ footer .bottom a{color:rgba(245,239,224,.7)}
     </div>
     <div class="dishes">
       <article class="dish">
-        <div class="ph" data-note="foto: escanciado de sidra"><img src="https://picsum.photos/seed/corralin-sidra/700/500" alt=""></div>
+        <div class="ph" data-note="foto: escanciado de sidra"><img src="assets/img/logo-horizontal-verde.png" alt=""></div>
         <div class="body"><span class="tag" data-i18n="dish1_tag">Del llagar</span><h3 data-i18n="dish1_title">Sidra natural</h3><p data-i18n="dish1_desc">Escanciada al culín, de llagar de la comarca. La bebida de Nava, capital de la manzana.</p></div>
       </article>
       <article class="dish">
-        <div class="ph" data-note="foto: cachopo al corte"><img src="https://picsum.photos/seed/corralin-cachopo/700/500" alt=""></div>
+        <div class="ph" data-note="foto: cachopo al corte"><img src="assets/img/logo-horizontal-verde.png" alt=""></div>
         <div class="body"><span class="tag" data-i18n="dish2_tag">La estrella</span><h3 data-i18n="dish2_title">Cachopo al corte</h3><p data-i18n="dish2_desc">Ternera asturiana rellena de jamón y queso Afuega'l Pitu. Para compartir, o casi.</p></div>
       </article>
       <article class="dish">
-        <div class="ph" data-note="foto: fabada en pote"><img src="https://picsum.photos/seed/corralin-fabada/700/500" alt=""></div>
+        <div class="ph" data-note="foto: fabada en pote"><img src="assets/img/logo-horizontal-verde.png" alt=""></div>
         <div class="body"><span class="tag" data-i18n="dish3_tag">De cuchara</span><h3 data-i18n="dish3_title">Fabada de la güela</h3><p data-i18n="dish3_desc">Faba de la Granja con su compango: morcilla, chorizo y lacón. A fuego lento, como toca.</p></div>
       </article>
     </div>
@@ -322,7 +322,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
       <p data-i18n="galeria_sub">Piedra, madera y el aroma de la manzana. Así se come en El Corralín.</p>
     </div>
     <div class="gallery">
-      <div class="ph g1" data-note="foto: comedor principal"><img src="https://picsum.photos/seed/corralin-g1/900/900" alt=""></div>
+      <div class="ph g1" data-note="foto: comedor principal"><img src="assets/img/logo-horizontal-verde.png" alt=""></div>
       <div class="ph g2" data-note="foto: barra de sidra"><img src="https://picsum.photos/seed/corralin-g2/500/500" alt=""></div>
       <div class="ph g3" data-note="foto: detalle mesa"><img src="https://picsum.photos/seed/corralin-g3/500/500" alt=""></div>
       <div class="ph g4" data-note="foto: terraza / patio"><img src="https://picsum.photos/seed/corralin-g4/900/500" alt=""></div>
