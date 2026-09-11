@@ -324,9 +324,9 @@ footer .bottom a{color:rgba(245,239,224,.7)}
     </div>
     <div class="gallery">
       <div class="ph g1" data-note="foto: comedor principal"><img src="assets/img/imagen6.jpg" alt=""></div>
-      <div class="ph g2" data-note="foto: barra de sidra"><img src="https://picsum.photos/seed/corralin-g2/500/500" alt=""></div>
-      <div class="ph g3" data-note="foto: detalle mesa"><img src="https://picsum.photos/seed/corralin-g3/500/500" alt=""></div>
-      <div class="ph g4" data-note="foto: terraza / patio"><img src="https://picsum.photos/seed/corralin-g4/900/500" alt=""></div>
+      <div class="ph g2" data-note="foto: barra de sidra"><<img src="assets/img/imagen7.jpeg" alt=""></div>
+      <div class="ph g3" data-note="foto: detalle mesa"><img src="assets/img/imagen8.jpg" alt=""></div>
+      <div class="ph g4" data-note="foto: terraza / patio"><img src="assets/img/imagen9.jpg" alt=""></div>
     </div>
   </div>
 </section>
