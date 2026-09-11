@@ -49,6 +49,114 @@ require_once '../includes/header.php';
 
   <form id="formConfig">
 
+    <!-- ══════════ Datos del local ══════════ -->
+    <section class="cfg-bloque">
+      <div class="cfg-bloque-cab">
+        <div class="icono"><span class="material-symbols-outlined">storefront</span></div>
+        <div>
+          <h2 class="cfg-bloque-titulo">Datos del local</h2>
+          <p class="cfg-bloque-texto">Se usan en la web, los comprobantes y los correos.</p>
+        </div>
+      </div>
+
+      <div class="cfg-grid">
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="locNombre">Nombre</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">restaurant</span>
+            <input class="campo-input" type="text" id="locNombre" maxlength="80"
+                   value="<?= htmlspecialchars((string) cfg('local.nombre'), ENT_QUOTES) ?>">
+          </div>
+          <span class="campo-error" id="err_local.nombre"></span>
+        </div>
+
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="locEslogan">Bajada <span class="campo-opcional">(opcional)</span></label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">notes</span>
+            <input class="campo-input" type="text" id="locEslogan" maxlength="120"
+                   value="<?= htmlspecialchars((string) cfg('local.eslogan'), ENT_QUOTES) ?>">
+          </div>
+          <span class="campo-ayuda">Aparece bajo el nombre en el comprobante.</span>
+        </div>
+
+        <div class="campo-grupo cfg-col-entera">
+          <label class="campo-etiqueta" for="locDireccion">Calle y número</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">location_on</span>
+            <input class="campo-input" type="text" id="locDireccion" maxlength="120"
+                   value="<?= htmlspecialchars((string) cfg('local.direccion'), ENT_QUOTES) ?>">
+          </div>
+          <span class="campo-error" id="err_local.direccion"></span>
+        </div>
+
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="locCp">Código postal</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">markunread_mailbox</span>
+            <input class="campo-input" type="text" id="locCp" maxlength="10"
+                   value="<?= htmlspecialchars((string) cfg('local.cp'), ENT_QUOTES) ?>">
+          </div>
+          <span class="campo-error" id="err_local.cp"></span>
+        </div>
+
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="locCiudad">Localidad</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">apartment</span>
+            <input class="campo-input" type="text" id="locCiudad" maxlength="80"
+                   value="<?= htmlspecialchars((string) cfg('local.ciudad'), ENT_QUOTES) ?>">
+          </div>
+          <span class="campo-error" id="err_local.ciudad"></span>
+        </div>
+
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="locProvincia">Provincia <span class="campo-opcional">(opcional)</span></label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">map</span>
+            <input class="campo-input" type="text" id="locProvincia" maxlength="80"
+                   value="<?= htmlspecialchars((string) cfg('local.provincia'), ENT_QUOTES) ?>">
+          </div>
+        </div>
+
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="locTelefono">Teléfono</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">phone</span>
+            <input class="campo-input" type="tel" id="locTelefono" maxlength="30"
+                   value="<?= htmlspecialchars((string) cfg('local.telefono'), ENT_QUOTES) ?>">
+          </div>
+          <span class="campo-error" id="err_local.telefono"></span>
+        </div>
+
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="locEmail">Email de contacto</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">mail</span>
+            <input class="campo-input" type="email" id="locEmail" maxlength="120"
+                   value="<?= htmlspecialchars((string) cfg('local.email'), ENT_QUOTES) ?>">
+          </div>
+          <span class="campo-error" id="err_local.email"></span>
+        </div>
+
+        <div class="campo-grupo cfg-col-entera">
+          <label class="campo-etiqueta" for="locSitio">Dirección web</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">language</span>
+            <input class="campo-input" type="url" id="locSitio" maxlength="160"
+                   value="<?= htmlspecialchars((string) cfg('local.sitio_url'), ENT_QUOTES) ?>">
+          </div>
+          <span class="campo-ayuda">Con https:// adelante. Se usa para el logo y los enlaces de los correos.</span>
+          <span class="campo-error" id="err_local.sitio_url"></span>
+        </div>
+      </div>
+
+      <div class="cfg-preview">
+        <span class="cfg-preview-label">Así se ve la dirección</span>
+        <p class="cfg-dir-preview" id="previewDireccion"></p>
+      </div>
+    </section>
+
     <!-- ══════════ Horarios de servicio ══════════ -->
     <section class="cfg-bloque">
       <div class="cfg-bloque-cab">
@@ -246,6 +354,24 @@ require_once '../includes/header.php';
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  // ── Vista previa de la dirección ─────────────────────────────────────────
+  function pintarDireccion() {
+    const calle  = $('locDireccion').value.trim();
+    const cp     = $('locCp').value.trim();
+    const ciudad = $('locCiudad').value.trim();
+    const prov   = $('locProvincia').value.trim();
+
+    let localidad = [cp, ciudad].filter(Boolean).join(' ');
+    if (prov) localidad += ' (' + prov + ')';
+
+    const txt = [calle, localidad].filter(Boolean).join(' · ');
+    $('previewDireccion').textContent = txt || '—';
+  }
+
+  ['locDireccion', 'locCp', 'locCiudad', 'locProvincia'].forEach(id =>
+    $(id).addEventListener('input', pintarDireccion));
+  pintarDireccion();
+
   // ── Vista previa de los horarios ─────────────────────────────────────────
   function slots(inicio, fin, intervalo) {
     const aMin = h => { const [x, y] = h.split(':').map(Number); return x * 60 + y; };
@@ -347,6 +473,16 @@ require_once '../includes/header.php';
     setLoading(true);
 
     const payload = {
+      'local.nombre':    $('locNombre').value.trim(),
+      'local.eslogan':   $('locEslogan').value.trim(),
+      'local.direccion': $('locDireccion').value.trim(),
+      'local.cp':        $('locCp').value.trim(),
+      'local.ciudad':    $('locCiudad').value.trim(),
+      'local.provincia': $('locProvincia').value.trim(),
+      'local.telefono':  $('locTelefono').value.trim(),
+      'local.email':     $('locEmail').value.trim(),
+      'local.sitio_url': $('locSitio').value.trim(),
+
       'horario.almuerzo_activo': $('almuerzoActivo').checked,
       'horario.almuerzo_inicio': $('almuerzoInicio').value,
       'horario.almuerzo_fin':    $('almuerzoFin').value,

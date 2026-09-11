@@ -130,7 +130,7 @@ class ComprobantePDF extends FPDF
         $this->SetTextColor(110, 110, 105);
         $this->Cell(0, 4, t('Comprobante emitido el ' . date('d/m/Y') . ' a las ' . date('H:i')
             . ' · Código de reserva ' . $this->pieCodigo), 0, 1, 'C');
-        $this->Cell(0, 4, t('El Corralín de Campanal · Plaza Manuel Uría, 4 · 33520 Nava (Asturias)'), 0, 0, 'C');
+        $this->Cell(0, 4, t(cfg('local.nombre') . ' · ' . localDireccion()), 0, 0, 'C');
     }
 }
 
@@ -214,7 +214,7 @@ try {
 $pdf = new ComprobantePDF('P', 'mm', 'A4');
 $pdf->pieCodigo = $reserva['codigo'];
 $pdf->SetTitle(t('Comprobante de reserva ' . $reserva['codigo']));
-$pdf->SetAuthor(t('El Corralín de Campanal'));
+$pdf->SetAuthor(t((string) cfg('local.nombre')));
 $pdf->SetMargins(25, 22, 25);
 $pdf->SetAutoPageBreak(true, 26);
 $pdf->AddPage();
@@ -229,12 +229,12 @@ if (is_file($logo)) {
     // Sin el archivo: título en texto como respaldo.
     $pdf->SetTextColor(...$VERDE);
     $pdf->SetFont('Times', 'B', 21);
-    $pdf->Cell(0, 10, t('El Corralín de Campanal'), 0, 1);
+    $pdf->Cell(0, 10, t((string) cfg('local.nombre')), 0, 1);
 }
 
 
 $pdf->SetFont('Times', '', 9);
-$pdf->Cell(0, 5, t('Plaza Manuel Uría, 4 · 33520 Nava (Asturias) · Tel. 985 71 60 42'), 0, 1);
+$pdf->Cell(0, 5, t(localDireccion() . ' · Tel. ' . cfg('local.telefono')), 0, 1);
 
 $pdf->Ln(3.5);
 $pdf->SetDrawColor(...$DORADO);
@@ -255,7 +255,7 @@ $pdf->Ln(1);
 
 $pdf->SetFont('Times', '', 11);
 $pdf->MultiCell(0, 6, t(
-    'Le confirmamos su reserva en El Corralín de Campanal. A continuación figuran los datos; '
+    'Le confirmamos su reserva en ' . cfg('local.nombre') . '. A continuación figuran los datos; '
     . 'le rogamos que los revise y conserve este comprobante para el día de su visita.'
 ), 0, 'J');
 $pdf->Ln(5);
@@ -298,7 +298,7 @@ $pdf->SetFont('Times', '', 11);
 $pdf->SetTextColor(...$TINTA);
 $pdf->MultiCell(0, 6, t(
     'La mesa se mantiene reservada durante ' . cfgInt('reservas.cortesia_min') . ' minutos a partir de la hora indicada. '
-    . 'Para cualquier cambio o anulación puede llamarnos al 985 71 60 42.'
+    . 'Para cualquier cambio o anulación puede llamarnos al ' . cfg('local.telefono') . '.'
 ), 0, 'J');
 $pdf->Ln(7);
 
@@ -306,7 +306,7 @@ $pdf->Cell(0, 6, t('Un cordial saludo,'), 0, 1);
 $pdf->Ln(2);
 $pdf->SetFont('Times', 'B', 11);
 $pdf->SetTextColor(...$VERDE);
-$pdf->Cell(0, 6, t('El Corralín de Campanal'), 0, 1);
+$pdf->Cell(0, 6, t((string) cfg('local.nombre')), 0, 1);
 
 $salida = $pdf->Output('S');
 

@@ -96,3 +96,8 @@ if ($esLocal) {
         $dbErrorMessage = 'No se pudo conectar con la base de datos remota. Verifica la configuración de conexión.';
     }
 }
+
+// Configuración editable del local (nombre, dirección, horarios, reglas…).
+// Va al final porque lee de $conn, y se carga siempre para que cfg() esté
+// disponible en cualquier página, incluidos nav.php y footer.php.
+require_once __DIR__ . '/config_app.php';

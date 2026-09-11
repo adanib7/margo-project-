@@ -108,6 +108,31 @@ function enviarCorreoBrevo(string $paraEmail, string $paraNombre, string $asunto
 
 /* ══════════════════════ Plantillas ══════════════════════ */
 
+/* Datos del local. mailer.php a veces se usa suelto, así que si config_app.php
+   no está cargado se cae a los valores de siempre. */
+function localNombreCorreo(): string
+{
+    return function_exists('cfg') ? (string) cfg('local.nombre') : 'El Corralín de Campanal';
+}
+
+function localTelefonoCorreo(): string
+{
+    return function_exists('cfg') ? (string) cfg('local.telefono') : '985 71 60 42';
+}
+
+function localDireccionCorreo(): string
+{
+    return function_exists('localDireccion')
+        ? localDireccion()
+        : 'Plaza Manuel Uría, 4 · 33520 Nava (Asturias)';
+}
+
+function localDominioCorreo(): string
+{
+    return function_exists('localDominio') ? localDominio() : 'corralin.kesug.com';
+}
+
+
 function e_($s): string
 {
     return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
@@ -118,7 +143,7 @@ function e_($s): string
  */
 function correoLayout(string $preheader, string $cuerpo): string
 {
-    $sitio = rtrim(mailConfig()['sitio_url'], '/');
+    $sitio = rtrim((string) (function_exists('cfg') ? cfg('local.sitio_url') : mailConfig()['sitio_url']), '/');
     $logo  = $sitio . '/assets/img/logo-horizontal-blanco.png';
 
     return '<!doctype html><html><head><meta charset="utf-8">'
@@ -129,12 +154,12 @@ function correoLayout(string $preheader, string $cuerpo): string
         . '<tr><td align="center">'
         . '<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:92%;background:#ffffff;border:1px solid #e4e1d9;border-radius:10px;overflow:hidden;">'
         . '<tr><td style="background:#2d5f3f;padding:22px 28px;">'
-        . '<img src="' . e_($logo) . '" alt="El Corralín de Campanal" height="34" style="height:34px;display:block;">'
+        . '<img src="' . e_($logo) . '" alt="' . e_(localNombreCorreo()) . '" height="34" style="height:34px;display:block;">'
         . '</td></tr>'
         . '<tr><td style="padding:28px;">' . $cuerpo . '</td></tr>'
         . '<tr><td style="background:#f5efe0;padding:16px 28px;font-size:12px;color:#6b6558;line-height:1.6;">'
-        . 'El Corralín de Campanal &middot; Plaza Manuel Uría, 4 &middot; 33520 Nava (Asturias)<br>'
-        . 'Tel. 985 71 60 42 &middot; <a href="' . e_($sitio) . '" style="color:#2d5f3f;">corralin.kesug.com</a>'
+        . e_(localNombreCorreo()) . ' &middot; ' . e_(localDireccionCorreo()) . '<br>'
+        . 'Tel. ' . e_(localTelefonoCorreo()) . ' &middot; <a href="' . e_($sitio) . '" style="color:#2d5f3f;">' . e_(localDominioCorreo()) . '</a>'
         . '</td></tr>'
         . '</table></td></tr></table></body></html>';
 }
@@ -182,13 +207,13 @@ function correoConfirmacionReserva(array $r): array
 
     $cuerpo = '<p style="margin:0 0 14px;font-size:16px;">' . e_($nombre !== '' ? "Hola, $nombre:" : 'Hola:') . '</p>'
         . '<p style="margin:0 0 20px;font-size:15px;line-height:1.65;color:#4a4a42;">'
-        . 'Tu reserva en El Corralín de Campanal quedó <strong style="color:#2d5f3f;">confirmada</strong>. '
+        . 'Tu reserva en ' . e_(localNombreCorreo()) . ' quedó <strong style="color:#2d5f3f;">confirmada</strong>. '
         . 'Guardá este correo; el día de tu visita te va a servir el código.</p>'
         . '<table role="presentation" cellpadding="0" cellspacing="0" width="100%" '
         . 'style="border-top:2px solid #c9962e;border-bottom:1px solid #e4e1d9;margin:6px 0 20px;">' . $filas . '</table>'
         . '<p style="margin:0 0 6px;font-size:14px;line-height:1.6;color:#4a4a42;">'
         . 'La mesa se mantiene durante ' . (function_exists('cfgInt') ? cfgInt('reservas.cortesia_min') : 15) . ' minutos a partir de la hora reservada. '
-        . 'Para cualquier cambio o anulación, respondé a este correo o llamanos al 985 71 60 42.</p>'
+        . 'Para cualquier cambio o anulación, respondé a este correo o llamanos al ' . e_(localTelefonoCorreo()) . '.</p>'
         . '<p style="margin:18px 0 0;font-size:15px;color:#2d5f3f;">Te esperamos.</p>';
 
     $asunto = 'Reserva confirmada · ' . $r['codigo'] . ' · ' . $fechaLarga;
@@ -235,7 +260,7 @@ function correoCancelacionReserva(array $r): array
 
     $cuerpo = '<p style="margin:0 0 14px;font-size:16px;">' . e_($nombre !== '' ? "Hola, $nombre:" : 'Hola:') . '</p>'
         . '<p style="margin:0 0 20px;font-size:15px;line-height:1.65;color:#4a4a42;">'
-        . 'Lamentamos avisarte de que tu reserva en El Corralín de Campanal ha sido '
+        . 'Lamentamos avisarte de que tu reserva en ' . e_(localNombreCorreo()) . ' ha sido '
         . '<strong style="color:#8c2f39;">anulada</strong>. Estos eran los datos:</p>'
         . '<table role="presentation" cellpadding="0" cellspacing="0" width="100%" '
         . 'style="border-top:2px solid #8c2f39;border-bottom:1px solid #e4e1d9;margin:6px 0 20px;">' . $filas . '</table>';
@@ -247,7 +272,7 @@ function correoCancelacionReserva(array $r): array
 
     $cuerpo .= '<p style="margin:0 0 6px;font-size:14px;line-height:1.6;color:#4a4a42;">'
         . 'Si se trata de un error o querés reservar otro día, escribinos respondiendo a este correo '
-        . 'o llamanos al 985 71 60 42. También podés reservar de nuevo desde la web.</p>'
+        . 'o llamanos al ' . e_(localTelefonoCorreo()) . '. También podés reservar de nuevo desde la web.</p>'
         . '<p style="margin:18px 0 0;font-size:15px;color:#2d5f3f;">Disculpá las molestias.</p>';
 
     $asunto = 'Reserva anulada · ' . $r['codigo'] . ' · ' . $fechaLarga;
