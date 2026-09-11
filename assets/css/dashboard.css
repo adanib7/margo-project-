@@ -1707,3 +1707,71 @@ body {
   color: #434840;
   margin-top: 0.5rem;
 }
+
+/* ===== RESERVAS (panel admin) ===== */
+
+.res-stats { grid-template-columns: repeat(4, 1fr); }
+
+.res-barra-rango { margin: -0.75rem 0 1.5rem; }
+
+.res-codigo {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #264220;
+  background: #eef3ea;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.35rem;
+  white-space: nowrap;
+}
+
+.res-contacto {
+  font-size: 0.78rem;
+  color: #73796f;
+  margin-top: 0.1rem;
+}
+
+.res-fecha {
+  font-weight: 600;
+  color: #264220;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+.res-hora { font-size: 0.85rem; color: #434840; }
+
+.res-chip-hoy {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: #c9962e;
+  color: #ffffff;
+  border-radius: 9999px;
+  padding: 0.1rem 0.4rem;
+  vertical-align: 1px;
+}
+
+.res-sin-mesa { color: #a09a8c; font-style: italic; font-size: 0.85rem; }
+
+.res-nota {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.res-fila-cancelada td { opacity: 0.55; }
+.res-fila-cancelada .res-codigo { text-decoration: line-through; }
+
+.btn-confirmar:hover { background-color: #caecbc; color: #264220; }
+.btn-cancelar:hover  { background-color: #ffdea5; color: #785a1a; }
+
+@media (max-width: 1100px) {
+  .res-stats { grid-template-columns: repeat(2, 1fr); }
+  .res-tabla th:nth-child(7), .res-tabla td:nth-child(7) { display: none; }
+}
+@media (max-width: 700px) {
+  .res-tabla th:nth-child(1), .res-tabla td:nth-child(1) { display: none; }
+}

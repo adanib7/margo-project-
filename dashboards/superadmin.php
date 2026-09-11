@@ -41,6 +41,16 @@ require_once '../includes/header.php';
       <p class="tarjeta-texto">Editar la distribución de mesas que ven los clientes al reservar.</p>
     </a>
 
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/reservas.php') ?>">
+      <div class="tarjeta-cabecera">
+        <div class="icono icono-primary">
+          <span class="material-symbols-outlined">event_available</span>
+        </div>
+        <h2>Reservas</h2>
+      </div>
+      <p class="tarjeta-texto">Ver, confirmar, editar y cancelar las reservas del salón.</p>
+    </a>
+
     <a class="tarjeta" href="<?= buildUrl('/dashboards/inventario.php') ?>">
       <div class="tarjeta-cabecera">
         <div class="icono">
