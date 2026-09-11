@@ -24,7 +24,7 @@ require_once '../includes/header.php';
   </header>
 
   <div class="grilla-tarjetas">
-    <a class="tarjeta" href="#">
+    <a class="tarjeta" href="<?= buildUrl("/dashboards/reservas.php") ?>">
       <div class="tarjeta-overlay"></div>
       <div class="tarjeta-cabecera">
         <div class="icono icono-primary">
@@ -35,7 +35,7 @@ require_once '../includes/header.php';
       <p class="tarjeta-texto">Gestiona las reservas de mesas, confirmaciones y listas de espera para el día.</p>
     </a>
 
-    <a class="tarjeta" href="#">
+    <a class="tarjeta" href="<?= buildUrl("/dashboards/admin_plano.php") ?>">
       <div class="tarjeta-overlay"></div>
       <div class="tarjeta-cabecera">
         <div class="icono">
