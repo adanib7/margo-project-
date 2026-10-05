@@ -1,6 +1,9 @@
 <?php
 session_start();
 require_once '../includes/config.php';
+require_once '../includes/plano_db.php';
+require_once '../includes/config_app.php';
+require_once '../includes/mailer.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -22,6 +25,9 @@ if ($conn === null) {
     exit;
 }
 
+ensureMesaTable($conn);
+ensureReservaMesaColumn($conn);
+
 $body       = json_decode(file_get_contents('php://input'), true);
 $nombre     = trim($body['nombre']     ?? '');
 $fecha      = trim($body['fecha']      ?? '');
@@ -29,9 +35,11 @@ $hora       = trim($body['hora']       ?? '');
 $personas   = (int) ($body['personas'] ?? 0);
 $comentario = trim($body['comentario'] ?? '');
 $telefono   = trim($body['telefono'] ?? '');
+$mesaId     = (int) ($body['mesa_id'] ?? 0);
 $usuarioId  = (int) $_SESSION['usuario_id'];
 
 $errores = [];
+$mesaNumero = null;
 
 if ($nombre === '') {
     $errores['nombre'] = 'El nombre es obligatorio.';
@@ -48,14 +56,37 @@ if (!$fechaObj || $fechaObj->format('Y-m-d') !== $fecha) {
     $errores['fecha'] = 'Ingresá una fecha válida.';
 } elseif ($fecha < date('Y-m-d')) {
     $errores['fecha'] = 'La fecha no puede ser anterior a hoy.';
+} else {
+    // Días de cierre y antelación mínima/máxima (panel de Configuración).
+    $errores += validarMomentoReserva($fecha, $hora);
 }
 
 if (!preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $hora)) {
     $errores['hora'] = 'Seleccioná un horario válido.';
 }
 
-if ($personas < 1 || $personas > 20) {
-    $errores['personas'] = 'Ingresá entre 1 y 20 personas.';
+$maxPersonas = cfgInt('reservas.max_personas');
+if ($personas < 1 || $personas > $maxPersonas) {
+    $errores['personas'] = "Ingresá entre 1 y {$maxPersonas} personas.";
+}
+
+if ($mesaId <= 0) {
+    $errores['mesa'] = 'Elegí una mesa del plano.';
+} else {
+    $stmt = $conn->prepare("SELECT numero, capacidad FROM mesas WHERE id = ?");
+    $stmt->bind_param('i', $mesaId);
+    $stmt->execute();
+    $mesa = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if (!$mesa) {
+        $errores['mesa'] = 'La mesa elegida ya no está disponible. Actualizá el plano.';
+    } else {
+        $mesaNumero = (int) $mesa['numero'];
+        if ($personas > (int) $mesa['capacidad']) {
+            $errores['personas'] = "La mesa {$mesaNumero} admite hasta {$mesa['capacidad']} personas.";
+        }
+    }
 }
 
 if (!empty($errores)) {
@@ -64,20 +95,22 @@ if (!empty($errores)) {
     exit;
 }
 
-$stmt = $conn->prepare("SELECT id FROM reservas WHERE fecha = ? AND hora = ? AND estado != 'cancelada' LIMIT 1");
-$stmt->bind_param('ss', $fecha, $hora);
-$stmt->execute();
-$stmt->store_result();
-if ($stmt->num_rows > 0) {
-    $errores['hora'] = 'Ese horario ya fue reservado. Elegí otro.';
+// Choque por solapamiento: la mesa queda tomada durante toda su duración,
+// no solo en la hora exacta de inicio.
+$choque = reservaSolapada($conn, $mesaId, $fecha, $hora);
+if ($choque) {
+    $desde = substr((string) $choque['hora'], 0, 5);
+    $errores['mesa'] = "La mesa {$mesaNumero} ya está ocupada desde las {$desde}. Elegí otra mesa u otro horario.";
 }
-$stmt->close();
 
 if (!empty($errores)) {
     http_response_code(409);
     echo json_encode(['ok' => false, 'errores' => $errores]);
     exit;
 }
+
+// Según Configuración: la reserva entra ya confirmada o pendiente de aprobación.
+$estadoInicial = cfgBool('reservas.auto_confirmar') ? 'confirmada' : 'pendiente';
 
 $alfabetoCodigo = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 $codigo = 'COR-';
@@ -86,41 +119,74 @@ for ($i = 0; $i < 6; $i++) {
 }
 
 $stmt = $conn->prepare(
-    "INSERT INTO reservas (codigo, usuario_id, nombre, fecha, hora, personas, comentario, telefono, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmada')"
+    "INSERT INTO reservas (codigo, usuario_id, mesa_id, nombre, fecha, hora, personas, comentario, telefono, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 );
 
 if ($stmt === false) {
     $errorMsg = $conn->error;
     if (stripos($errorMsg, 'unknown column') !== false) {
+        // Base sin columna `telefono` (deploy viejo): insertamos sin ese campo.
         $stmt = $conn->prepare(
-            "INSERT INTO reservas (codigo, usuario_id, nombre, fecha, hora, personas, comentario, estado) VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmada')"
+            "INSERT INTO reservas (codigo, usuario_id, mesa_id, nombre, fecha, hora, personas, comentario, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
         if ($stmt === false) {
             http_response_code(500);
             echo json_encode(['ok' => false, 'mensaje' => 'No se pudo preparar la inserción de reserva.']);
             exit;
         }
-        $stmt->bind_param('sisssis', $codigo, $usuarioId, $nombre, $fecha, $hora, $personas, $comentario);
+        $stmt->bind_param('siisssiss', $codigo, $usuarioId, $mesaId, $nombre, $fecha, $hora, $personas, $comentario, $estadoInicial);
     } else {
         http_response_code(500);
         echo json_encode(['ok' => false, 'mensaje' => 'La tabla de reservas no existe todavía en la base de datos.']);
         exit;
     }
 } else {
-    $stmt->bind_param('sisssiss', $codigo, $usuarioId, $nombre, $fecha, $hora, $personas, $comentario, $telefono);
+    $stmt->bind_param('siisssisss', $codigo, $usuarioId, $mesaId, $nombre, $fecha, $hora, $personas, $comentario, $telefono, $estadoInicial);
 }
 
 if ($stmt->execute()) {
     $stmt->close();
+
+    // Correo de confirmación al cliente. Si falla, la reserva ya está hecha:
+    // no se corta ni se devuelve error, solo se informa en 'email_enviado'.
+    $emailEnviado = false;
+    if (mailHabilitado()) {
+        $u = $conn->prepare("SELECT email FROM usuarios WHERE id = ?");
+        if ($u !== false) {
+            $u->bind_param('i', $usuarioId);
+            $u->execute();
+            $emailUsuario = trim((string) ($u->get_result()->fetch_assoc()['email'] ?? ''));
+            $u->close();
+
+            if ($emailUsuario !== '') {
+                [$asunto, $html] = correoConfirmacionReserva([
+                    'codigo'      => $codigo,
+                    'nombre'      => $nombre,
+                    'fecha'       => $fecha,
+                    'hora'        => $hora,
+                    'personas'    => $personas,
+                    'mesa_numero' => $mesaNumero,
+                    'comentario'  => $comentario,
+                ]);
+                [$emailEnviado] = enviarCorreoBrevo($emailUsuario, $nombre, $asunto, $html);
+            }
+        }
+    }
+
     echo json_encode([
-        'ok'       => true,
-        'mensaje'  => "¡Reserva confirmada para el {$fecha} a las {$hora}hs!",
-        'codigo'   => $codigo,
-        'nombre'   => $nombre,
-        'fecha'    => $fecha,
-        'hora'     => $hora,
-        'personas' => $personas,
-        'telefono' => $telefono,
+        'ok'            => true,
+        'mensaje'       => $estadoInicial === 'confirmada'
+            ? "¡Reserva confirmada para el {$fecha} a las {$hora}hs!"
+            : "¡Reserva recibida para el {$fecha} a las {$hora}hs! Te avisamos en cuanto la confirmemos.",
+        'estado'        => $estadoInicial,
+        'codigo'        => $codigo,
+        'nombre'        => $nombre,
+        'fecha'         => $fecha,
+        'hora'          => $hora,
+        'personas'      => $personas,
+        'telefono'      => $telefono,
+        'mesa'          => $mesaNumero,
+        'email_enviado' => $emailEnviado,
     ]);
 } else {
     $stmt->close();

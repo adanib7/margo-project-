@@ -2,6 +2,7 @@
 session_start();
 require_once '../includes/config.php';
 require_once '../includes/check_auth.php';
+require_once '../includes/plano_db.php';
 requireLogin();
 $pageTitle = 'Mis Reservas';
 $pageCSS = '../assets/css/dashboard.css';
@@ -12,13 +13,28 @@ $reservas   = [];
 $errorCarga = ($conn === null);
 
 if ($conn !== null) {
-    $stmt = $conn->prepare(
-        "SELECT codigo, fecha, hora, personas, comentario, estado FROM reservas WHERE usuario_id = ? ORDER BY fecha ASC, hora ASC"
-    );
-    $stmt->bind_param('i', $_SESSION['usuario_id']);
-    $stmt->execute();
-    $reservas = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
+    $conMesa = planoLigadoAReservas($conn);
+
+    $sql = $conMesa
+        ? "SELECT r.*, m.numero AS mesa_numero
+           FROM reservas r
+           LEFT JOIN mesas m ON m.id = r.mesa_id
+           WHERE r.usuario_id = ?
+           ORDER BY r.fecha ASC, r.hora ASC"
+        : "SELECT r.*, NULL AS mesa_numero
+           FROM reservas r
+           WHERE r.usuario_id = ?
+           ORDER BY r.fecha ASC, r.hora ASC";
+
+    $stmt = $conn->prepare($sql);
+    if ($stmt !== false) {
+        $stmt->bind_param('i', $_SESSION['usuario_id']);
+        $stmt->execute();
+        $reservas = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+    } else {
+        $errorCarga = true;
+    }
 }
 
 $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cancelada' => 'Cancelada'];
@@ -54,6 +70,7 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
           <tr>
             <th>Fecha</th>
             <th>Hora</th>
+            <th>Mesa</th>
             <th>Personas</th>
             <th>Pedido especial</th>
             <th>Estado</th>
@@ -65,14 +82,20 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
             <tr>
               <td><?= htmlspecialchars(date('d/m/Y', strtotime($r['fecha'])), ENT_QUOTES, 'UTF-8') ?></td>
               <td><?= htmlspecialchars(substr($r['hora'], 0, 5), ENT_QUOTES, 'UTF-8') ?>hs</td>
+              <td><?= $r['mesa_numero'] !== null ? 'Mesa ' . (int) $r['mesa_numero'] : '—' ?></td>
               <td><?= (int) $r['personas'] ?></td>
               <td><?= $r['comentario'] !== null && $r['comentario'] !== '' ? htmlspecialchars($r['comentario'], ENT_QUOTES, 'UTF-8') : '—' ?></td>
               <td><span class="badge-rol badge-estado-<?= htmlspecialchars($r['estado'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($labelEstado[$r['estado']] ?? $r['estado'], ENT_QUOTES, 'UTF-8') ?></span></td>
               <td>
                 <?php if (!empty($r['codigo'])): ?>
-                  <a class="btn-tabla" title="Ver comprobante" href="<?= buildUrl('/includes/comprobante.php?codigo=' . urlencode($r['codigo'])) ?>" target="_blank" rel="noopener">
-                    <span class="material-symbols-outlined">receipt_long</span>
-                  </a>
+                  <div class="gu-acciones">
+                    <a class="btn-tabla" title="Descargar PDF" href="<?= buildUrl('/includes/comprobante_pdf.php?codigo=' . urlencode($r['codigo'])) ?>" target="_blank" rel="noopener">
+                      <span class="material-symbols-outlined">picture_as_pdf</span>
+                    </a>
+                    <a class="btn-tabla" title="Ver comprobante" href="<?= buildUrl('/includes/comprobante.php?codigo=' . urlencode($r['codigo'])) ?>" target="_blank" rel="noopener">
+                      <span class="material-symbols-outlined">receipt_long</span>
+                    </a>
+                  </div>
                 <?php else: ?>
                   —
                 <?php endif; ?>

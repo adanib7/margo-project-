@@ -1,4 +1,11 @@
 <?php
+// El local está en Nava (Asturias): fijamos la zona horaria para que todas las
+// páginas comparen fechas y horas contra el mismo reloj. Sin esto, el servidor
+// (que suele estar en UTC) puede adelantar el día y rechazar reservas válidas.
+if (function_exists('date_default_timezone_set')) {
+    date_default_timezone_set('Europe/Madrid');
+}
+
 // Detectar BASE_URL de forma simple y confiable
 $scriptPath = $_SERVER['SCRIPT_NAME'];
 // str_replace normaliza el separador '\' que dirname() devuelve en Windows (dev local)
@@ -89,3 +96,8 @@ if ($esLocal) {
         $dbErrorMessage = 'No se pudo conectar con la base de datos remota. Verifica la configuración de conexión.';
     }
 }
+
+// Configuración editable del local (nombre, dirección, horarios, reglas…).
+// Va al final porque lee de $conn, y se carga siempre para que cfg() esté
+// disponible en cualquier página, incluidos nav.php y footer.php.
+require_once __DIR__ . '/config_app.php';

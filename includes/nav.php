@@ -8,7 +8,7 @@ $rol = $_SESSION['rol'] ?? 'usuario';
 ?>
 <nav class="barra-superior">
   <div class="marca">
-    <img src="<?= buildUrl('/assets/img/logo-horizontal-verde.png') ?>" alt="El Corralín de Campanal" class="marca-logo">
+    <img src="<?= buildUrl('/assets/img/logo-horizontal-verde.png') ?>" alt="<?= htmlspecialchars(cfg('local.nombre'), ENT_QUOTES, 'UTF-8') ?>" class="marca-logo">
   </div>
 
 

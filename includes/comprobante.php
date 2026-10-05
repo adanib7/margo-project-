@@ -2,19 +2,41 @@
 session_start();
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/check_auth.php';
+require_once __DIR__ . '/plano_db.php';
+require_once __DIR__ . '/config_app.php';
 requireLogin();
 
 $codigo  = trim($_GET['codigo'] ?? '');
 $reserva = null;
 
 if ($codigo !== '' && $conn !== null) {
-    $stmt = $conn->prepare(
-        "SELECT codigo, nombre, fecha, hora, personas, comentario, telefono, estado FROM reservas WHERE codigo = ? AND usuario_id = ?"
-    );
-    $stmt->bind_param('si', $codigo, $_SESSION['usuario_id']);
-    $stmt->execute();
-    $reserva = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
+    // SELECT * : no depende de qué columnas tenga `reservas` en cada servidor.
+    $stmt = $conn->prepare("SELECT * FROM reservas WHERE codigo = ? AND usuario_id = ? LIMIT 1");
+    if ($stmt !== false) {
+        $stmt->bind_param('si', $codigo, $_SESSION['usuario_id']);
+        $stmt->execute();
+        $reserva = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+    }
+
+    if ($reserva) {
+        $reserva['mesa_numero'] = null;
+        $reserva['telefono']    = $reserva['telefono']   ?? '';
+        $reserva['comentario']  = $reserva['comentario'] ?? '';
+
+        if (!empty($reserva['mesa_id']) && planoLigadoAReservas($conn)) {
+            $qm = $conn->prepare("SELECT numero FROM mesas WHERE id = ?");
+            if ($qm !== false) {
+                $qm->bind_param('i', $reserva['mesa_id']);
+                $qm->execute();
+                $rowm = $qm->get_result()->fetch_assoc();
+                $qm->close();
+                if ($rowm) {
+                    $reserva['mesa_numero'] = (int) $rowm['numero'];
+                }
+            }
+        }
+    }
 }
 
 $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cancelada' => 'Cancelada'];
@@ -24,7 +46,7 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Comprobante de reserva · El Corralín de Campanal</title>
+<title>Comprobante de reserva · <?= htmlspecialchars(cfg('local.nombre'), ENT_QUOTES, 'UTF-8') ?></title>
 <style>
   :root { --verde: #264220; --verde-claro: #3d5a35; --dorado: #C9962E; --crema: #fafaf4; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -58,6 +80,7 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
     font-size: 0.9rem;
   }
   .boton-imprimir {
+    display: inline-block;
     background: var(--verde);
     color: #fff;
     border: none;
@@ -65,6 +88,7 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
     padding: 0.6rem 1.1rem;
     font-weight: 600;
     font-size: 0.85rem;
+    text-decoration: none;
     cursor: pointer;
   }
   .boton-imprimir:hover { background: var(--verde-claro); }
@@ -166,7 +190,7 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
 <div class="pagina-acciones">
   <a href="<?= buildUrl('/dashboards/mis-reservas.php') ?>" class="enlace-volver">← Mis reservas</a>
   <?php if ($reserva): ?>
-    <button class="boton-imprimir" onclick="window.print()">Imprimir / Guardar PDF</button>
+    <a class="boton-imprimir" href="<?= buildUrl('/includes/comprobante_pdf.php?codigo=' . urlencode($reserva['codigo'])) ?>">Descargar PDF</a>
   <?php endif; ?>
 </div>
 
@@ -178,7 +202,7 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
 <?php else: ?>
   <div class="ticket">
     <div class="ticket-header">
-      <img src="<?= buildUrl('/assets/img/logo-horizontal-verde.png') ?>" alt="El Corralín de Campanal">
+      <img src="<?= buildUrl('/assets/img/logo-horizontal-verde.png') ?>" alt="<?= htmlspecialchars(cfg('local.nombre'), ENT_QUOTES, 'UTF-8') ?>">
       <p>Comprobante de reserva</p>
     </div>
 
@@ -206,6 +230,12 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
         <span class="etiqueta">Hora</span>
         <span class="valor"><?= htmlspecialchars(substr($reserva['hora'], 0, 5), ENT_QUOTES, 'UTF-8') ?>hs</span>
       </div>
+      <?php if (!empty($reserva['mesa_numero'])): ?>
+      <div class="dato">
+        <span class="etiqueta">Mesa</span>
+        <span class="valor">Mesa <?= (int) $reserva['mesa_numero'] ?></span>
+      </div>
+      <?php endif; ?>
       <div class="dato">
         <span class="etiqueta">Personas</span>
         <span class="valor"><?= (int) $reserva['personas'] ?></span>
@@ -225,7 +255,7 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
     </div>
 
     <div class="ticket-footer">
-      Plaza Manuel Uría, 4 · 33520 Nava, Asturias · 985 71 60 42
+      <?= htmlspecialchars(localDireccion(' · ', false) . ' · ' . cfg('local.telefono'), ENT_QUOTES, 'UTF-8') ?>
     </div>
   </div>
 <?php endif; ?>

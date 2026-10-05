@@ -41,17 +41,27 @@ require_once '../includes/header.php';
       <p class="tarjeta-texto">Editar la distribución de mesas que ven los clientes al reservar.</p>
     </a>
 
-    <a class="tarjeta" href="#">
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/reservas.php') ?>">
       <div class="tarjeta-cabecera">
-        <div class="icono">
-          <span class="material-symbols-outlined">shield</span>
+        <div class="icono icono-primary">
+          <span class="material-symbols-outlined">event_available</span>
         </div>
-        <h2>Roles y Permisos</h2>
+        <h2>Reservas</h2>
       </div>
-      <p class="tarjeta-texto">Configuración de accesos y actualización de permisos en el sistema.</p>
+      <p class="tarjeta-texto">Ver, confirmar, editar y cancelar las reservas del salón.</p>
     </a>
 
-    <a class="tarjeta" href="#">
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/inventario.php') ?>">
+      <div class="tarjeta-cabecera">
+        <div class="icono">
+          <span class="material-symbols-outlined">inventory_2</span>
+        </div>
+        <h2>Inventario</h2>
+      </div>
+      <p class="tarjeta-texto">Controlar el stock de ingredientes, bebidas y suministros del local.</p>
+    </a>
+
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/configuracion.php') ?>">
       <div class="tarjeta-cabecera">
         <div class="icono">
           <span class="material-symbols-outlined">settings</span>
@@ -61,7 +71,7 @@ require_once '../includes/header.php';
       <p class="tarjeta-texto">Ajustes globales del sistema y mantenimiento de la plataforma.</p>
     </a>
 
-    <a class="tarjeta" href="#">
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/reportes.php') ?>">
       <div class="tarjeta-cabecera">
         <div class="icono">
           <span class="material-symbols-outlined">insights</span>

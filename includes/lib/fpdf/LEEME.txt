@@ -1,0 +1,11 @@
+FPDF 1.86 — http://www.fpdf.org  (Olivier Plathey)
+
+Librería usada para generar el comprobante de reserva en PDF
+(includes/comprobante_pdf.php).
+
+Licencia FPDF: uso libre y gratuito para cualquier fin, con permiso
+para modificarla. No requiere Composer ni extensiones extra (solo
+zlib para comprimir, que ya viene en PHP).
+
+Solo se incluyen fpdf.php y la carpeta font/ (métricas de las fuentes
+base: Times, Helvetica, Courier). No se modificó nada del original.
