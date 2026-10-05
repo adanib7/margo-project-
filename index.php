@@ -206,6 +206,10 @@ footer .bottom a{color:rgba(245,239,224,.7)}
   .header-actions .lang{display:none}
   .header-actions .btn-reservar-top{display:none}
   .menu-toggle{display:flex}
+  .hero .wrap{padding-block:52px 24px}
+  .hero h1{max-width:11ch}
+  .hero-cta{justify-content:center}
+  .hero-cta .btn{width:min(100%, 320px)}
   .dishes{grid-template-columns:1fr;max-width:440px;margin-inline:auto}
   .gallery{grid-template-columns:repeat(2,1fr)}
   .split,.menu-grid,.info-grid,.contact .split{grid-template-columns:1fr;gap:40px}
@@ -216,9 +220,18 @@ footer .bottom a{color:rgba(245,239,224,.7)}
 }
 @media(max-width:560px){
   .wrap{width:calc(100% - 40px)}
-  .hero-meta{gap:24px}
+  .hero{min-height:auto}
+  .hero .wrap{padding-top:92px;padding-bottom:16px}
+  .hero h1{font-size:clamp(32px,10vw,48px);max-width:9ch;line-height:1.02}
+  .hero .lede{font-size:17px;line-height:1.5}
+  .hero-cta{width:100%;justify-content:stretch}
+  .hero-cta .btn{width:100%}
+  .hero-meta{display:none}
+  .sec-head h2{font-size:clamp(26px,8vw,34px)}
   .stats{flex-wrap:wrap;gap:28px}
   .gallery{grid-template-columns:1fr 1fr;grid-auto-rows:150px}
+  .contact .form-card{padding:28px 20px}
+  .form-card .btn{width:100%}
 }
 </style>
 </head>
@@ -275,7 +288,6 @@ footer .bottom a{color:rgba(245,239,224,.7)}
         </div>
       </div>
     </div>
-    <a href="public/login.php" class="btn btn-accent btn-lg mobile-reservar" style="width:100%" data-i18n="cta_reservar">Reservar</a>
   </div>
 </div>
 
@@ -335,7 +347,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
     </div>
     <div class="gallery">
       <div class="ph g1" data-note="foto: comedor principal"><img src="assets/img/imagen6.jpg" alt=""></div>
-      <div class="ph g2" data-note="foto: barra de sidra"><<img src="assets/img/imagen7.jpeg" alt=""></div>
+      <div class="ph g2" data-note="foto: barra de sidra"><img src="assets/img/imagen7.jpeg" alt=""></div>
       <div class="ph g3" data-note="foto: detalle mesa"><img src="assets/img/imagen8.jpeg" alt=""></div>
       <div class="ph g4" data-note="foto: terraza / patio"><img src="assets/img/imagen9.jpeg" alt=""></div>
     </div>
@@ -387,7 +399,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
           <div class="line"><i data-lucide="phone"></i><span class="t"><?= $h($LOC_TEL) ?></span></div>
         </div>
       </div>
-      <div class="map"><div class="ph" data-note="mapa: ubicación en Nava (embed)"><<img src="assets/img/imagen11.jpeg" alt=""></div></div>
+      <div class="map"><div class="ph" data-note="mapa: ubicación en Nava (embed)"><img src="assets/img/imagen11.jpeg" alt=""></div></div>
     </div>
   </div>
 </section>
