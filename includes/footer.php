@@ -1,4 +1,4 @@
-<?php if (!empty($showDashboardBottomNav)): ?>
+l<?php if (!empty($showDashboardBottomNav)): ?>
 <nav class="nav-inferior">
   <a class="item-nav" href="#">
     <span class="material-symbols-outlined mb-1">home</span>
