@@ -55,6 +55,14 @@ function buildUrl(string $path, bool $absolute = false): string {
     return $url;
 }
 
+// URL de un archivo de assets/js. El ?v= cambia cada vez que se edita el
+// archivo, así el navegador no se queda con una versión vieja en caché.
+function jsUrl(string $file): string {
+    $path = __DIR__ . '/../assets/js/' . $file;
+    $version = is_file($path) ? filemtime($path) : time();
+    return buildUrl('/assets/js/' . $file) . '?v=' . $version;
+}
+
 $conn = null;
 $dbErrorMessage = '';
 
