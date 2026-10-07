@@ -1,274 +1,295 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+/* Login y registro (public/login.php).
+   Usa los mismos colores y tipografías que la portada (colors_and_type.css). */
+@import url('colors_and_type.css');
 
 body {
-  font-family: Montserrat, sans-serif;
-  background: #c9952e5f;
+  margin: 0;
   min-height: 100vh;
+  background: var(--crema-50);
+  color: var(--fg-default);
+  font-family: var(--font-body);
+}
+
+.login {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+/* ===== Mitad izquierda: foto + marca ===== */
+.login-marca {
+  position: relative;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+  align-items: flex-end;
+  overflow: hidden;
+  background: var(--verde-900);
 }
 
-/* ===== Form (estilo Uiverse) ===== */
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background-color: #ffffff;
-  padding: 30px;
-  width: 100%;
-  max-width: 450px;
-  border-radius: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12);
-}
-
-.login-logo {
-  display: block;
-  height: 52px;
-  width: auto;
-  margin: 0 auto 8px;
-}
-
-::placeholder {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  color: #6b7280;
-}
-
-/* ===== Tabs login/registro ===== */
-.tabs {
-  display: flex;
-  gap: 5px;
-  margin-bottom: 10px;
-  border-bottom: 1.5px solid #ecedec;
-}
-
-.tabs a {
-  flex: 1;
-  text-align: center;
-  padding: 10px;
-  text-decoration: none;
-  color: #6b7280;
-  font-weight: 500;
-  font-size: 14px;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1.5px;
-  transition: 0.2s ease-in-out;
-}
-
-.tabs a.activo {
-  color: #2D5F3F;
-  border-bottom-color: #2D5F3F;
-}
-
-.tabs a:hover {
-  color: #2D5F3F;
-}
-
-/* ===== Labels ===== */
-.flex-column > label {
-  color: #151717;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-/* ===== Inputs con icono ===== */
-.inputForm {
-  border: 1.5px solid #ecedec;
-  border-radius: 10px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  padding-left: 10px;
-  transition: 0.2s ease-in-out;
-  background: #fff;
-}
-
-.inputForm svg {
-  flex-shrink: 0;
-  fill: #151717;
-}
-
-.input {
-  margin-left: 10px;
-  border-radius: 10px;
-  border: none;
+.login-foto {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  font-size: 0.95rem;
-  color: #111827;
-  background: transparent;
+  object-fit: cover;
 }
 
-.input:focus {
-  outline: none;
+/* Mismo filtro verde que el hero de la portada */
+.login-marca::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(27, 59, 39, .55) 0%, rgba(27, 59, 39, .7) 55%, rgba(27, 59, 39, .9) 100%);
 }
 
-.inputForm:focus-within {
-  border: 1.5px solid #2D5F3F;
-}
-
-/* ===== Fila checkbox / olvidé contraseña ===== */
-.flex-row {
+.login-marca-contenido {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 100%;
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-  justify-content: space-between;
+  flex-direction: column;
+  padding: 40px 56px 56px;
+  color: var(--crema-100);
 }
 
-.flex-row > div {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.flex-row > div > label {
-  font-size: 14px;
-  color: #151717;
-  font-weight: 400;
-  cursor: pointer;
-}
-
-.flex-row input[type="checkbox"] {
-  accent-color: #2D5F3F;
-  cursor: pointer;
-}
-
-.span {
-  font-size: 14px;
-  color: #2D5F3F;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.span:hover {
-  text-decoration: underline;
-}
-
-/* ===== Botón de volver ===== */
-.enlace-volver-login {
+.login-volver {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  color: #2D5F3F;
+  gap: 6px;
+  align-self: flex-start;
+  margin-bottom: auto;
+  color: var(--crema-100);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  opacity: .85;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.login-volver:hover { opacity: 1; }
+.login-volver .material-symbols-outlined { font-size: 18px; }
+
+.login-logo {
+  width: 260px;
+  height: auto;
+  margin: 48px 0 24px;
+  filter: brightness(0) invert(1); /* el logo verde pasa a blanco, como en la portada */
+}
+
+.login-eyebrow {
+  color: var(--dorado-300);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+}
+
+.login-titulo {
+  margin: 14px 0 28px;
+  max-width: 14ch;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(32px, 3.6vw, 48px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -.02em;
+}
+
+.login-ventajas {
+  list-style: none;
+  margin: 0;
+  padding: 24px 0 0;
+  border-top: 1px solid rgba(245, 239, 224, .2);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 15px;
+}
+.login-ventajas li { display: flex; align-items: center; gap: 12px; }
+.login-ventajas .material-symbols-outlined { color: var(--dorado-300); font-size: 22px; }
+
+/* ===== Mitad derecha: formulario ===== */
+.login-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}
+
+.login-form {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-tabs {
+  display: flex;
+  padding: 4px;
+  margin-bottom: 28px;
+  background: var(--crema-200);
+  border-radius: var(--radius-pill);
+}
+.login-tabs a {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  border-radius: var(--radius-pill);
+  color: var(--fg-muted);
+  font-family: var(--font-display);
+  font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  margin-bottom: 10px;
+  transition: background var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
 }
-.enlace-volver-login:hover {
-  color: #1d4d36;
-}
-.enlace-volver-login .material-symbols-outlined {
-  font-size: 1rem;
-}
-
-/* ===== Botón principal ===== */
-.button-submit {
-  margin: 20px 0 10px 0;
-  background-color: #2D5F3F;
-  border: none;
-  color: white;
-  font-size: 15px;
-  font-weight: 500;
-  border-radius: 10px;
-  height: 50px;
-  width: 100%;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
+.login-tabs a.activo {
+  background: var(--blanco);
+  color: var(--verde-700);
+  box-shadow: var(--shadow-sm);
 }
 
-.button-submit:hover {
-  background-color: #1d4d36;
+.login-form-titulo {
+  margin: 0 0 20px;
+  color: var(--verde-900);
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -.01em;
 }
 
-/* ===== Párrafos ===== */
-.p {
-  text-align: center;
-  color: #151717;
-  font-size: 14px;
-  margin: 5px 0;
-}
-
-.p.line {
-  margin-top: 10px;
-  color: #6b7280;
-  position: relative;
-}
-
-.p.line::before,
-.p.line::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 35%;
-  height: 1px;
-  background: #ecedec;
-}
-
-.p.line::before { left: 0; }
-.p.line::after  { right: 0; }
-
-.hint {
-  color: #6b7280;
-  font-size: 12px;
-  margin-top: -4px;
-}
-
-/* ===== Botón Google (Uiverse style) ===== */
-.btn {
-  margin-top: 10px;
-  width: 100%;
-  height: 50px;
-  border-radius: 10px;
+.login-mensaje {
   display: flex;
-  justify-content: center;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: #f8e9ea;
+  border: 1px solid #e8c3c7;
+  color: var(--burdeos-500);
+  font-size: 14px;
+  font-weight: 500;
+}
+.login-mensaje.exito {
+  background: var(--verde-50);
+  border-color: #c7dbc9;
+  color: var(--verde-700);
+}
+.login-mensaje .material-symbols-outlined { font-size: 20px; }
+
+.login-label {
+  margin: 14px 0 6px;
+  color: var(--verde-900);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.login-campo {
+  display: flex;
   align-items: center;
-  font-weight: 500;
   gap: 10px;
-  border: 1px solid #ededef;
-  background-color: white;
-  cursor: pointer;
-  transition: 0.2s ease-in-out;
+  height: 50px;
+  padding: 0 6px 0 14px;
+  background: var(--blanco);
+  border: 1.5px solid var(--gris-200);
+  border-radius: var(--radius-md);
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
-
-.btn:hover {
-  border: 1px solid #2D5F3F;
+.login-campo:focus-within {
+  border-color: var(--dorado-500);
+  box-shadow: 0 0 0 4px rgba(201, 150, 46, .18);
 }
+.login-campo > .material-symbols-outlined { color: var(--fg-muted); font-size: 20px; }
+.login-campo input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--fg-default);
+}
+.login-campo input::placeholder { color: var(--gris-300); }
 
-/* Wrapper del botón de Google que inyecta Google Identity */
-.g_id_signin {
+.login-ojo {
   display: flex;
-  justify-content: center;
-  margin-top: 5px;
+  padding: 8px;
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm);
+  color: var(--fg-muted);
+  cursor: pointer;
+}
+.login-ojo:hover { color: var(--verde-700); background: var(--gris-100); }
+.login-ojo .material-symbols-outlined { font-size: 20px; }
+
+.login-ayuda {
+  margin: 6px 0 0;
+  color: var(--fg-muted);
+  font-size: 12.5px;
+  line-height: 1.5;
 }
 
-/* ===== Mensajes de error / éxito ===== */
-.mensaje {
-  margin-top: 15px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 14px;
+/* Mismo botón que "Reservar" en la portada */
+.login-boton {
+  margin-top: 26px;
+  min-height: 52px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--verde-700);
+  color: var(--fg-on-brand);
+  font-family: var(--font-display);
+  font-size: var(--fs-button);
+  font-weight: 600;
+  letter-spacing: var(--ls-button);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--dur-base) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.login-boton:hover { background: var(--verde-800); }
+.login-boton:active { transform: scale(.98); }
+
+.login-alternativa {
+  margin: 16px 0 0;
   text-align: center;
-  background: #fee2e2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
+  color: var(--fg-muted);
+  font-size: 14px;
+}
+.login-alternativa a {
+  color: var(--verde-700);
+  font-weight: 600;
+  text-decoration: none;
+}
+.login-alternativa a:hover { color: var(--dorado-600); }
+
+.login-separador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 26px 0 16px;
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+.login-separador::before,
+.login-separador::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--gris-200);
 }
 
-.mensaje.success {
-  background: #dcfce7;
-  color: #166534;
-  border-color: #bbf7d0;
-}
+.login-google { display: flex; justify-content: center; min-height: 44px; }
 
-/* ===== Responsive ===== */
-@media (max-width: 500px) {
-  .form {
-    width: 100%;
-    padding: 24px;
-  }
+/* ===== Celular: la foto pasa a ser una franja arriba ===== */
+@media (max-width: 860px) {
+  .login { grid-template-columns: minmax(0, 1fr); }
+  .login-marca-contenido { padding: 20px 24px 28px; }
+  .login-logo { width: 160px; margin: 28px 0 14px; }
+  .login-titulo { font-size: 28px; margin-bottom: 0; }
+  .login-ventajas { display: none; }
+  .login-panel { align-items: flex-start; padding: 32px 20px 48px; }
 }
