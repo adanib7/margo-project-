@@ -41,95 +41,104 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
     </div>
   </aside>
 
-  <!-- ── Mitad derecha: formulario ── -->
+  <!-- ── Mitad derecha: los dos formularios, uno encima del otro ── -->
   <main class="login-panel">
-    <form class="login-form" method="post" action="?modo=<?= $h($modo) ?>">
-      <div class="login-tabs">
-        <a href="?modo=login"    class="<?= $modo === 'login'    ? 'activo' : '' ?>">Iniciar sesión</a>
-        <a href="?modo=registro" class="<?= $modo === 'registro' ? 'activo' : '' ?>">Registrarse</a>
+    <div class="login-caja" data-modo="<?= $h($modo) ?>">
+      <div class="login-tabs" role="tablist">
+        <span class="login-tabs-indicador" aria-hidden="true"></span>
+        <a href="?modo=login"    data-modo="login"    role="tab">Iniciar sesión</a>
+        <a href="?modo=registro" data-modo="registro" role="tab">Registrarse</a>
       </div>
 
-      <h2 class="login-form-titulo"><?= $modo === 'registro' ? 'Creá tu cuenta' : 'Bienvenido de nuevo' ?></h2>
+      <div class="login-vistas">
+        <!-- Iniciar sesión -->
+        <form class="login-vista" data-vista="login" method="post" action="?modo=login">
+          <h2 class="login-form-titulo">Bienvenido de nuevo</h2>
+          <?php if ($mensaje !== '' && $modo === 'login'): ?>
+            <div class="login-mensaje <?= $tipo === 'success' ? 'exito' : '' ?>">
+              <span class="material-symbols-outlined"><?= $tipo === 'success' ? 'check_circle' : 'error' ?></span>
+              <?= $h($mensaje) ?>
+            </div>
+          <?php endif; ?>
+          <input type="hidden" name="accion" value="login">
 
-      <?php if ($mensaje !== ''): ?>
-        <div class="login-mensaje <?= $tipo === 'success' ? 'exito' : '' ?>">
-          <span class="material-symbols-outlined"><?= $tipo === 'success' ? 'check_circle' : 'error' ?></span>
-          <?= $h($mensaje) ?>
-        </div>
-      <?php endif; ?>
+          <label class="login-label" for="usuario">Usuario</label>
+          <div class="login-campo">
+            <span class="material-symbols-outlined">person</span>
+            <input type="text" id="usuario" name="usuario" required autocomplete="username"
+                   value="<?= $h($modo === 'login' ? ($_POST['usuario'] ?? '') : '') ?>" placeholder="Tu usuario">
+          </div>
 
-      <?php if ($modo === 'login'): ?>
-        <input type="hidden" name="accion" value="login">
+          <label class="login-label" for="pass">Contraseña</label>
+          <div class="login-campo">
+            <span class="material-symbols-outlined">lock</span>
+            <input type="password" id="pass" name="contraseña" required autocomplete="current-password" placeholder="Tu contraseña">
+            <button type="button" class="login-ojo" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
+          </div>
 
-        <label class="login-label" for="usuario">Usuario</label>
-        <div class="login-campo">
-          <span class="material-symbols-outlined">person</span>
-          <input type="text" id="usuario" name="usuario" required autocomplete="username"
-                 value="<?= $h($_POST['usuario'] ?? '') ?>" placeholder="Tu usuario">
-        </div>
+          <button type="submit" class="login-boton">Entrar</button>
+          <p class="login-alternativa">¿No tenés cuenta? <a href="?modo=registro" data-modo="registro">Registrate</a></p>
 
-        <label class="login-label" for="pass">Contraseña</label>
-        <div class="login-campo">
-          <span class="material-symbols-outlined">lock</span>
-          <input type="password" id="pass" name="contraseña" required autocomplete="current-password" placeholder="Tu contraseña">
-          <button type="button" class="login-ojo" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
-        </div>
+          <p class="login-separador"><span>o continuá con</span></p>
+          <div class="login-google g_id_signin" data-type="standard" data-size="large" data-theme="outline"
+               data-text="continue_with" data-shape="rectangular" data-logo_alignment="center" data-width="300"></div>
+        </form>
 
-        <button type="submit" class="login-boton">Entrar</button>
-        <p class="login-alternativa">¿No tenés cuenta? <a href="?modo=registro">Registrate</a></p>
-      <?php else: ?>
-        <input type="hidden" name="accion" value="registro">
+        <!-- Registrarse -->
+        <form class="login-vista" data-vista="registro" method="post" action="?modo=registro">
+          <h2 class="login-form-titulo">Creá tu cuenta</h2>
+          <?php if ($mensaje !== '' && $modo === 'registro'): ?>
+            <div class="login-mensaje <?= $tipo === 'success' ? 'exito' : '' ?>">
+              <span class="material-symbols-outlined"><?= $tipo === 'success' ? 'check_circle' : 'error' ?></span>
+              <?= $h($mensaje) ?>
+            </div>
+          <?php endif; ?>
+          <input type="hidden" name="accion" value="registro">
 
-        <label class="login-label" for="usuario">Usuario</label>
-        <div class="login-campo">
-          <span class="material-symbols-outlined">person</span>
-          <input type="text" id="usuario" name="usuario" required autocomplete="username"
-                 value="<?= $h($_POST['usuario'] ?? '') ?>" placeholder="Ej: juan99">
-        </div>
+          <label class="login-label" for="r-usuario">Usuario</label>
+          <div class="login-campo">
+            <span class="material-symbols-outlined">person</span>
+            <input type="text" id="r-usuario" name="usuario" required autocomplete="username"
+                   value="<?= $h($modo === 'registro' ? ($_POST['usuario'] ?? '') : '') ?>" placeholder="Ej: juan99">
+          </div>
 
-        <label class="login-label" for="email">Email</label>
-        <div class="login-campo">
-          <span class="material-symbols-outlined">alternate_email</span>
-          <input type="email" id="email" name="email" required autocomplete="email"
-                 value="<?= $h($_POST['email'] ?? '') ?>" placeholder="ejemplo@correo.com">
-        </div>
+          <label class="login-label" for="r-email">Email</label>
+          <div class="login-campo">
+            <span class="material-symbols-outlined">alternate_email</span>
+            <input type="email" id="r-email" name="email" required autocomplete="email"
+                   value="<?= $h($_POST['email'] ?? '') ?>" placeholder="ejemplo@correo.com">
+          </div>
 
-        <label class="login-label" for="pass">Contraseña</label>
-        <div class="login-campo">
-          <span class="material-symbols-outlined">lock</span>
-          <input type="password" id="pass" name="contraseña" required autocomplete="new-password" placeholder="Mínimo 6 caracteres">
-          <button type="button" class="login-ojo" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
-        </div>
-        <p class="login-ayuda">Solo letras y números. Al menos 6 caracteres, una mayúscula y un número.</p>
+          <label class="login-label" for="r-pass">Contraseña</label>
+          <div class="login-campo">
+            <span class="material-symbols-outlined">lock</span>
+            <input type="password" id="r-pass" name="contraseña" required autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+            <button type="button" class="login-ojo" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
+          </div>
+          <p class="login-ayuda">Solo letras y números. Al menos 6 caracteres, una mayúscula y un número.</p>
 
-        <label class="login-label" for="confirmar">Confirmar contraseña</label>
-        <div class="login-campo">
-          <span class="material-symbols-outlined">lock</span>
-          <input type="password" id="confirmar" name="confirmar" required autocomplete="new-password" placeholder="Repetí la contraseña">
-          <button type="button" class="login-ojo" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
-        </div>
+          <label class="login-label" for="r-confirmar">Confirmar contraseña</label>
+          <div class="login-campo">
+            <span class="material-symbols-outlined">lock</span>
+            <input type="password" id="r-confirmar" name="confirmar" required autocomplete="new-password" placeholder="Repetí la contraseña">
+            <button type="button" class="login-ojo" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
+          </div>
 
-        <button type="submit" class="login-boton">Crear cuenta</button>
-        <p class="login-alternativa">¿Ya tenés cuenta? <a href="?modo=login">Iniciá sesión</a></p>
-      <?php endif; ?>
+          <button type="submit" class="login-boton">Crear cuenta</button>
+          <p class="login-alternativa">¿Ya tenés cuenta? <a href="?modo=login" data-modo="login">Iniciá sesión</a></p>
 
-      <p class="login-separador"><span>o continuá con</span></p>
+          <p class="login-separador"><span>o continuá con</span></p>
+          <div class="login-google g_id_signin" data-type="standard" data-size="large" data-theme="outline"
+               data-text="continue_with" data-shape="rectangular" data-logo_alignment="center" data-width="300"></div>
+        </form>
+      </div>
 
       <div id="g_id_onload"
            data-client_id="<?= GOOGLE_CLIENT_ID ?>"
            data-login_uri="<?= buildUrl('/includes/google_auth.php', true) ?>"
            data-auto_prompt="false">
       </div>
-      <div class="login-google g_id_signin"
-           data-type="standard"
-           data-size="large"
-           data-theme="outline"
-           data-text="continue_with"
-           data-shape="rectangular"
-           data-logo_alignment="center"
-           data-width="300">
-      </div>
-    </form>
+    </div>
   </main>
 </div>
 

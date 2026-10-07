@@ -8,3 +8,30 @@ document.querySelectorAll('.login-ojo').forEach(boton => {
     boton.setAttribute('aria-label', mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña');
   });
 });
+
+// Pestañas Iniciar sesión / Registrarse: cambian sin recargar la página.
+// El CSS hace la animación según el atributo data-modo de la caja.
+const caja = document.querySelector('.login-caja');
+const titulos = { login: 'Iniciar sesión', registro: 'Crear cuenta' };
+const nombreLocal = document.title.split(' · ').slice(1).join(' · ');
+
+function cambiarModo(modo) {
+  caja.dataset.modo = modo;
+  document.querySelectorAll('.login-vista').forEach(vista => {
+    vista.inert = vista.dataset.vista !== modo; // el formulario oculto no recibe foco
+  });
+  document.querySelectorAll('.login-tabs a').forEach(tab => {
+    tab.setAttribute('aria-selected', tab.dataset.modo === modo);
+  });
+  document.title = titulos[modo] + ' · ' + nombreLocal;
+  history.replaceState(null, '', '?modo=' + modo);
+}
+
+document.querySelectorAll('a[data-modo]').forEach(enlace => {
+  enlace.addEventListener('click', e => {
+    e.preventDefault();
+    cambiarModo(enlace.dataset.modo);
+  });
+});
+
+cambiarModo(caja.dataset.modo);

@@ -18,7 +18,9 @@ body {
 
 /* ===== Mitad izquierda: foto + marca ===== */
 .login-marca {
-  position: relative;
+  position: sticky;
+  top: 0;
+  height: 100vh;
   display: flex;
   align-items: flex-end;
   overflow: hidden;
@@ -112,41 +114,75 @@ body {
 /* ===== Mitad derecha: formulario ===== */
 .login-panel {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 48px 24px;
+  padding: clamp(48px, 12vh, 120px) 24px 48px;
 }
 
-.login-form {
+.login-caja {
   width: 100%;
   max-width: 400px;
-  display: flex;
-  flex-direction: column;
 }
 
+/* Pestañas: la cápsula blanca (indicador) se desliza entre las dos opciones */
 .login-tabs {
+  position: relative;
   display: flex;
   padding: 4px;
   margin-bottom: 28px;
   background: var(--crema-200);
   border-radius: var(--radius-pill);
 }
+.login-tabs-indicador {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  background: var(--blanco);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
+  transition: transform 350ms var(--ease-out);
+}
+.login-caja[data-modo="registro"] .login-tabs-indicador { transform: translateX(100%); }
+
 .login-tabs a {
+  position: relative; /* por encima del indicador */
   flex: 1;
   padding: 10px;
   text-align: center;
-  border-radius: var(--radius-pill);
   color: var(--fg-muted);
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  transition: background var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
+  transition: color var(--dur-base) var(--ease-out);
 }
-.login-tabs a.activo {
-  background: var(--blanco);
-  color: var(--verde-700);
-  box-shadow: var(--shadow-sm);
+.login-caja[data-modo="login"]    .login-tabs a[data-modo="login"],
+.login-caja[data-modo="registro"] .login-tabs a[data-modo="registro"] { color: var(--verde-700); }
+
+/* Los dos formularios ocupan la misma celda: la caja siempre mide lo que el
+   más alto, así al cambiar de pestaña no se mueve nada de la página. */
+.login-vistas { display: grid; }
+.login-vista {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  transition: opacity 300ms var(--ease-out), transform 400ms var(--ease-out), visibility 0s linear 0s;
+}
+/* El formulario que no está activo se corre hacia su lado y se desvanece */
+.login-caja[data-modo="registro"] .login-vista[data-vista="login"] { transform: translateX(-32px); }
+.login-caja[data-modo="login"] .login-vista[data-vista="registro"] { transform: translateX(32px); }
+.login-caja[data-modo="registro"] .login-vista[data-vista="login"],
+.login-caja[data-modo="login"] .login-vista[data-vista="registro"] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 200ms var(--ease-out), transform 400ms var(--ease-out), visibility 0s linear 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-tabs-indicador, .login-vista { transition: none !important; }
 }
 
 .login-form-titulo {
@@ -287,6 +323,7 @@ body {
 /* ===== Celular: la foto pasa a ser una franja arriba ===== */
 @media (max-width: 860px) {
   .login { grid-template-columns: minmax(0, 1fr); }
+  .login-marca { position: relative; height: auto; }
   .login-marca-contenido { padding: 20px 24px 28px; }
   .login-logo { width: 160px; margin: 28px 0 14px; }
   .login-titulo { font-size: 28px; margin-bottom: 0; }
