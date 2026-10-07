@@ -1,7 +1,9 @@
 <?php
-
+session_start();
 require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/check_auth.php';
 require_once __DIR__ . '/../includes/plano_db.php';
+requireRole('admin', 'superadmin');
 
 function sendJson(array $data): void
 {
