@@ -61,17 +61,6 @@ require_once '../includes/header.php';
       <p class="tarjeta-texto">Visualiza y organiza la disposición del comedor y la asignación de mesas.</p>
     </a>
 
-    <a class="tarjeta" href="<?= buildUrl('/dashboards/sala.php') ?>">
-      <div class="tarjeta-overlay"></div>
-      <div class="tarjeta-cabecera">
-        <div class="icono">
-          <span class="material-symbols-outlined">sensors</span>
-        </div>
-        <h2>Sala en vivo</h2>
-      </div>
-      <p class="tarjeta-texto">Mirá qué mesas están ocupadas, cuáles se liberan y quién llega, hora por hora.</p>
-    </a>
-
     <a class="tarjeta" href="<?= buildUrl('/dashboards/inventario.php') ?>">
       <div class="tarjeta-overlay"></div>
       <div class="tarjeta-cabecera">
