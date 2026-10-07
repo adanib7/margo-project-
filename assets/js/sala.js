@@ -50,7 +50,12 @@
     const fecha = inputFecha.value;
     try {
       const res = await fetch(BASE + '/api/sala_estado.php' + (fecha ? '?fecha=' + fecha : ''), { cache: 'no-store' });
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error('El servidor no respondió bien (error ' + res.status + '). Probá recargar la página.');
+      }
       if (!data.ok) throw new Error(data.mensaje || 'No se pudo cargar la sala.');
 
       const primeraVez = datos === null;

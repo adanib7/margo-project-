@@ -43,6 +43,11 @@ if (isset($_GET['desde_id'])) {
            WHERE r.id > ? ORDER BY r.id ASC LIMIT 10";
 
     $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        http_response_code(500);
+        echo json_encode(['ok' => false, 'mensaje' => 'No se pudieron consultar las reservas nuevas.']);
+        exit;
+    }
     $stmt->bind_param('i', $desdeId);
     $stmt->execute();
     foreach ($stmt->get_result()->fetch_all(MYSQLI_ASSOC) as $r) {

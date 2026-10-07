@@ -37,13 +37,18 @@ ensureReservaMesaColumn($conn);
 // Mesas del plano (sin fecha/hora: solo posición, tamaño y capacidad).
 $mesas = planoMesasConOcupacion($conn);
 
-// Reservas del día que siguen en pie.
+// Reservas del día que siguen en pie. Con r.* sirve aunque la base del hosting
+// sea de un deploy viejo y le falte alguna columna (ej. telefono).
 $stmt = $conn->prepare(
-    "SELECT id, codigo, nombre, hora, personas, estado, mesa_id, telefono, comentario
-     FROM reservas
+    "SELECT * FROM reservas
      WHERE fecha = ? AND estado <> 'cancelada'
      ORDER BY hora ASC"
 );
+if ($stmt === false) {
+    http_response_code(500);
+    echo json_encode(['ok' => false, 'mensaje' => 'No se pudieron leer las reservas del día.']);
+    exit;
+}
 $stmt->bind_param('s', $fecha);
 $stmt->execute();
 $reservas = [];
@@ -55,7 +60,7 @@ foreach ($stmt->get_result()->fetch_all(MYSQLI_ASSOC) as $r) {
         'hora'       => substr((string) $r['hora'], 0, 5),
         'personas'   => (int) $r['personas'],
         'estado'     => $r['estado'],
-        'mesa_id'    => $r['mesa_id'] !== null ? (int) $r['mesa_id'] : null,
+        'mesa_id'    => isset($r['mesa_id']) ? (int) $r['mesa_id'] : null,
         'telefono'   => $r['telefono'] ?? '',
         'comentario' => $r['comentario'] ?? '',
     ];
