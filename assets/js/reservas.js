@@ -216,6 +216,9 @@
     }
   }
 
+  // Llegó una reserva nueva (aviso en vivo de avisos.js): refrescamos la tabla.
+  document.addEventListener('reservas:nuevas', cargar);
+
   // ── Filtros ──────────────────────────────────────────────────────────────
   document.getElementById('inputBusqueda').addEventListener('input', e => {
     clearTimeout(debounceT);

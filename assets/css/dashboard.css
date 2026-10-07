@@ -2363,3 +2363,69 @@ body {
 @media (max-width: 1000px) {
   #canvas-wrap { overflow: auto; }
 }
+
+/* ===== AVISOS EN VIVO DE RESERVAS NUEVAS (assets/js/avisos.js) ===== */
+.aviso-pila {
+  position: fixed;
+  top: 5rem;
+  right: 1rem;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: min(360px, calc(100vw - 2rem));
+  pointer-events: none;
+}
+.aviso-tarjeta {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.9rem 0.75rem 0.9rem 1rem;
+  background: #ffffff;
+  border: 1px solid rgba(115, 121, 111, 0.25);
+  border-left: 4px solid #C9962E;
+  border-radius: 0.75rem;
+  box-shadow: 0 12px 32px rgba(27, 59, 39, 0.18);
+  color: #1a1c19;
+  text-decoration: none;
+  opacity: 0;
+  transform: translateX(24px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.aviso-tarjeta.visible { opacity: 1; transform: translateX(0); }
+.aviso-tarjeta:hover { border-color: #264220; border-left-color: #C9962E; }
+.aviso-icono {
+  flex-shrink: 0;
+  padding: 0.45rem;
+  border-radius: 50%;
+  background: #ffdea5;
+  color: #785a1a;
+  font-size: 1.25rem;
+  animation: aviso-campana 0.8s ease 2;
+}
+.aviso-texto { flex: 1; display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.85rem; color: #434840; }
+.aviso-texto strong { color: #264220; font-size: 0.9rem; }
+.aviso-cerrar {
+  display: flex;
+  padding: 0.2rem;
+  border: none;
+  background: none;
+  border-radius: 0.4rem;
+  color: #73796f;
+  cursor: pointer;
+}
+.aviso-cerrar:hover { background: #f4f4ee; color: #1a1c19; }
+.aviso-cerrar .material-symbols-outlined { font-size: 1.1rem; }
+
+@keyframes aviso-campana {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-15deg); }
+  40% { transform: rotate(12deg); }
+  60% { transform: rotate(-8deg); }
+  80% { transform: rotate(4deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aviso-tarjeta { transition: none; }
+  .aviso-icono { animation: none; }
+}

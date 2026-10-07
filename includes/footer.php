@@ -12,5 +12,11 @@
     <a class="enlace-pie" href="#">Ubicación</a>
   </div>
 </footer>
+<?php if (in_array($_SESSION['rol'] ?? '', ['admin', 'superadmin'], true)): ?>
+<!-- Avisos en vivo de reservas nuevas (solo admin y superadmin) -->
+<script src="<?= jsUrl('avisos.js') ?>"
+        data-api="<?= buildUrl('/api/reservas_nuevas.php') ?>"
+        data-reservas="<?= buildUrl('/dashboards/reservas.php') ?>"></script>
+<?php endif; ?>
 </body>
 </html>
