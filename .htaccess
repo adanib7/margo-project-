@@ -1,0 +1,10 @@
+# No mostrar el listado de archivos de una carpeta sin index.
+Options -Indexes
+
+# Carpetas y archivos que no son parte del sitio: responden "no encontrado".
+# (base de datos con los .sql, documentación interna, config de GitHub, README)
+RedirectMatch 404 (?i)/(base\sde\sdatos|documentacion|\.github|\.git)(/|$)
+RedirectMatch 404 (?i)\.(sql|md|docx|log)$
+
+# Archivos con contraseñas: nunca se sirven por la web.
+RedirectMatch 404 (?i)/includes/(db_config|mail_config)(\.example)?\.php$

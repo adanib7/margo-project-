@@ -92,9 +92,17 @@ if ($esLocal) {
     }
 } else {
     try {
+        // Los datos de acceso viven en includes/db_config.php, que NO se sube a
+        // GitHub (.gitignore). En el hosting se sube a mano una sola vez.
+        $dbFile = __DIR__ . '/db_config.php';
+        if (!is_file($dbFile)) {
+            throw new RuntimeException('Falta includes/db_config.php');
+        }
+        $db = require $dbFile;
+
         // @: la falla de red ya se detecta manualmente vía connect_error; sin esto
         // PHP emite un warning nativo que corrompe las respuestas JSON de la API.
-        $conn = @new mysqli("sql213.infinityfree.com", "if0_41994986", "hrXr99gspmS", "if0_41994986_margoproject");
+        $conn = @new mysqli($db['host'], $db['usuario'], $db['password'], $db['base']);
         if ($conn->connect_error) {
             throw new RuntimeException($conn->connect_error);
         }

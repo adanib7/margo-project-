@@ -19,3 +19,11 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /htdocs/
+          # No se suben al hosting: lo de git, los .sql, la documentación y el README.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            base de datos/**
+            documentacion/**
+            README.md
