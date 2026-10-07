@@ -279,3 +279,24 @@ function correoCancelacionReserva(array $r): array
 
     return [$asunto, correoLayout('Tu reserva del ' . $fechaLarga . ' ha sido anulada', $cuerpo)];
 }
+
+/**
+ * Construye el correo con el código para recuperar la contraseña.
+ *
+ * @return array [asunto, html]
+ */
+function correoCodigoRecuperacion(string $nombre, string $codigo, int $minutos): array
+{
+    $cuerpo = '<p style="margin:0 0 14px;font-size:16px;">' . e_($nombre !== '' ? "Hola, $nombre:" : 'Hola:') . '</p>'
+        . '<p style="margin:0 0 20px;font-size:15px;line-height:1.65;color:#4a4a42;">'
+        . 'Recibimos un pedido para cambiar la contraseña de tu cuenta en ' . e_(localNombreCorreo()) . '. '
+        . 'Escribí este código en la página para elegir una nueva:</p>'
+        . '<p style="margin:0 0 20px;padding:16px 0;text-align:center;border-top:2px solid #c9962e;border-bottom:1px solid #e4e1d9;'
+        . 'font-family:\'Courier New\',monospace;font-size:34px;font-weight:bold;letter-spacing:8px;color:#2d5f3f;">' . e_($codigo) . '</p>'
+        . '<p style="margin:0 0 6px;font-size:14px;line-height:1.6;color:#4a4a42;">'
+        . 'Tu usuario para entrar es <strong>' . e_($nombre) . '</strong>. '
+        . 'El código vence en ' . $minutos . ' minutos y sirve una sola vez. '
+        . 'Si no pediste cambiar la contraseña, ignorá este correo: tu cuenta sigue igual.</p>';
+
+    return ['Tu código para cambiar la contraseña: ' . $codigo, correoLayout('Tu código es ' . $codigo, $cuerpo)];
+}

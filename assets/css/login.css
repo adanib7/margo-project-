@@ -158,8 +158,9 @@ body {
   text-decoration: none;
   transition: color var(--dur-base) var(--ease-out);
 }
-.login-caja[data-modo="login"]    .login-tabs a[data-modo="login"],
-.login-caja[data-modo="registro"] .login-tabs a[data-modo="registro"] { color: var(--verde-700); }
+.login-caja[data-modo="login"]     .login-tabs a[data-modo="login"],
+.login-caja[data-modo="recuperar"] .login-tabs a[data-modo="login"],
+.login-caja[data-modo="registro"]  .login-tabs a[data-modo="registro"] { color: var(--verde-700); }
 
 /* Los dos formularios ocupan la misma celda: la caja siempre mide lo que el
    más alto, así al cambiar de pestaña no se mueve nada de la página. */
@@ -170,16 +171,16 @@ body {
   flex-direction: column;
   transition: opacity 300ms var(--ease-out), transform 400ms var(--ease-out), visibility 0s linear 0s;
 }
-/* El formulario que no está activo se corre hacia su lado y se desvanece */
-.login-caja[data-modo="registro"] .login-vista[data-vista="login"] { transform: translateX(-32px); }
-.login-caja[data-modo="login"] .login-vista[data-vista="registro"] { transform: translateX(32px); }
-.login-caja[data-modo="registro"] .login-vista[data-vista="login"],
-.login-caja[data-modo="login"] .login-vista[data-vista="registro"] {
+/* Los formularios que no están activos se desvanecen corridos hacia un costado:
+   el de login hacia la izquierda, los otros hacia la derecha. */
+.login-vista:not(.activa) {
+  transform: translateX(32px);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   transition: opacity 200ms var(--ease-out), transform 400ms var(--ease-out), visibility 0s linear 200ms;
 }
+.login-vista[data-vista="login"]:not(.activa) { transform: translateX(-32px); }
 
 @media (prefers-reduced-motion: reduce) {
   .login-tabs-indicador, .login-vista { transition: none !important; }
@@ -213,6 +214,40 @@ body {
   color: var(--verde-700);
 }
 .login-mensaje .material-symbols-outlined { font-size: 20px; }
+.login-mensaje[hidden] { display: none; }
+
+/* Recuperar contraseña */
+.login-olvido {
+  align-self: flex-end;
+  margin-top: 8px;
+  color: var(--verde-700);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.login-olvido:hover { color: var(--dorado-600); }
+
+.login-intro {
+  margin: -8px 0 4px;
+  color: var(--fg-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.rec-paso2 { display: flex; flex-direction: column; }
+.rec-paso2[hidden] { display: none; }
+
+.login-error {
+  min-height: 0;
+  margin-top: 4px;
+  color: var(--burdeos-500);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.login-error:empty { display: none; }
+.login-campo.con-error { border-color: var(--burdeos-500); }
+
+#rec-codigo { font-family: var(--font-mono); font-size: 18px; letter-spacing: .35em; }
 
 .login-label {
   margin: 14px 0 6px;

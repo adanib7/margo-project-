@@ -3,8 +3,15 @@ session_start();
 require_once '../includes/config.php';
 require_once '../includes/check_auth.php';
 require_once '../includes/auth.php';
+// Las tres vistas de esta página; cualquier otro valor en la URL vuelve al login.
+$titulosModo = ['login' => 'Iniciar sesión', 'registro' => 'Crear cuenta', 'recuperar' => 'Recuperar contraseña'];
+if (!isset($titulosModo[$modo])) {
+    $modo = 'login';
+}
+$activa = static fn(string $vista) => $vista === $modo ? 'activa' : '';
+
 $pageCSS   = '../assets/css/login.css';
-$pageTitle = ($modo === 'registro' ? 'Crear cuenta' : 'Iniciar sesión') . ' · ' . cfg('local.nombre');
+$pageTitle = $titulosModo[$modo] . ' · ' . cfg('local.nombre');
 require_once '../includes/header.php';
 
 // Mostrar errores que vengan de google_auth.php
@@ -41,7 +48,7 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
     </div>
   </aside>
 
-  <!-- ── Mitad derecha: los dos formularios, uno encima del otro ── -->
+  <!-- ── Mitad derecha: los formularios, uno encima del otro ── -->
   <main class="login-panel">
     <div class="login-caja" data-modo="<?= $h($modo) ?>">
       <div class="login-tabs" role="tablist">
@@ -52,7 +59,7 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 
       <div class="login-vistas">
         <!-- Iniciar sesión -->
-        <form class="login-vista" data-vista="login" method="post" action="?modo=login">
+        <form class="login-vista <?= $activa('login') ?>" data-vista="login" method="post" action="?modo=login">
           <h2 class="login-form-titulo">Bienvenido de nuevo</h2>
           <?php if ($mensaje !== '' && $modo === 'login'): ?>
             <div class="login-mensaje <?= $tipo === 'success' ? 'exito' : '' ?>">
@@ -75,6 +82,7 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
             <input type="password" id="pass" name="contraseña" required autocomplete="current-password" placeholder="Tu contraseña">
             <button type="button" class="login-ojo" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
           </div>
+          <a href="?modo=recuperar" data-modo="recuperar" class="login-olvido">¿Olvidaste tu contraseña?</a>
 
           <button type="submit" class="login-boton">Entrar</button>
           <p class="login-alternativa">¿No tenés cuenta? <a href="?modo=registro" data-modo="registro">Registrate</a></p>
@@ -85,7 +93,7 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
         </form>
 
         <!-- Registrarse -->
-        <form class="login-vista" data-vista="registro" method="post" action="?modo=registro">
+        <form class="login-vista <?= $activa('registro') ?>" data-vista="registro" method="post" action="?modo=registro">
           <h2 class="login-form-titulo">Creá tu cuenta</h2>
           <?php if ($mensaje !== '' && $modo === 'registro'): ?>
             <div class="login-mensaje <?= $tipo === 'success' ? 'exito' : '' ?>">
@@ -130,6 +138,54 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
           <p class="login-separador"><span>o continuá con</span></p>
           <div class="login-google g_id_signin" data-type="standard" data-size="large" data-theme="outline"
                data-text="continue_with" data-shape="rectangular" data-logo_alignment="center" data-width="300"></div>
+        </form>
+
+        <!-- Recuperar contraseña: se maneja con JavaScript (api/recuperar_password.php) -->
+        <form class="login-vista <?= $activa('recuperar') ?>" data-vista="recuperar" id="formRecuperar" novalidate>
+          <h2 class="login-form-titulo">Recuperar contraseña</h2>
+          <p class="login-intro" id="recIntro">Escribí el email de tu cuenta y te mandamos un código para elegir una contraseña nueva.</p>
+          <div class="login-mensaje" id="recMensaje" hidden></div>
+
+          <label class="login-label" for="rec-email">Email</label>
+          <div class="login-campo">
+            <span class="material-symbols-outlined">alternate_email</span>
+            <input type="email" id="rec-email" name="email" autocomplete="email" placeholder="ejemplo@correo.com">
+          </div>
+          <span class="login-error" data-error="email"></span>
+
+          <!-- Paso 2: aparece cuando ya se mandó el código -->
+          <div class="rec-paso2" id="recPaso2" hidden>
+            <label class="login-label" for="rec-codigo">Código de 6 números</label>
+            <div class="login-campo">
+              <span class="material-symbols-outlined">pin</span>
+              <input type="text" id="rec-codigo" name="codigo" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000">
+            </div>
+            <span class="login-error" data-error="codigo"></span>
+
+            <label class="login-label" for="rec-pass">Nueva contraseña</label>
+            <div class="login-campo">
+              <span class="material-symbols-outlined">lock</span>
+              <input type="password" id="rec-pass" name="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+              <button type="button" class="login-ojo" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
+            </div>
+            <span class="login-error" data-error="password"></span>
+            <p class="login-ayuda">Solo letras y números. Al menos 6 caracteres, una mayúscula y un número.</p>
+
+            <label class="login-label" for="rec-confirmar">Confirmar contraseña</label>
+            <div class="login-campo">
+              <span class="material-symbols-outlined">lock</span>
+              <input type="password" id="rec-confirmar" name="confirmar" autocomplete="new-password" placeholder="Repetí la contraseña">
+              <button type="button" class="login-ojo" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
+            </div>
+            <span class="login-error" data-error="confirmar"></span>
+          </div>
+
+          <button type="submit" class="login-boton" id="recBoton">Enviarme un código</button>
+          <p class="login-alternativa">
+            <a href="#" id="recReenviar" hidden>Reenviar código</a>
+            <span id="recSeparador" hidden> · </span>
+            <a href="?modo=login" data-modo="login">Volver a iniciar sesión</a>
+          </p>
         </form>
       </div>
 
