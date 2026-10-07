@@ -95,224 +95,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
     }
 }
+$pageTitle = 'Plano de mesas';
+$pageCSS = '../assets/css/dashboard.css';
+$volverUrl = ($_SESSION['rol'] ?? '') === 'superadmin'
+    ? buildUrl('/dashboards/superadmin.php')
+    : buildUrl('/dashboards/admin.php');
+require_once '../includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plano de mesas · El Corralín</title>
-<style>
-  :root {
-    --verde: #2D5F3F;
-    --verde-claro: #3d7d54;
-    --ambar: #C9962E;
-    --crema: #F5EFE0;
-    --rojo: #a33;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: Georgia, 'Times New Roman', serif;
-    background: var(--crema);
-    color: var(--verde);
-    min-height: 100vh;
-  }
-  header {
-    background: var(--verde);
-    color: var(--crema);
-    padding: 14px 28px;
-    display: flex;
-    align-items: baseline;
-    gap: 14px;
-  }
-  header h1 { font-size: 1.3rem; font-weight: normal; letter-spacing: 1px; }
-  header span { font-size: .8rem; opacity: .7; font-family: Arial, sans-serif; }
-  .contenido {
-    display: flex;
-    gap: 20px;
-    padding: 20px 28px;
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-  #canvas-wrap {
-    background: #fff;
-    border: 2px solid var(--verde);
-    border-radius: 6px;
-    overflow: hidden;
-    line-height: 0;
-  }
-
-  /* --- Lienzo del plano, ahora un div con grilla via CSS --- */
-  #plano {
-    position: relative;
-    width: 900px;
-    height: 560px;
-    background-color: #fff;
-    background-image:
-      linear-gradient(#e9e2cc 1px, transparent 1px),
-      linear-gradient(90deg, #e9e2cc 1px, transparent 1px);
-    background-size: 40px 40px;
-    touch-action: none;
-    user-select: none;
-  }
-
-  aside {
-    width: 230px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  aside h2 {
-    font-size: .75rem;
-    font-family: Arial, sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--ambar);
-    margin-top: 8px;
-  }
-  button {
-    font-family: Arial, sans-serif;
-    font-size: .85rem;
-    padding: 9px 12px;
-    border: 1.5px solid var(--verde);
-    background: transparent;
-    color: var(--verde);
-    border-radius: 4px;
-    cursor: pointer;
-    text-align: left;
-  }
-  button:hover { background: var(--verde); color: var(--crema); }
-  button.principal {
-    background: var(--ambar);
-    border-color: var(--ambar);
-    color: #fff;
-    font-weight: bold;
-    text-align: center;
-  }
-  button.principal:hover { filter: brightness(.92); }
-  button.peligro { border-color: var(--rojo); color: var(--rojo); }
-  button.peligro:hover { background: var(--rojo); color: #fff; }
-  .campo { display: flex; flex-direction: column; gap: 3px; }
-  .campo label { font-size: .75rem; font-family: Arial, sans-serif; }
-  .campo input {
-    padding: 7px;
-    border: 1.5px solid var(--verde);
-    border-radius: 4px;
-    background: #fff;
-    font-size: .9rem;
-    font-family: Arial, sans-serif;
-  }
-  #panel-mesa { display: none; }
-  #panel-mesa.visible { display: flex; flex-direction: column; gap: 10px; }
-  #aviso {
-    font-size: .8rem;
-    font-family: Arial, sans-serif;
-    min-height: 1.2em;
-  }
-  #ayuda {
-    font-size: .72rem;
-    font-family: Arial, sans-serif;
-    color: #7a7256;
-    line-height: 1.4;
-  }
-
-  /* --- Mesas --- */
-  .mesa {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--verde);
-    border: 3px solid var(--ambar);
-    cursor: grab;
-    box-sizing: border-box;
-    touch-action: none;
-  }
-  .mesa:active { cursor: grabbing; }
-  .mesa.cuadrada { border-radius: 8px; }
-  .mesa.redonda { border-radius: 50%; }
-  .mesa.seleccionada {
-    box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ambar);
-  }
-  .mesa-numero {
-    font-family: Georgia, serif;
-    font-weight: bold;
-    font-size: 20px;
-    color: var(--crema);
-    pointer-events: none;
-    line-height: 1;
-  }
-
-  /* --- Controles (aparecen solo si la mesa está seleccionada) --- */
-  .handle { position: absolute; display: none; z-index: 5; }
-  .mesa.seleccionada .handle { display: block; }
-
-  .handle.esquina {
-    width: 13px; height: 13px;
-    background: #fff;
-    border: 2px solid var(--ambar);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-  }
-  .handle.tl { top: 0;   left: 0;   cursor: nwse-resize; }
-  .handle.tr { top: 0;   left: 100%; cursor: nesw-resize; }
-  .handle.bl { top: 100%; left: 0;   cursor: nesw-resize; }
-  .handle.br { top: 100%; left: 100%; cursor: nwse-resize; }
-
-  .handle.rotar {
-    width: 13px; height: 13px;
-    background: #fff;
-    border: 2px solid var(--verde);
-    border-radius: 50%;
-    top: -30px; left: 50%;
-    transform: translate(-50%, -50%);
-    cursor: grab;
-  }
-  .handle.rotar::after {
-    content: '';
-    position: absolute;
-    width: 2px; height: 22px;
-    background: var(--ambar);
-    left: 50%; top: 100%;
-    transform: translateX(-50%);
-  }
-</style>
-</head>
-<body>
-
-<header>
-  <h1>El Corralín de Campanal</h1>
-  <span>Editor del plano de mesas</span>
-</header>
-
-<div class="contenido">
-  <div id="canvas-wrap"><div id="plano"></div></div>
-
-  <aside>
-    <h2>Agregar</h2>
-    <button onclick="agregarMesa('cuadrada')">＋ Mesa cuadrada</button>
-    <button onclick="agregarMesa('redonda')">＋ Mesa redonda</button>
-
-    <div id="panel-mesa">
-      <h2>Mesa seleccionada</h2>
-      <div class="campo">
-        <label>Número</label>
-        <input type="number" id="in-numero" min="1">
-      </div>
-      <div class="campo">
-        <label>Capacidad (personas)</label>
-        <input type="number" id="in-capacidad" min="1" max="20">
-      </div>
-      <button class="peligro" onclick="eliminarSeleccionada()">Eliminar mesa</button>
+<?php require_once '../includes/nav.php'; ?>
+<main class="contenido-principal">
+  <header class="seccion-encabezado">
+    <div>
+      <a href="<?= $volverUrl ?>" class="enlace-volver">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Panel principal
+      </a>
+      <h1 class="titulo-pagina" style="margin-top:.5rem">Plano de mesas</h1>
+      <p class="subtitulo-pagina">Armá la distribución del salón: agregá, mové, girá y cambiá el tamaño de las mesas.</p>
     </div>
+  </header>
 
-    <h2>Plano</h2>
-    <button class="principal" onclick="guardarPlano()">Guardar plano</button>
-    <p id="aviso"></p>
-    <p id="ayuda">Arrastrá el cuerpo para mover · esquinas para cambiar el tamaño · el círculo de arriba para girar · Supr para eliminar.</p>
-  </aside>
-</div>
+  <div class="plano-editor">
+    <div id="canvas-wrap"><div id="plano"></div></div>
+
+    <aside class="plano-panel">
+      <section class="plano-bloque">
+        <h2 class="campo-etiqueta">Agregar</h2>
+        <button class="boton-secundario plano-boton" onclick="agregarMesa('cuadrada')">
+          <span class="material-symbols-outlined">crop_square</span> Mesa cuadrada
+        </button>
+        <button class="boton-secundario plano-boton" onclick="agregarMesa('redonda')">
+          <span class="material-symbols-outlined">circle</span> Mesa redonda
+        </button>
+      </section>
+
+      <section id="panel-mesa" class="plano-bloque">
+        <h2 class="campo-etiqueta">Mesa seleccionada</h2>
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="in-numero">Número</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">tag</span>
+            <input class="campo-input" type="number" id="in-numero" min="1">
+          </div>
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="in-capacidad">Capacidad (personas)</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">group</span>
+            <input class="campo-input" type="number" id="in-capacidad" min="1" max="20">
+          </div>
+        </div>
+        <button class="boton-peligro plano-boton" onclick="eliminarSeleccionada()">
+          <span class="material-symbols-outlined">delete</span> Eliminar mesa
+        </button>
+      </section>
+
+      <section class="plano-bloque">
+        <button class="boton-accion plano-boton" onclick="guardarPlano()">
+          <span class="material-symbols-outlined">save</span> Guardar plano
+        </button>
+        <p id="aviso"></p>
+        <p class="campo-ayuda">Arrastrá el cuerpo para mover · esquinas para cambiar el tamaño · el círculo de arriba para girar · Supr para eliminar.</p>
+      </section>
+    </aside>
+  </div>
+</main>
 
 <script src="<?= jsUrl('admin_plano.js') ?>"></script>
-</body>
-</html>
+<?php require_once '../includes/footer.php'; ?>

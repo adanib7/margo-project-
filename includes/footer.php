@@ -1,4 +1,4 @@
-l<footer class="pie-pagina">
+<footer class="pie-pagina">
   <div>
     <img src="<?= buildUrl('/assets/img/logo-horizontal-verde.png') ?>" alt="<?= htmlspecialchars(cfg('local.nombre'), ENT_QUOTES, 'UTF-8') ?>" class="footer-logo">
     <p class="texto-pie">© <?= date('Y') ?> <?= htmlspecialchars(cfg('local.nombre'), ENT_QUOTES, 'UTF-8') ?>. Todos los derechos reservados.</p>
