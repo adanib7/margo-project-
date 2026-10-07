@@ -48,6 +48,9 @@ function cfgDefaults(): array
         'reservas.duracion_horas'       => '2',
         'reservas.cortesia_min'         => '15',
         'reservas.auto_confirmar'       => '1',
+        // Límites por usuario contra el spam de reservas (0 = sin límite).
+        'reservas.max_activas_usuario'  => '3',
+        'reservas.max_por_dia_usuario'  => '1',
     ];
 }
 

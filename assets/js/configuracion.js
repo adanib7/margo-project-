@@ -152,6 +152,8 @@
       'reservas.antelacion_max_dias':  parseInt($('antMax').value, 10),
       'reservas.duracion_horas':       parseInt($('duracion').value, 10),
       'reservas.cortesia_min':         parseInt($('cortesia').value, 10),
+      'reservas.max_activas_usuario':  parseInt($('maxActivas').value, 10),
+      'reservas.max_por_dia_usuario':  parseInt($('maxPorDia').value, 10),
       'reservas.auto_confirmar':       $('autoConfirmar').checked,
     };
 

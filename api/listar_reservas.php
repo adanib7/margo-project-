@@ -30,10 +30,10 @@ $params = [];
 $types  = '';
 
 if ($search !== '') {
-    $where[]  = '(r.nombre LIKE ? OR r.codigo LIKE ? OR r.telefono LIKE ?)';
+    $where[]  = '(r.nombre LIKE ? OR r.codigo LIKE ? OR r.telefono LIKE ? OR u.email LIKE ?)';
     $like     = '%' . $search . '%';
-    $params[] = $like; $params[] = $like; $params[] = $like;
-    $types   .= 'sss';
+    $params[] = $like; $params[] = $like; $params[] = $like; $params[] = $like;
+    $types   .= 'ssss';
 }
 
 if (in_array($estado, ['pendiente', 'confirmada', 'cancelada'], true)) {

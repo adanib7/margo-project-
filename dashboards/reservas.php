@@ -74,7 +74,7 @@ require_once '../includes/header.php';
   <div class="gu-barra">
     <div class="campo-input-wrapper gu-busqueda">
       <span class="campo-icono material-symbols-outlined">search</span>
-      <input class="campo-input" type="text" id="inputBusqueda" placeholder="Buscar por nombre, código o teléfono…">
+      <input class="campo-input" type="text" id="inputBusqueda" placeholder="Buscar por nombre, código, teléfono o email…">
     </div>
     <div class="filtros-rol" role="group" aria-label="Filtrar por estado">
       <button class="filtro-btn filtro-activo" data-estado="">Todos</button>
@@ -93,6 +93,15 @@ require_once '../includes/header.php';
       <button class="filtro-btn" data-rango="pasadas">Pasadas</button>
       <button class="filtro-btn" data-rango="">Todas</button>
     </div>
+  </div>
+
+  <!-- ── Acciones sobre varias reservas (aparece al marcar casillas) ── -->
+  <div class="res-seleccion" id="resSeleccion" hidden>
+    <span id="resSeleccionTexto">0 seleccionadas</span>
+    <button type="button" class="boton-secundario" id="btnLimpiarSeleccion">Quitar selección</button>
+    <button type="button" class="boton-peligro" id="btnCancelarSeleccion">
+      <span class="material-symbols-outlined">event_busy</span> Cancelar seleccionadas
+    </button>
   </div>
 
   <!-- ── Tabla ── -->

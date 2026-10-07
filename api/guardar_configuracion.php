@@ -141,6 +141,8 @@ $reglas = [
     'reservas.antelacion_max_dias'  => [1, 365, 'Ingresá entre 1 y 365 días.'],
     'reservas.duracion_horas'       => [1, 8,   'Ingresá entre 1 y 8 horas.'],
     'reservas.cortesia_min'         => [0, 120, 'Ingresá entre 0 y 120 minutos.'],
+    'reservas.max_activas_usuario'  => [0, 20,  'Ingresá entre 0 y 20 (0 = sin límite).'],
+    'reservas.max_por_dia_usuario'  => [0, 10,  'Ingresá entre 0 y 10 (0 = sin límite).'],
 ];
 
 foreach ($reglas as $clave => [$min, $max, $msg]) {

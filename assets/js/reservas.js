@@ -58,6 +58,7 @@
 
   function mostrarEstado(html) {
     tablaWrap.innerHTML = '<div class="gu-estado">' + html + '</div>';
+    document.getElementById('resSeleccion').hidden = true;
   }
 
   // ── Cargar ───────────────────────────────────────────────────────────────
@@ -129,7 +130,10 @@
       const contacto = [r.telefono, r.email].filter(Boolean).map(esc).join(' · ') || '—';
       const chipHoy  = esHoy(r.fecha) ? ' <span class="res-chip-hoy">hoy</span>' : '';
 
+      const casilla = cancelada ? '' : '<input type="checkbox" class="res-sel" value="' + r.id + '" aria-label="Seleccionar ' + esc(r.codigo) + '">';
+
       return '<tr class="' + (cancelada ? 'res-fila-cancelada' : '') + '">'
+        + '<td class="col-sel">' + casilla + '</td>'
         + '<td><span class="res-codigo">' + esc(r.codigo) + '</span></td>'
         + '<td><div class="gu-usuario-celda">'
         +   '<div class="gu-avatar">' + esc(iniciales(r.nombre)) + '</div>'
@@ -148,6 +152,7 @@
 
     tablaWrap.innerHTML =
       '<table class="gu-tabla res-tabla"><thead><tr>'
+      + '<th class="col-sel"><input type="checkbox" id="resSelTodas" aria-label="Seleccionar todas"></th>'
       + '<th>Código</th><th>Cliente</th><th>Cuándo</th><th>Mesa</th>'
       + '<th>Pers.</th><th>Estado</th><th>Nota</th><th class="col-acciones">Acciones</th>'
       + '</tr></thead><tbody>' + filas + '</tbody></table>';
@@ -160,7 +165,36 @@
       b.addEventListener('click', () => pedirConfirmacion('cancelar', b.dataset)));
     tablaWrap.querySelectorAll('.btn-eliminar').forEach(b =>
       b.addEventListener('click', () => pedirConfirmacion('eliminar', b.dataset)));
+
+    // Casillas: cada cambio actualiza la barra de "N seleccionadas"
+    tablaWrap.querySelectorAll('.res-sel').forEach(c => c.addEventListener('change', actualizarSeleccion));
+    document.getElementById('resSelTodas').addEventListener('change', e => {
+      tablaWrap.querySelectorAll('.res-sel').forEach(c => { c.checked = e.target.checked; });
+      actualizarSeleccion();
+    });
+    actualizarSeleccion();
   }
+
+  // ── Selección múltiple ───────────────────────────────────────────────────
+  function idsSeleccionados() {
+    return Array.from(tablaWrap.querySelectorAll('.res-sel:checked')).map(c => parseInt(c.value, 10));
+  }
+
+  function actualizarSeleccion() {
+    const n = idsSeleccionados().length;
+    document.getElementById('resSeleccion').hidden = n === 0;
+    document.getElementById('resSeleccionTexto').textContent =
+      n === 1 ? '1 reserva seleccionada' : n + ' reservas seleccionadas';
+  }
+
+  document.getElementById('btnLimpiarSeleccion').addEventListener('click', () => {
+    tablaWrap.querySelectorAll('.res-sel, #resSelTodas').forEach(c => { c.checked = false; });
+    actualizarSeleccion();
+  });
+
+  document.getElementById('btnCancelarSeleccion').addEventListener('click', () => {
+    pedirConfirmacion('cancelar-varias', { ids: idsSeleccionados() });
+  });
 
   // ── Cambiar estado rápido ────────────────────────────────────────────────
   async function cambiarEstado(id, estado) {
@@ -322,20 +356,25 @@
   // MODAL: confirmar (cancelar / eliminar)
   // ══════════════════════════════════════════════════════════════════════════
   function pedirConfirmacion(tipo, d) {
-    accionPend = { tipo: tipo, id: parseInt(d.id, 10), nombre: d.nombre, codigo: d.codigo };
+    accionPend = tipo === 'cancelar-varias'
+      ? { tipo: tipo, ids: d.ids }
+      : { tipo: tipo, id: parseInt(d.id, 10), nombre: d.nombre, codigo: d.codigo };
 
-    const esCancelar = tipo === 'cancelar';
+    const varias     = tipo === 'cancelar-varias';
+    const esCancelar = tipo === 'cancelar' || varias;
     document.getElementById('modalConfirmarIcono').innerHTML =
       '<span class="material-symbols-outlined">' + (esCancelar ? 'event_busy' : 'delete') + '</span>';
     document.getElementById('modalConfirmarTitulo').textContent =
-      esCancelar ? 'Cancelar reserva' : 'Eliminar reserva';
+      varias ? 'Cancelar ' + d.ids.length + ' reservas' : (esCancelar ? 'Cancelar reserva' : 'Eliminar reserva');
     document.getElementById('modalConfirmarSubtitulo').textContent =
       esCancelar ? 'La mesa queda libre otra vez.' : 'Se borra del historial. No se puede deshacer.';
-    document.getElementById('modalConfirmarTexto').innerHTML = esCancelar
+    document.getElementById('modalConfirmarTexto').innerHTML = varias
+      ? '¿Cancelar las <strong>' + d.ids.length + ' reservas</strong> seleccionadas?'
+      : esCancelar
       ? '¿Cancelar la reserva <strong>' + esc(d.codigo) + '</strong> de <strong>' + esc(d.nombre) + '</strong>?'
       : '¿Eliminar definitivamente la reserva <strong>' + esc(d.codigo) + '</strong> de <strong>' + esc(d.nombre) + '</strong>?';
     document.getElementById('btnAceptarConfirmarTexto').textContent =
-      esCancelar ? 'Cancelar reserva' : 'Eliminar';
+      varias ? 'Cancelar ' + d.ids.length : (esCancelar ? 'Cancelar reserva' : 'Eliminar');
 
     // El aviso por correo solo tiene sentido al anular.
     document.getElementById('bloqueAviso').style.display = esCancelar ? '' : 'none';
@@ -362,6 +401,13 @@
     const orig = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<span class="material-symbols-outlined icono-spin">progress_activity</span> Procesando…';
+
+    if (accionPend.tipo === 'cancelar-varias') {
+      await cancelarVarias(accionPend.ids);
+      btn.disabled = false;
+      btn.innerHTML = orig;
+      return;
+    }
 
     const esCancelar = accionPend.tipo === 'cancelar';
     const url  = BASE + (esCancelar ? '/api/cambiar_estado_reserva.php' : '/api/eliminar_reserva.php');
@@ -395,6 +441,33 @@
       btn.innerHTML = orig;
     }
   });
+
+  // Cancela cada reserva seleccionada con la misma API que el botón de una sola.
+  async function cancelarVarias(ids) {
+    const avisar = document.getElementById('chkAvisar').checked;
+    const motivo = document.getElementById('txtMotivo').value.trim();
+    let ok = 0;
+
+    for (const id of ids) {
+      try {
+        const res  = await fetch(BASE + '/api/cambiar_estado_reserva.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: id, estado: 'cancelada', avisar: avisar, motivo: motivo }),
+        });
+        const data = await res.json();
+        if (data.ok) ok++;
+      } catch { /* sigue con las demás */ }
+    }
+
+    cerrarConfirmar();
+    const fallidas = ids.length - ok;
+    mostrarToast(
+      fallidas === 0 ? ok + ' reservas canceladas.' : ok + ' canceladas, ' + fallidas + ' no se pudieron cancelar.',
+      fallidas === 0 ? 'exito' : 'error'
+    );
+    cargar();
+  }
 
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;

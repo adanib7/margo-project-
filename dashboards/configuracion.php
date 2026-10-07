@@ -317,6 +317,28 @@ require_once '../includes/header.php';
           <span class="campo-ayuda">Cuánto se guarda la mesa pasada la hora. Sale en el comprobante y el correo.</span>
           <span class="campo-error" id="err_reservas.cortesia_min"></span>
         </div>
+
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="maxActivas">Reservas activas por cliente</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">event_repeat</span>
+            <input class="campo-input" type="number" id="maxActivas" min="0" max="20"
+                   value="<?= cfgInt('reservas.max_activas_usuario') ?>">
+          </div>
+          <span class="campo-ayuda">Cuántas reservas futuras puede tener a la vez una cuenta. Evita el spam. 0 = sin límite.</span>
+          <span class="campo-error" id="err_reservas.max_activas_usuario"></span>
+        </div>
+
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="maxPorDia">Reservas por cliente en un mismo día</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">today</span>
+            <input class="campo-input" type="number" id="maxPorDia" min="0" max="10"
+                   value="<?= cfgInt('reservas.max_por_dia_usuario') ?>">
+          </div>
+          <span class="campo-ayuda">Evita que una cuenta tome varias mesas el mismo día para revenderlas. 0 = sin límite.</span>
+          <span class="campo-error" id="err_reservas.max_por_dia_usuario"></span>
+        </div>
       </div>
 
       <label class="res-check cfg-check-suelto">

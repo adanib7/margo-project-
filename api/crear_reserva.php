@@ -95,6 +95,42 @@ if (!empty($errores)) {
     exit;
 }
 
+// Límites por usuario contra el spam (panel de Configuración, 0 = sin límite).
+// Solo cuentan las reservas que siguen en pie: no canceladas, de hoy en adelante.
+$maxActivas = cfgInt('reservas.max_activas_usuario');
+$maxPorDia  = cfgInt('reservas.max_por_dia_usuario');
+
+$stmt = $conn->prepare(
+    "SELECT COUNT(*) AS activas, COALESCE(SUM(fecha = ?), 0) AS ese_dia
+     FROM reservas
+     WHERE usuario_id = ? AND estado <> 'cancelada' AND fecha >= ?"
+);
+$hoy = date('Y-m-d');
+$stmt->bind_param('sis', $fecha, $usuarioId, $hoy);
+$stmt->execute();
+$cuenta = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+if ($maxActivas > 0 && (int) $cuenta['activas'] >= $maxActivas) {
+    http_response_code(429);
+    echo json_encode([
+        'ok'      => false,
+        'mensaje' => "Ya tenés {$maxActivas} reservas activas, que es el máximo por cliente. "
+                   . 'Si necesitás otra, llamanos al ' . cfg('local.telefono') . '.',
+    ]);
+    exit;
+}
+
+if ($maxPorDia > 0 && (int) $cuenta['ese_dia'] >= $maxPorDia) {
+    http_response_code(429);
+    echo json_encode(['ok' => false, 'errores' => [
+        'fecha' => $maxPorDia === 1
+            ? 'Ya tenés una reserva para ese día. Elegí otra fecha.'
+            : "Ya tenés {$maxPorDia} reservas para ese día, que es el máximo. Elegí otra fecha.",
+    ]]);
+    exit;
+}
+
 // Choque por solapamiento: la mesa queda tomada durante toda su duración,
 // no solo en la hora exacta de inicio.
 $choque = reservaSolapada($conn, $mesaId, $fecha, $hora);
