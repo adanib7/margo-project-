@@ -53,25 +53,20 @@
   }
 
   function mostrarAviso(r) {
+    // Mismo estilo que los avisos del sistema (toast verde): un clic lleva a Reservas.
     const tarjeta = document.createElement('a');
     tarjeta.className = 'aviso-tarjeta';
     tarjeta.href = URL_RESERVAS;
     tarjeta.innerHTML =
-        '<span class="aviso-icono material-symbols-outlined">notifications_active</span>'
-      + '<span class="aviso-texto">'
-      +   '<strong>Nueva reserva · ' + esc(r.codigo) + '</strong>'
-      +   '<span>' + esc(r.nombre) + ' · ' + r.personas + (r.personas === 1 ? ' persona' : ' personas') + '</span>'
-      +   '<span>' + esc(fechaCorta(r.fecha)) + ' · ' + esc(r.hora) + ' h' + (r.mesa ? ' · Mesa ' + r.mesa : '') + '</span>'
-      + '</span>'
-      + '<button type="button" class="aviso-cerrar" aria-label="Cerrar"><span class="material-symbols-outlined">close</span></button>';
+        '<span class="material-symbols-outlined toast-icono">event_available</span>'
+      + '<span class="aviso-texto"><strong>Nueva reserva de ' + esc(r.nombre) + '</strong>'
+      + esc(fechaCorta(r.fecha)) + ', ' + esc(r.hora) + ' h · ' + r.personas + ' pers.'
+      + (r.mesa ? ' · Mesa ' + r.mesa : '') + '</span>'
+      + '<span class="aviso-ver">Ver</span>';
 
-    tarjeta.querySelector('.aviso-cerrar').addEventListener('click', e => {
-      e.preventDefault();
-      cerrar(tarjeta);
-    });
     contenedor.prepend(tarjeta);
     requestAnimationFrame(() => tarjeta.classList.add('visible'));
-    setTimeout(() => cerrar(tarjeta), 20000); // se va sola a los 20 segundos
+    setTimeout(() => cerrar(tarjeta), 15000); // se va sola a los 15 segundos
   }
 
   function cerrar(tarjeta) {
