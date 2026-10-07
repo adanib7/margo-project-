@@ -41,6 +41,16 @@ require_once '../includes/header.php';
       <p class="tarjeta-texto">Editar la distribución de mesas que ven los clientes al reservar.</p>
     </a>
 
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/sala.php') ?>">
+      <div class="tarjeta-cabecera">
+        <div class="icono">
+          <span class="material-symbols-outlined">sensors</span>
+        </div>
+        <h2>Sala en vivo</h2>
+      </div>
+      <p class="tarjeta-texto">Ver qué mesas están ocupadas, cuáles se liberan y quién llega, hora por hora.</p>
+    </a>
+
     <a class="tarjeta" href="<?= buildUrl('/dashboards/reservas.php') ?>">
       <div class="tarjeta-cabecera">
         <div class="icono icono-primary">
