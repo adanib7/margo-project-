@@ -140,16 +140,12 @@ function franjaReserva(string $hora): array
     $horas = function_exists('cfgInt') ? max(1, cfgInt('reservas.duracion_horas')) : 2;
 
     [$h, $m] = array_map('intval', array_pad(explode(':', substr($hora, 0, 5)), 2, 0));
-    $iniMin = $h * 60 + $m;
 
-    $fmt = static function (int $min): string {
-        return sprintf('%02d:%02d:00', intdiv($min, 60), $min % 60);
-    };
-
+    // TIME admite horas mayores a 23 para reservas que terminan pasada medianoche.
     return [
-        'inicio'   => $fmt($iniMin),
-        'fin'      => $fmt($iniMin + $horas * 60),
-        'duracion' => $fmt($horas * 60),
+        'inicio'   => sprintf('%02d:%02d:00', $h, $m),
+        'fin'      => sprintf('%02d:%02d:00', $h + $horas, $m),
+        'duracion' => sprintf('%02d:00:00', $horas),
     ];
 }
 

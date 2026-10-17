@@ -100,10 +100,11 @@
     setLoading(true);
 
     try {
-      const res  = await fetch(BASE_URL + '/api/crear_admin.php', {
+      const res  = await fetch(BASE_URL + '/api/crear_usuario.php', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
+          rol:      'admin',
           nombre:   document.getElementById('adminNombre').value.trim(),
           email:    document.getElementById('adminEmail').value.trim(),
           password: inputPwd.value,
@@ -140,26 +141,6 @@
     }
   });
 
-  // ── Toast ─────────────────────────────────────────────────────────────────
-  function mostrarToast(texto, tipo) {
-    const toast = document.createElement('div');
-    toast.className = 'toast toast-' + tipo;
-    toast.innerHTML =
-      '<span class="material-symbols-outlined toast-icono">' +
-        (tipo === 'exito' ? 'check_circle' : 'error') +
-      '</span>' +
-      '<span>' + texto + '</span>';
-    document.body.appendChild(toast);
-
-    // Forzar reflow para que la animación arranque
-    toast.getBoundingClientRect();
-    toast.classList.add('toast-visible');
-
-    setTimeout(() => {
-      toast.classList.remove('toast-visible');
-      toast.addEventListener('transitionend', () => toast.remove(), { once: true });
-    }, 3500);
-  }
 })();
 
 /* ── Aceternity Card Hover Effect (vanilla JS) ── */

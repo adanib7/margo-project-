@@ -57,11 +57,10 @@ if ($params) {
     $stmt->bind_param($types, ...$params);
 }
 $stmt->execute();
-$filas = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
-
-$items = array_map(static function (array $f): array {
-    return [
+$resultado = $stmt->get_result();
+$items = [];
+while ($f = $resultado->fetch_assoc()) {
+    $items[] = [
         'id'              => (int) $f['id'],
         'nombre'          => $f['nombre'],
         'categoria'       => $f['categoria'],
@@ -73,7 +72,8 @@ $items = array_map(static function (array $f): array {
         'actualizado_en'  => $f['actualizado_en'],
         'bajo_stock'      => (float) $f['stock'] <= (float) $f['stock_minimo'],
     ];
-}, $filas);
+}
+$stmt->close();
 
 // Totales globales (sobre toda la tabla, sin filtros).
 $totales = ['articulos' => 0, 'bajo_stock' => 0, 'valor_total' => 0.0];

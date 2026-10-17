@@ -17,10 +17,6 @@
   contenedor.setAttribute('aria-live', 'polite');
   document.body.appendChild(contenedor);
 
-  function esc(s) {
-    return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-  }
-
   function fechaCorta(iso) {
     const [a, m, d] = iso.split('-').map(Number);
     return new Date(a, m - 1, d).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -59,8 +55,8 @@
     tarjeta.href = URL_RESERVAS;
     tarjeta.innerHTML =
         '<span class="material-symbols-outlined toast-icono">event_available</span>'
-      + '<span class="aviso-texto"><strong>Nueva reserva de ' + esc(r.nombre) + '</strong>'
-      + esc(fechaCorta(r.fecha)) + ', ' + esc(r.hora) + ' h · ' + r.personas + ' pers.'
+      + '<span class="aviso-texto"><strong>Nueva reserva de ' + escaparHtml(r.nombre) + '</strong>'
+      + escaparHtml(fechaCorta(r.fecha)) + ', ' + escaparHtml(r.hora) + ' h · ' + r.personas + ' pers.'
       + (r.mesa ? ' · Mesa ' + r.mesa : '') + '</span>'
       + '<span class="aviso-ver">Ver</span>';
 

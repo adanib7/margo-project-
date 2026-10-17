@@ -530,16 +530,4 @@
     }
   });
 
-  function mostrarToast(texto, tipo) {
-    const t = document.createElement('div');
-    t.className = 'toast toast-' + tipo;
-    t.innerHTML = `<span class="material-symbols-outlined toast-icono">${tipo === 'exito' ? 'check_circle' : 'error'}</span><span>${texto}</span>`;
-    document.body.appendChild(t);
-    t.getBoundingClientRect();
-    t.classList.add('toast-visible');
-    setTimeout(() => {
-      t.classList.remove('toast-visible');
-      t.addEventListener('transitionend', () => t.remove(), { once: true });
-    }, 3500);
-  }
 })();

@@ -84,11 +84,10 @@ if ($params) {
     $stmt->bind_param($types, ...$params);
 }
 $stmt->execute();
-$filas = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
-
-$reservas = array_map(static function (array $f): array {
-    return [
+$resultado = $stmt->get_result();
+$reservas = [];
+while ($f = $resultado->fetch_assoc()) {
+    $reservas[] = [
         'id'         => (int) $f['id'],
         'codigo'     => $f['codigo'],
         'nombre'     => $f['nombre'],
@@ -104,7 +103,8 @@ $reservas = array_map(static function (array $f): array {
         'mesa_cap'   => $f['mesa_capacidad'] !== null ? (int) $f['mesa_capacidad'] : null,
         'creada'     => $f['fecha_creacion'] ?? null,
     ];
-}, $filas);
+}
+$stmt->close();
 
 // Totales globales (sin filtros), para las tarjetas de arriba.
 $totales = ['hoy' => 0, 'pendientes' => 0, 'confirmadas' => 0, 'canceladas' => 0, 'comensales_hoy' => 0];

@@ -5,12 +5,6 @@
   let desde  = '';
   let hasta  = '';
 
-  function esc(s) {
-    return String(s ?? '')
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
   const nf = new Intl.NumberFormat('es-ES');
   const cf = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
 
@@ -61,7 +55,7 @@
 
     const filasD = dias.map(d =>
       '<div class="rep-fila' + (d.cerrado ? ' rep-fila-cerrada' : '') + '">'
-      + '<span class="rep-fila-nom">' + esc(d.nombre) + '</span>'
+      + '<span class="rep-fila-nom">' + escaparHtml(d.nombre) + '</span>'
       + barra(d.reservas, maxD, 'rep-verde')
       + '<span class="rep-fila-val">' + d.reservas + (d.cerrado ? ' <em>cerrado</em>' : '') + '</span>'
       + '</div>').join('');
@@ -69,7 +63,7 @@
     const filasF = franjas.length
       ? franjas.map(f =>
           '<div class="rep-fila">'
-          + '<span class="rep-fila-nom">' + esc(f.hora) + '</span>'
+          + '<span class="rep-fila-nom">' + escaparHtml(f.hora) + '</span>'
           + barra(f.reservas, maxF, 'rep-dorado')
           + '<span class="rep-fila-val">' + f.reservas + '</span>'
           + '</div>').join('')
@@ -108,7 +102,7 @@
     const max = Math.max(1, ...clientes.map(c => c.reservas));
     const filas = clientes.map(c =>
       '<div class="rep-fila">'
-      + '<span class="rep-fila-nom">' + esc(c.nombre) + '</span>'
+      + '<span class="rep-fila-nom">' + escaparHtml(c.nombre) + '</span>'
       + barra(c.reservas, max, 'rep-verde')
       + '<span class="rep-fila-val">' + c.reservas + '</span></div>').join('');
 
@@ -120,7 +114,7 @@
     const max = Math.max(1, ...inv.categorias.map(c => c.valor));
     const filas = inv.categorias.map(c =>
       '<div class="rep-fila">'
-      + '<span class="rep-fila-nom">' + esc(c.categoria) + '</span>'
+      + '<span class="rep-fila-nom">' + escaparHtml(c.categoria) + '</span>'
       + barra(c.valor, max, 'rep-dorado')
       + '<span class="rep-fila-val">' + cf.format(c.valor) + '</span></div>').join('');
 
@@ -158,7 +152,7 @@
         + bloqueInventario(data.inventario);
     } catch (e) {
       $('repContenido').innerHTML =
-        '<div class="gu-estado"><span class="material-symbols-outlined" style="font-size:2rem;color:#b91c1c">error</span><p>' + esc(e.message) + '</p></div>';
+        '<div class="gu-estado"><span class="material-symbols-outlined" style="font-size:2rem;color:#b91c1c">error</span><p>' + escaparHtml(e.message) + '</p></div>';
     }
   }
 

@@ -28,12 +28,6 @@
   };
 
   // ── Helpers ──────────────────────────────────────────────────────────────
-  function esc(str) {
-    return String(str ?? '')
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-  }
-
   const nf = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 });
   const cf = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
 
@@ -66,7 +60,7 @@
       actualizarStats(data.totales);
       renderTabla(data.items);
     } catch (e) {
-      mostrarEstado(`<span class="material-symbols-outlined" style="font-size:2rem;color:#b91c1c">error</span><p>${esc(e.message)}</p>`);
+      mostrarEstado(`<span class="material-symbols-outlined" style="font-size:2rem;color:#b91c1c">error</span><p>${escaparHtml(e.message)}</p>`);
     }
   }
 
@@ -93,11 +87,11 @@
         <tr data-id="${it.id}">
           <td>
             <div class="gu-usuario-celda">
-              <span class="inv-cat-dot inv-cat-${esc(it.categoria)}"></span>
-              <span class="gu-nombre">${esc(it.nombre)}</span>
+              <span class="inv-cat-dot inv-cat-${escaparHtml(it.categoria)}"></span>
+              <span class="gu-nombre">${escaparHtml(it.nombre)}</span>
             </div>
           </td>
-          <td>${esc(cat)}</td>
+          <td>${escaparHtml(cat)}</td>
           <td>
             <div class="inv-stock-cell">
               <button class="inv-step" data-delta="-1" title="Restar 1">
@@ -107,23 +101,23 @@
               <button class="inv-step" data-delta="1" title="Sumar 1">
                 <span class="material-symbols-outlined">add</span>
               </button>
-              <span class="inv-unidad">${esc(uni)}</span>
+              <span class="inv-unidad">${escaparHtml(uni)}</span>
               ${bajo}
             </div>
           </td>
-          <td class="gu-fecha">${nf.format(it.stock_minimo)} ${esc(uni)}</td>
+          <td class="gu-fecha">${nf.format(it.stock_minimo)} ${escaparHtml(uni)}</td>
           <td>${cf.format(it.precio_unitario)}</td>
           <td>${cf.format(it.stock * it.precio_unitario)}</td>
-          <td class="gu-email">${esc(it.proveedor || '—')}</td>
+          <td class="gu-email">${escaparHtml(it.proveedor || '—')}</td>
           <td class="gu-fecha">${formatFecha(it.actualizado_en)}</td>
           <td>
             <div class="gu-acciones">
               <button class="btn-tabla btn-editar" title="Editar"
-                data-item='${esc(JSON.stringify(it))}'>
+                data-item='${escaparHtml(JSON.stringify(it))}'>
                 <span class="material-symbols-outlined">edit</span>
               </button>
               <button class="btn-tabla btn-eliminar" title="Eliminar"
-                data-id="${it.id}" data-nombre="${esc(it.nombre)}">
+                data-id="${it.id}" data-nombre="${escaparHtml(it.nombre)}">
                 <span class="material-symbols-outlined">delete</span>
               </button>
             </div>
@@ -393,22 +387,6 @@
     if (modalItem.classList.contains('modal-visible'))     cerrarModalItem();
     if (modalEliminar.classList.contains('modal-visible')) cerrarModalEliminar();
   });
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // Toast
-  // ══════════════════════════════════════════════════════════════════════════
-  function mostrarToast(texto, tipo) {
-    const t = document.createElement('div');
-    t.className = 'toast toast-' + tipo;
-    t.innerHTML = `<span class="material-symbols-outlined toast-icono">${tipo === 'exito' ? 'check_circle' : 'error'}</span><span>${esc(texto)}</span>`;
-    document.body.appendChild(t);
-    t.getBoundingClientRect();
-    t.classList.add('toast-visible');
-    setTimeout(() => {
-      t.classList.remove('toast-visible');
-      t.addEventListener('transitionend', () => t.remove(), { once: true });
-    }, 3500);
-  }
 
   // ── Arranque ─────────────────────────────────────────────────────────────
   cargarInventario();

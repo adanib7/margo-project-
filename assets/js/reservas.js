@@ -26,12 +26,6 @@
   };
 
   // ── Helpers ──────────────────────────────────────────────────────────────
-  function esc(s) {
-    return String(s ?? '')
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
   const DIAS  = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
   const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
@@ -81,7 +75,7 @@
       llenarSelectMesas();
       renderTabla(data.reservas);
     } catch (e) {
-      mostrarEstado('<span class="material-symbols-outlined" style="font-size:2rem;color:#b91c1c">error</span><p>' + esc(e.message) + '</p>');
+      mostrarEstado('<span class="material-symbols-outlined" style="font-size:2rem;color:#b91c1c">error</span><p>' + escaparHtml(e.message) + '</p>');
     }
   }
 
@@ -114,38 +108,38 @@
         acciones.push('<button class="btn-tabla btn-confirmar" title="Confirmar" data-id="' + r.id + '">'
           + '<span class="material-symbols-outlined">check_circle</span></button>');
       }
-      acciones.push('<button class="btn-tabla btn-editar" title="Editar" data-json=\'' + esc(JSON.stringify(r)) + '\'>'
+      acciones.push('<button class="btn-tabla btn-editar" title="Editar" data-json=\'' + escaparHtml(JSON.stringify(r)) + '\'>'
         + '<span class="material-symbols-outlined">edit</span></button>');
       if (!cancelada) {
         acciones.push('<button class="btn-tabla btn-cancelar" title="Cancelar" data-id="' + r.id
-          + '" data-nombre="' + esc(r.nombre) + '" data-codigo="' + esc(r.codigo) + '">'
+          + '" data-nombre="' + escaparHtml(r.nombre) + '" data-codigo="' + escaparHtml(r.codigo) + '">'
           + '<span class="material-symbols-outlined">event_busy</span></button>');
       }
       if (ES_SUPERADMIN) {
         acciones.push('<button class="btn-tabla btn-eliminar" title="Eliminar" data-id="' + r.id
-          + '" data-nombre="' + esc(r.nombre) + '" data-codigo="' + esc(r.codigo) + '">'
+          + '" data-nombre="' + escaparHtml(r.nombre) + '" data-codigo="' + escaparHtml(r.codigo) + '">'
           + '<span class="material-symbols-outlined">delete</span></button>');
       }
 
       const contacto = [r.telefono, r.email].filter(Boolean).map(esc).join(' · ') || '—';
       const chipHoy  = esHoy(r.fecha) ? ' <span class="res-chip-hoy">hoy</span>' : '';
 
-      const casilla = cancelada ? '' : '<input type="checkbox" class="res-sel" value="' + r.id + '" aria-label="Seleccionar ' + esc(r.codigo) + '">';
+      const casilla = cancelada ? '' : '<input type="checkbox" class="res-sel" value="' + r.id + '" aria-label="Seleccionar ' + escaparHtml(r.codigo) + '">';
 
       return '<tr class="' + (cancelada ? 'res-fila-cancelada' : '') + '">'
         + '<td class="col-sel">' + casilla + '</td>'
-        + '<td><span class="res-codigo">' + esc(r.codigo) + '</span></td>'
+        + '<td><span class="res-codigo">' + escaparHtml(r.codigo) + '</span></td>'
         + '<td><div class="gu-usuario-celda">'
-        +   '<div class="gu-avatar">' + esc(iniciales(r.nombre)) + '</div>'
-        +   '<div><span class="gu-nombre">' + esc(r.nombre) + '</span>'
+        +   '<div class="gu-avatar">' + escaparHtml(iniciales(r.nombre)) + '</div>'
+        +   '<div><span class="gu-nombre">' + escaparHtml(r.nombre) + '</span>'
         +   '<div class="res-contacto">' + contacto + '</div></div>'
         + '</div></td>'
         + '<td><span class="res-fecha">' + fechaCorta(r.fecha) + chipHoy + '</span>'
-        +   '<div class="res-hora">' + esc(r.hora) + ' h</div></td>'
+        +   '<div class="res-hora">' + escaparHtml(r.hora) + ' h</div></td>'
         + '<td>' + (r.mesa ? 'Mesa ' + r.mesa : '<span class="res-sin-mesa">sin asignar</span>') + '</td>'
         + '<td>' + r.personas + '</td>'
-        + '<td><span class="badge-rol badge-estado-' + esc(r.estado) + '">' + labelEstado(r.estado) + '</span></td>'
-        + '<td class="gu-email res-nota">' + (r.comentario ? esc(r.comentario) : '—') + '</td>'
+        + '<td><span class="badge-rol badge-estado-' + escaparHtml(r.estado) + '">' + labelEstado(r.estado) + '</span></td>'
+        + '<td class="gu-email res-nota">' + (r.comentario ? escaparHtml(r.comentario) : '—') + '</td>'
         + '<td><div class="gu-acciones">' + acciones.join('') + '</div></td>'
         + '</tr>';
     }).join('');
@@ -285,7 +279,7 @@
     // La hora guardada puede no estar entre las opciones fijas: la agrego si falta.
     const selHora = document.getElementById('rHora');
     if (r.hora && !Array.from(selHora.options).some(o => o.value === r.hora)) {
-      selHora.insertAdjacentHTML('afterbegin', '<option value="' + esc(r.hora) + '">' + esc(r.hora) + '</option>');
+      selHora.insertAdjacentHTML('afterbegin', '<option value="' + escaparHtml(r.hora) + '">' + escaparHtml(r.hora) + '</option>');
     }
     selHora.value = r.hora || '';
 
@@ -374,8 +368,8 @@
     document.getElementById('modalConfirmarTexto').innerHTML = varias
       ? '¿Cancelar las <strong>' + d.ids.length + ' reservas</strong> seleccionadas?'
       : esCancelar
-      ? '¿Cancelar la reserva <strong>' + esc(d.codigo) + '</strong> de <strong>' + esc(d.nombre) + '</strong>?'
-      : '¿Eliminar definitivamente la reserva <strong>' + esc(d.codigo) + '</strong> de <strong>' + esc(d.nombre) + '</strong>?';
+      ? '¿Cancelar la reserva <strong>' + escaparHtml(d.codigo) + '</strong> de <strong>' + escaparHtml(d.nombre) + '</strong>?'
+      : '¿Eliminar definitivamente la reserva <strong>' + escaparHtml(d.codigo) + '</strong> de <strong>' + escaparHtml(d.nombre) + '</strong>?';
     document.getElementById('btnAceptarConfirmarTexto').textContent =
       varias ? 'Cancelar ' + d.ids.length : (esCancelar ? 'Cancelar reserva' : 'Eliminar');
 
@@ -479,19 +473,5 @@
   });
 
   // ── Toast ────────────────────────────────────────────────────────────────
-  function mostrarToast(texto, tipo) {
-    const t = document.createElement('div');
-    t.className = 'toast toast-' + tipo;
-    t.innerHTML = '<span class="material-symbols-outlined toast-icono">'
-      + (tipo === 'exito' ? 'check_circle' : 'error') + '</span><span>' + esc(texto) + '</span>';
-    document.body.appendChild(t);
-    t.getBoundingClientRect();
-    t.classList.add('toast-visible');
-    setTimeout(() => {
-      t.classList.remove('toast-visible');
-      t.addEventListener('transitionend', () => t.remove(), { once: true });
-    }, 3500);
-  }
-
   cargar();
 })();

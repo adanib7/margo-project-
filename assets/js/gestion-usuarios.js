@@ -55,21 +55,21 @@
         <td>
           <div class="gu-usuario-celda">
             <div class="gu-avatar">${iniciales(u.nombre)}</div>
-            <span class="gu-nombre">${esc(u.nombre)}</span>
+            <span class="gu-nombre">${escaparHtml(u.nombre)}</span>
           </div>
         </td>
-        <td class="gu-email">${esc(u.email)}</td>
+        <td class="gu-email">${escaparHtml(u.email)}</td>
         <td><span class="badge-rol badge-${u.rol}">${labelRol(u.rol)}</span></td>
         <td class="gu-fecha">${formatFecha(u.fecha_registro)}</td>
         <td>
           <div class="gu-acciones">
             <button class="btn-tabla btn-editar" title="Editar"
-              data-id="${u.id}" data-nombre="${esc(u.nombre)}"
-              data-email="${esc(u.email)}" data-rol="${u.rol}">
+              data-id="${u.id}" data-nombre="${escaparHtml(u.nombre)}"
+              data-email="${escaparHtml(u.email)}" data-rol="${u.rol}">
               <span class="material-symbols-outlined">edit</span>
             </button>
             <button class="btn-tabla btn-eliminar" title="Eliminar"
-              data-id="${u.id}" data-nombre="${esc(u.nombre)}">
+              data-id="${u.id}" data-nombre="${escaparHtml(u.nombre)}">
               <span class="material-symbols-outlined">delete</span>
             </button>
           </div>
@@ -102,12 +102,6 @@
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-  function esc(str) {
-    return String(str)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-  }
-
   function iniciales(nombre) {
     return nombre.trim().split(/\s+/).slice(0,2).map(w => w[0].toUpperCase()).join('');
   }
@@ -375,22 +369,6 @@
     if (modalUsuario.classList.contains('modal-visible'))  cerrarModalUsuario();
     if (modalEliminar.classList.contains('modal-visible')) cerrarModalEliminar();
   });
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // Toast
-  // ══════════════════════════════════════════════════════════════════════════
-  function mostrarToast(texto, tipo) {
-    const t = document.createElement('div');
-    t.className = 'toast toast-' + tipo;
-    t.innerHTML = `<span class="material-symbols-outlined toast-icono">${tipo === 'exito' ? 'check_circle' : 'error'}</span><span>${texto}</span>`;
-    document.body.appendChild(t);
-    t.getBoundingClientRect();
-    t.classList.add('toast-visible');
-    setTimeout(() => {
-      t.classList.remove('toast-visible');
-      t.addEventListener('transitionend', () => t.remove(), { once: true });
-    }, 3500);
-  }
 
   // ── Arranque ──────────────────────────────────────────────────────────────
   cargarUsuarios();

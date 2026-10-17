@@ -19,7 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 $fecha = trim($_GET['fecha'] ?? '');
 
-if ($fecha === '' || DateTime::createFromFormat('Y-m-d', $fecha)->format('Y-m-d') !== $fecha) {
+$fechaObj = DateTime::createFromFormat('Y-m-d', $fecha);
+if (!$fechaObj || $fechaObj->format('Y-m-d') !== $fecha) {
     http_response_code(400);
     echo json_encode(['ok' => false, 'mensaje' => 'Fecha inválida.']);
     exit;

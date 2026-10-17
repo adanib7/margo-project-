@@ -2,12 +2,6 @@
 
   const $ = id => document.getElementById(id);
 
-  function esc(s) {
-    return String(s ?? '')
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
   // ── Vista previa de la dirección ─────────────────────────────────────────
   function pintarDireccion() {
     const calle  = $('locDireccion').value.trim();
@@ -80,8 +74,8 @@
       return;
     }
     $('listaFechas').innerHTML = fechasCerradas.map(f =>
-      '<span class="cfg-fecha-chip">' + esc(fechaLegible(f))
-      + '<button type="button" class="cfg-fecha-x" data-fecha="' + esc(f) + '" aria-label="Quitar">'
+      '<span class="cfg-fecha-chip">' + escaparHtml(fechaLegible(f))
+      + '<button type="button" class="cfg-fecha-x" data-fecha="' + escaparHtml(f) + '" aria-label="Quitar">'
       + '<span class="material-symbols-outlined">close</span></button></span>'
     ).join('');
 
@@ -183,18 +177,4 @@
     }
   });
 
-  // ── Toast ────────────────────────────────────────────────────────────────
-  function mostrarToast(texto, tipo) {
-    const t = document.createElement('div');
-    t.className = 'toast toast-' + tipo;
-    t.innerHTML = '<span class="material-symbols-outlined toast-icono">'
-      + (tipo === 'exito' ? 'check_circle' : 'error') + '</span><span>' + esc(texto) + '</span>';
-    document.body.appendChild(t);
-    t.getBoundingClientRect();
-    t.classList.add('toast-visible');
-    setTimeout(() => {
-      t.classList.remove('toast-visible');
-      t.addEventListener('transitionend', () => t.remove(), { once: true });
-    }, 3500);
-  }
 })();

@@ -15,12 +15,6 @@
     mesa:     ['qMesa',     'qErrorMesa'],
   };
 
-  function esc(s) {
-    return String(s ?? '')
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
   function limpiarErrores() {
     Object.values(CAMPOS).forEach(p => $(p[1]).textContent = '');
     modal.querySelectorAll('.campo-wrapper-error').forEach(el => el.classList.remove('campo-wrapper-error'));
@@ -109,31 +103,18 @@
 
       if (data.ok) {
         cerrar();
-        mostrarToast(data.mensaje, 'exito');
+        mostrarToast(data.mensaje, 'exito', 4500);
       } else if (data.errores) {
         Object.keys(data.errores).forEach(c => marcarError(c, data.errores[c]));
         setLoading(false);
       } else {
-        mostrarToast(data.mensaje || 'Error inesperado.', 'error');
+        mostrarToast(data.mensaje || 'Error inesperado.', 'error', 4500);
         setLoading(false);
       }
     } catch {
-      mostrarToast('No se pudo conectar con el servidor.', 'error');
+      mostrarToast('No se pudo conectar con el servidor.', 'error', 4500);
       setLoading(false);
     }
   });
 
-  function mostrarToast(texto, tipo) {
-    const t = document.createElement('div');
-    t.className = 'toast toast-' + tipo;
-    t.innerHTML = '<span class="material-symbols-outlined toast-icono">'
-      + (tipo === 'exito' ? 'check_circle' : 'error') + '</span><span>' + esc(texto) + '</span>';
-    document.body.appendChild(t);
-    t.getBoundingClientRect();
-    t.classList.add('toast-visible');
-    setTimeout(() => {
-      t.classList.remove('toast-visible');
-      t.addEventListener('transitionend', () => t.remove(), { once: true });
-    }, 4500);
-  }
 })();
