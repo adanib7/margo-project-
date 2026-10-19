@@ -75,23 +75,25 @@ if ($conn === null) {
 
         if ($usuario === '' || $pass1 === '') {
             $mensaje = "Completá todos los campos.";
-        } elseif (($err = validarPassword($pass1)) !== '') {
-            $mensaje = $err;
         } else {
-            $stmt = $conn->prepare("SELECT id, password, rol FROM usuarios WHERE nombre = ?");
-            $stmt->bind_param("s", $usuario);
+            // En el acceso se verifica el hash existente; las reglas se aplican
+            // al crear o cambiar la contraseña, no al volver a iniciar sesión.
+            $stmt = $conn->prepare("SELECT id, nombre, password, rol FROM usuarios WHERE nombre = ? OR email = ? LIMIT 2");
+            $stmt->bind_param("ss", $usuario, $usuario);
             $stmt->execute();
-            $row  = $stmt->get_result()->fetch_assoc();
+            $resultado = $stmt->get_result();
+            // Si un nombre coincide con el correo de otra cuenta, no elegir una al azar.
+            $row = $resultado->num_rows === 1 ? $resultado->fetch_assoc() : null;
             $stmt->close();
 
             if ($row && is_string($row['password']) && password_verify($pass1, $row['password'])) {
                 session_regenerate_id(true);
-                $_SESSION['usuario_logueado'] = $usuario;
+                $_SESSION['usuario_logueado'] = $row['nombre'];
                 $_SESSION['rol']              = $row['rol'] ?? 'usuario';
                 $_SESSION['usuario_id']       = $row['id'];
                 redirectToDashboard();
             } else {
-                $mensaje = "Usuario o contraseña incorrectos.";
+                $mensaje = "Usuario, correo o contraseña incorrectos.";
             }
         }
     }

@@ -17,6 +17,16 @@ Esta guia conecta el codigo real con los apuntes del curso. Sirve para estudiar 
 
 PHP se ejecuta en el servidor. JavaScript se ejecuta en el navegador. MySQL guarda los datos entre visitas. JSON es el formato de intercambio; no es la base de datos del proyecto.
 
+El login acepta el nombre de usuario o el correo en un mismo campo. La consulta
+preparada busca por `nombre = ? OR email = ?`. La sesion siempre conserva el nombre
+real obtenido de la base, aunque se haya escrito el correo. Si la entrada coincide
+con dos cuentas diferentes, se rechaza el acceso para no elegir una arbitrariamente.
+
+Las contrasenas nuevas admiten simbolos opcionales: se mantienen el minimo de seis
+caracteres, una mayuscula y un numero. `validarPassword()` se comparte entre registro,
+perfil y recuperacion. Al iniciar sesion se verifica el hash guardado, sin volver a
+exigir las reglas de creacion a contrasenas existentes.
+
 ## 2. Recorrido que deben poder explicar: crear una reserva
 
 1. El usuario inicia sesion. PHP guarda su identificador y rol en `$_SESSION`.

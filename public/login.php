@@ -77,11 +77,11 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
           <?php endif; ?>
           <input type="hidden" name="accion" value="login">
 
-          <label class="login-label" for="usuario">Usuario</label>
+          <label class="login-label" for="usuario">Usuario o correo electrónico</label>
           <div class="login-campo">
             <span class="material-symbols-outlined">person</span>
             <input type="text" id="usuario" name="usuario" required autocomplete="username"
-                   value="<?= $h($modo === 'login' ? ($_POST['usuario'] ?? '') : '') ?>" placeholder="Tu usuario">
+                   value="<?= $h($modo === 'login' ? ($_POST['usuario'] ?? '') : '') ?>" placeholder="Tu usuario o correo electrónico">
           </div>
 
           <label class="login-label" for="pass">Contraseña</label>
@@ -132,7 +132,7 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
             <input type="password" id="r-pass" name="contraseña" required autocomplete="new-password" placeholder="Mínimo 6 caracteres">
             <button type="button" class="login-ojo" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
           </div>
-          <p class="login-ayuda">Solo letras y números. Al menos 6 caracteres, una mayúscula y un número.</p>
+          <p class="login-ayuda">Al menos 6 caracteres, una mayúscula y un número. Podés incluir símbolos, pero no son obligatorios.</p>
 
           <label class="login-label" for="r-confirmar">Confirmar contraseña</label>
           <div class="login-campo">
@@ -204,7 +204,7 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
               <button type="button" class="login-ojo" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
             </div>
             <span class="login-error" data-error="password"></span>
-            <p class="login-ayuda">Solo letras y números. Al menos 6 caracteres, una mayúscula y un número.</p>
+            <p class="login-ayuda">Al menos 6 caracteres, una mayúscula y un número. Podés incluir símbolos, pero no son obligatorios.</p>
 
             <label class="login-label" for="rec-confirmar">Confirmar contraseña</label>
             <div class="login-campo">
