@@ -24,6 +24,7 @@ $erroresGoogle = [
     'google'   => 'No se pudo iniciar sesión con Google.',
     'token'    => 'Token de Google inválido.',
     'database' => 'No se pudo conectar con la base de datos.',
+    'google_cuenta' => 'Ese correo ya tiene una cuenta que no se puede vincular automáticamente. Iniciá sesión con tu usuario o correo y contraseña.',
 ];
 if (isset($erroresGoogle[$_GET['error'] ?? ''])) {
     $mensaje = $erroresGoogle[$_GET['error']];

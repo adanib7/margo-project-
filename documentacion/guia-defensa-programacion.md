@@ -124,7 +124,7 @@ Limites actuales: comprobar y guardar son pasos separados, por lo que falta prot
 - FPDF (`includes/lib/fpdf/`): genera archivos PDF. Revisar como lo usan los comprobantes y reportes; es codigo de una libreria externa.
 - Lucide y Material Symbols: iconos de la interfaz.
 - Tailwind: utilidades y estilos base de las pantallas; tambien se usa CSS propio.
-- Google: acceso con una cuenta externa. `includes/google_auth.php` valida la credencial y busca una cuenta vinculada por su identificador `sub`. Las altas y primeras vinculaciones pasan por la confirmacion del correo antes de poder acceder.
+- Google: acceso con una cuenta externa. `includes/google_auth.php` valida la credencial y busca una cuenta vinculada por su identificador `sub`. Permite crear la cuenta e iniciar sesion directamente, sin un codigo adicional del sitio.
 - Brevo: API externa de correo. `includes/mailer.php` envia JSON mediante una solicitud HTTP con cURL, o un stream si cURL no esta disponible.
 
 Conviene saber que problema resuelve cada herramienta, que datos recibe, que devuelve y que ocurre si falla. No tienen que atribuirse la implementacion interna de las librerias.
@@ -172,16 +172,19 @@ Hay que terminar el registro en el navegador donde se inicio; si se pierde la se
 se puede volver a completar el formulario de registro respetando los limites.
 
 `registroConfirmar()` usa una transaccion y `SELECT ... FOR UPDATE`: bloquea el
-pendiente mientras comprueba el codigo, crea o vincula la cuenta y elimina ese
+pendiente mientras comprueba el codigo, crea la cuenta y elimina ese
 pendiente. `commit()` confirma esos cambios juntos; `rollback()` los deshace si
 algo falla. Dos confirmaciones simultaneas no pueden consumir el mismo codigo.
 Ese bloqueo es para verificar registros; no soluciona la concurrencia de reservas.
 
 Solo despues de confirmar se crea la cuenta con rol `usuario`. No se inicia sesion
 automaticamente: se vuelve al login. Las cuentas existentes y las altas realizadas
-por el superadministrador conservan su funcionamiento. Los nuevos registros por
-Google tambien verifican el correo; despues continuan con Google. Vincular Google
-a una cuenta existente conserva su nombre, contrasena y rol.
+por el superadministrador conservan su funcionamiento. El registro con Google no
+usa este codigo: el servidor valida la credencial de Google y permite entrar
+directamente. La vinculacion automatica a una cuenta local con el mismo email solo
+se hace si Google administra ese correo (Gmail o Workspace); conserva nombre,
+contrasena y rol. Si es un correo externo y existe una cuenta local sin vincular,
+se solicita usar el acceso local para evitar una vinculacion insegura.
 
 Los formularios de registro y verificacion incluyen un token CSRF: PHP comprueba que
 coincida con el de la sesion antes de procesarlos. En Google se comparan la cookie

@@ -41,41 +41,55 @@ try {
     $stmt->execute();
     $usuario = $stmt->get_result()->fetch_assoc();
     $stmt->close();
-    if ($usuario) {
-        session_regenerate_id(true);
-        $_SESSION['usuario_logueado'] = $usuario['nombre'];
-        $_SESSION['usuario_id'] = $usuario['id'];
-        $_SESSION['rol'] = $usuario['rol'] ?? 'usuario';
-        redirectToDashboard();
-    }
-
-    // Confirmar el correo antes de crear una cuenta o vincular una cuenta local.
-    // También cubre cuentas Google que usan un correo de otro proveedor.
-    require_once __DIR__ . '/registro.php';
-    registroPreparar($conn);
-    $base = preg_replace('/[^a-zA-Z0-9]/', '', explode('@', $email)[0]) ?: 'usuario';
-    $base = substr($base, 0, 90);
-    $nombre = $base;
-    $numero = 1;
-    $stmt = $conn->prepare('SELECT id FROM usuarios WHERE nombre = ?');
-    do {
-        $stmt->bind_param('s', $nombre);
+    if (!$usuario) {
+        $stmt = $conn->prepare('SELECT id, nombre, rol, google_id FROM usuarios WHERE email = ? LIMIT 1');
+        $stmt->bind_param('s', $email);
         $stmt->execute();
-        $ocupado = $stmt->get_result()->num_rows > 0;
-        if ($ocupado) { $nombre = $base . $numero++; }
-    } while ($ocupado);
-    $stmt->close();
-    [$ok, $mensaje] = registroSolicitar($conn, $email, [
-        'nombre' => $nombre,
-        'google_id' => $googleId,
-        'foto' => is_string($datos['picture'] ?? null) ? $datos['picture'] : null,
-    ]);
-    $_SESSION['registro_email'] = $email;
-    $_SESSION['registro_mensaje'] = $mensaje;
-    $_SESSION['registro_tipo'] = $ok ? 'success' : 'error';
-    header('Location: ' . buildUrl('/public/login.php?modo=verificar', true));
+        $existente = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        $foto = is_string($datos['picture'] ?? null) ? $datos['picture'] : null;
+
+        if ($existente) {
+            // Vincular por email solo si Google administra ese correo (Gmail/Workspace).
+            // Para correos externos, email_verified por si solo no prueba su propiedad actual.
+            $correoGoogle = str_ends_with(strtolower($email), '@gmail.com') || !empty($datos['hd']);
+            if (!$correoGoogle || (!empty($existente['google_id']) && $existente['google_id'] !== $googleId)) {
+                header('Location: ' . buildUrl('/public/login.php?error=google_cuenta', true));
+                exit;
+            }
+            $stmt = $conn->prepare('UPDATE usuarios SET google_id = ?, foto = ? WHERE id = ?');
+            $stmt->bind_param('ssi', $googleId, $foto, $existente['id']);
+            $stmt->execute();
+            $stmt->close();
+            $usuario = $existente;
+        } else {
+            $base = preg_replace('/[^a-zA-Z0-9]/', '', explode('@', $email)[0]) ?: 'usuario';
+            $base = substr($base, 0, 90);
+            $nombre = $base;
+            $numero = 1;
+            $stmt = $conn->prepare('SELECT id FROM usuarios WHERE nombre = ?');
+            do {
+                $stmt->bind_param('s', $nombre);
+                $stmt->execute();
+                $ocupado = $stmt->get_result()->num_rows > 0;
+                if ($ocupado) { $nombre = $base . $numero++; }
+            } while ($ocupado);
+            $stmt->close();
+            $stmt = $conn->prepare("INSERT INTO usuarios (google_id, nombre, email, foto, rol) VALUES (?, ?, ?, ?, 'usuario')");
+            $stmt->bind_param('ssss', $googleId, $nombre, $email, $foto);
+            $stmt->execute();
+            $usuario = ['id' => $stmt->insert_id, 'nombre' => $nombre, 'rol' => 'usuario'];
+            $stmt->close();
+        }
+    }
+    session_regenerate_id(true);
+    $_SESSION['usuario_logueado'] = $usuario['nombre'];
+    $_SESSION['usuario_id'] = $usuario['id'];
+    $_SESSION['rol'] = $usuario['rol'] ?? 'usuario';
+    unset($_SESSION['registro_email'], $_SESSION['registro_solicitud'], $_SESSION['registro_mensaje'], $_SESSION['registro_tipo']);
+    redirectToDashboard();
 } catch (Throwable $e) {
-    error_log('Google: no se pudo completar el acceso o iniciar la verificación.');
+    error_log('Google: no se pudo completar el acceso.');
     header('Location: ' . buildUrl('/public/login.php?error=database', true));
 } finally {
     mysqli_report($reportAnterior);

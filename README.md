@@ -27,7 +27,7 @@ Guia para estudiar la programacion y preparar la defensa: [documentacion/guia-de
 
 VERIFICACION DE NUEVOS REGISTROS:
 
-El registro publico envia un codigo de seis digitos mediante Brevo. La cuenta se
+El registro con usuario y contrasena envia un codigo de seis digitos mediante Brevo. La cuenta se
 crea en `usuarios` solo al confirmar el codigo. Requiere el correo habilitado en
 `includes/mail_config.php`; si falla, el registro no se habilita.
 
@@ -41,8 +41,9 @@ El codigo vence en 15 minutos, admite cinco intentos y puede reenviarse tras
 de diez solicitudes de envio y treinta confirmaciones por IP por hora. Los
 pendientes de mas de 24 horas se limpian al procesar otro registro.
 
-Google mantiene el acceso directo a cuentas ya vinculadas; las altas y primeras
-vinculaciones requieren confirmar el correo y luego volver a continuar con Google.
+Google permite entrar y crear cuentas directamente, sin un codigo adicional del
+sitio. Se conserva la validacion del token de Google. La vinculacion automatica a
+una cuenta local solo se permite cuando Google administra el correo (Gmail o Workspace).
 Las cuentas creadas por el superadministrador mantienen su flujo administrativo.
 
 Prueba de integracion: `C:\xampp\php\php.exe tests/registro.php` con una instancia
