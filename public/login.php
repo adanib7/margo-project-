@@ -3,10 +3,15 @@ session_start();
 require_once '../includes/config.php';
 require_once '../includes/check_auth.php';
 require_once '../includes/auth.php';
-// Las tres vistas de esta página; cualquier otro valor en la URL vuelve al login.
-$titulosModo = ['login' => 'Iniciar sesión', 'registro' => 'Crear cuenta', 'recuperar' => 'Recuperar contraseña'];
+// Cualquier otro valor en la URL vuelve al login.
+$titulosModo = ['login' => 'Iniciar sesión', 'registro' => 'Crear cuenta', 'recuperar' => 'Recuperar contraseña', 'verificar' => 'Verificar correo'];
 if (!isset($titulosModo[$modo])) {
     $modo = 'login';
+}
+if ($modo === 'verificar' && $registroEmail === '') {
+    $modo = 'registro';
+    $mensaje = 'Completá el registro para recibir un código de verificación.';
+    $tipo = 'error';
 }
 $activa = static fn(string $vista) => $vista === $modo ? 'activa' : '';
 
@@ -51,6 +56,9 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
   <!-- ── Mitad derecha: los formularios, uno encima del otro ── -->
   <main class="login-panel">
     <div class="login-caja" data-modo="<?= $h($modo) ?>">
+      <?php if ($modo === 'verificar' && $mensaje === '' && isset($_SESSION['registro_mensaje'])): ?>
+        <?php $mensaje = $_SESSION['registro_mensaje']; $tipo = $_SESSION['registro_tipo'] ?? 'error'; unset($_SESSION['registro_mensaje'], $_SESSION['registro_tipo']); ?>
+      <?php endif; ?>
       <div class="login-tabs" role="tablist">
         <span class="login-tabs-indicador" aria-hidden="true"></span>
         <a href="?modo=login"    data-modo="login"    role="tab">Iniciar sesión</a>
@@ -102,6 +110,7 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
             </div>
           <?php endif; ?>
           <input type="hidden" name="accion" value="registro">
+          <input type="hidden" name="csrf" value="<?= $h($_SESSION['registro_csrf']) ?>">
 
           <label class="login-label" for="r-usuario">Usuario</label>
           <div class="login-campo">
@@ -132,12 +141,38 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
             <button type="button" class="login-ojo" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
           </div>
 
-          <button type="submit" class="login-boton">Crear cuenta</button>
+          <p class="login-ayuda">Te enviaremos un código para verificar el correo antes de habilitar tu cuenta.</p>
+          <button type="submit" class="login-boton">Recibir código</button>
           <p class="login-alternativa">¿Ya tenés cuenta? <a href="?modo=login" data-modo="login">Iniciá sesión</a></p>
+          <?php if ($registroEmail !== ''): ?>
+            <p class="login-alternativa"><a href="?modo=verificar" data-modo="verificar">Ya tengo un código pendiente</a></p>
+          <?php endif; ?>
 
           <p class="login-separador"><span>o continuá con</span></p>
           <div class="login-google g_id_signin" data-type="standard" data-size="large" data-theme="outline"
                data-text="continue_with" data-shape="rectangular" data-logo_alignment="center" data-width="300"></div>
+        </form>
+
+        <!-- Confirmación del registro: PHP controla los códigos y los límites. -->
+        <form class="login-vista <?= $activa('verificar') ?>" data-vista="verificar" method="post" action="?modo=verificar">
+          <h2 class="login-form-titulo">Verificá tu correo</h2>
+          <p class="login-intro">Ingresá el código enviado a <strong><?= $h($registroEmail) ?></strong>. Revisá también spam.</p>
+          <?php if ($mensaje !== '' && $modo === 'verificar'): ?>
+            <div class="login-mensaje <?= $tipo === 'success' ? 'exito' : '' ?>" role="status">
+              <span class="material-symbols-outlined"><?= $tipo === 'success' ? 'check_circle' : 'error' ?></span>
+              <?= $h($mensaje) ?>
+            </div>
+          <?php endif; ?>
+          <input type="hidden" name="csrf" value="<?= $h($_SESSION['registro_csrf']) ?>">
+          <label class="login-label" for="registro-codigo">Código de seis números</label>
+          <div class="login-campo">
+            <span class="material-symbols-outlined">pin</span>
+            <input type="text" id="registro-codigo" name="codigo" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required placeholder="000000">
+          </div>
+          <p class="login-ayuda">Vence en 15 minutos. Tenés hasta cinco intentos por código. Para reenviarlo hay que esperar un minuto.</p>
+          <button type="submit" class="login-boton" name="accion" value="verificar_registro">Verificar correo</button>
+          <button type="submit" class="login-boton login-boton-secundario" name="accion" value="reenviar_registro" formnovalidate>Reenviar código</button>
+          <p class="login-alternativa"><a href="?modo=registro" data-modo="registro">Cambiar correo o volver a registrarme</a></p>
         </form>
 
         <!-- Recuperar contraseña: se maneja con JavaScript (api/recuperar_password.php) -->

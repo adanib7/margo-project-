@@ -13,7 +13,7 @@ document.querySelectorAll('.login-ojo').forEach(boton => {
 // Cambian sin recargar la página. El CSS anima según la clase "activa" y el
 // atributo data-modo de la caja.
 const caja = document.querySelector('.login-caja');
-const titulos = { login: 'Iniciar sesión', registro: 'Crear cuenta', recuperar: 'Recuperar contraseña' };
+const titulos = { login: 'Iniciar sesión', registro: 'Crear cuenta', recuperar: 'Recuperar contraseña', verificar: 'Verificar correo' };
 const nombreLocal = document.title.split(' · ').slice(1).join(' · ');
 
 function cambiarModo(modo) {
@@ -24,7 +24,7 @@ function cambiarModo(modo) {
     vista.inert = !activa; // el formulario oculto no recibe foco
   });
   document.querySelectorAll('.login-tabs a').forEach(tab => {
-    tab.setAttribute('aria-selected', tab.dataset.modo === modo);
+    tab.setAttribute('aria-selected', tab.dataset.modo === modo || (modo === 'verificar' && tab.dataset.modo === 'registro'));
   });
   document.title = titulos[modo] + ' · ' + nombreLocal;
   history.replaceState(null, '', '?modo=' + modo);

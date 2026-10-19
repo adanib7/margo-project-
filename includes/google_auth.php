@@ -3,90 +3,81 @@ session_start();
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/check_auth.php';
 
-if (!isset($_POST['credential'])) {
-    header("Location: " . buildUrl('/public/login.php?error=google', true));
+// Google usa una cookie y un campo POST iguales para impedir solicitudes falsificadas.
+$csrfCookie = $_COOKIE['g_csrf_token'] ?? '';
+$csrfPost = $_POST['g_csrf_token'] ?? '';
+if (!is_string($csrfCookie) || !is_string($csrfPost) || $csrfCookie === ''
+    || !hash_equals($csrfCookie, $csrfPost) || !is_string($_POST['credential'] ?? null)) {
+    header('Location: ' . buildUrl('/public/login.php?error=google', true));
     exit;
 }
 
-$id_token = $_POST['credential'];
-
-$url      = "https://oauth2.googleapis.com/tokeninfo?id_token=" . urlencode($id_token);
-$response = @file_get_contents($url);
-
-if ($response === false) {
-    header("Location: " . buildUrl('/public/login.php?error=google', true));
+$url = 'https://oauth2.googleapis.com/tokeninfo?id_token=' . urlencode($_POST['credential']);
+$contexto = stream_context_create(['http' => ['timeout' => 8]]);
+$response = @file_get_contents($url, false, $contexto);
+$datos = $response === false ? null : json_decode($response, true);
+$email = $datos['email'] ?? '';
+if (!is_array($datos) || !is_string($datos['sub'] ?? null) || $datos['sub'] === ''
+    || ($datos['aud'] ?? '') !== GOOGLE_CLIENT_ID
+    || !in_array($datos['iss'] ?? '', ['accounts.google.com', 'https://accounts.google.com'], true)
+    || (int) ($datos['exp'] ?? 0) <= time()
+    || !filter_var($datos['email_verified'] ?? false, FILTER_VALIDATE_BOOLEAN)
+    || !is_string($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    header('Location: ' . buildUrl('/public/login.php?error=token', true));
     exit;
 }
-
-$datos = json_decode($response, true);
-
-if (!isset($datos['sub']) || $datos['aud'] !== GOOGLE_CLIENT_ID) {
-    header("Location: " . buildUrl('/public/login.php?error=token', true));
-    exit;
-}
-
-$google_id = $datos['sub'];
-$email     = $datos['email'];
-$nombre    = $datos['name'];
-$foto      = $datos['picture'] ?? null;
-
-// Si $conn es null, no podemos procesar
 if ($conn === null) {
-    header("Location: " . buildUrl('/public/login.php?error=database', true));
+    header('Location: ' . buildUrl('/public/login.php?error=database', true));
     exit;
 }
 
-$stmt = $conn->prepare("SELECT id, nombre, google_id, rol FROM usuarios WHERE google_id = ? OR email = ? LIMIT 1");
-if (!$stmt) {
-    header("Location: " . buildUrl('/public/login.php?error=database', true));
-    exit;
-}
-$stmt->bind_param("ss", $google_id, $email);
-$stmt->execute();
-$resultado = $stmt->get_result();
-
-if ($resultado->num_rows > 0) {
-    $user   = $resultado->fetch_assoc();
-    $nombre = $user['nombre'];
-    $_SESSION['rol'] = $user['rol'] ?? 'usuario';
-
-    // Vincular google_id si el usuario existía solo por email
-    if (empty($user['google_id'])) {
-        $upd = $conn->prepare("UPDATE usuarios SET google_id = ?, foto = ? WHERE id = ?");
-        $upd->bind_param("ssi", $google_id, $foto, $user['id']);
-        $upd->execute();
-        $upd->close();
+$reportAnterior = (new mysqli_driver())->report_mode;
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+try {
+    $googleId = $datos['sub'];
+    // Una cuenta ya vinculada se identifica por sub, que no depende del email.
+    $stmt = $conn->prepare('SELECT id, nombre, rol FROM usuarios WHERE google_id = ? LIMIT 1');
+    $stmt->bind_param('s', $googleId);
+    $stmt->execute();
+    $usuario = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    if ($usuario) {
+        session_regenerate_id(true);
+        $_SESSION['usuario_logueado'] = $usuario['nombre'];
+        $_SESSION['usuario_id'] = $usuario['id'];
+        $_SESSION['rol'] = $usuario['rol'] ?? 'usuario';
+        redirectToDashboard();
     }
-} else {
-    // Nuevo usuario: generar nombre único a partir del email
-    $base_nombre = preg_replace('/[^a-zA-Z0-9]/', '', explode('@', $email)[0]);
-    $nombre      = $base_nombre;
-    $i           = 1;
 
-    $check = $conn->prepare("SELECT id FROM usuarios WHERE nombre = ?");
-    while (true) {
-        $check->bind_param("s", $nombre);
-        $check->execute();
-        if ($check->get_result()->num_rows === 0) break;
-        $nombre = $base_nombre . $i++;
-    }
-    $check->close();
-
-    $ins = $conn->prepare("INSERT INTO usuarios (google_id, nombre, email, foto, rol) VALUES (?, ?, ?, ?, 'usuario')");
-    $ins->bind_param("ssss", $google_id, $nombre, $email, $foto);
-    $ins->execute();
-    $ins->close();
-    $_SESSION['rol'] = 'usuario';
+    // Confirmar el correo antes de crear una cuenta o vincular una cuenta local.
+    // También cubre cuentas Google que usan un correo de otro proveedor.
+    require_once __DIR__ . '/registro.php';
+    registroPreparar($conn);
+    $base = preg_replace('/[^a-zA-Z0-9]/', '', explode('@', $email)[0]) ?: 'usuario';
+    $base = substr($base, 0, 90);
+    $nombre = $base;
+    $numero = 1;
+    $stmt = $conn->prepare('SELECT id FROM usuarios WHERE nombre = ?');
+    do {
+        $stmt->bind_param('s', $nombre);
+        $stmt->execute();
+        $ocupado = $stmt->get_result()->num_rows > 0;
+        if ($ocupado) { $nombre = $base . $numero++; }
+    } while ($ocupado);
+    $stmt->close();
+    [$ok, $mensaje] = registroSolicitar($conn, $email, [
+        'nombre' => $nombre,
+        'google_id' => $googleId,
+        'foto' => is_string($datos['picture'] ?? null) ? $datos['picture'] : null,
+    ]);
+    $_SESSION['registro_email'] = $email;
+    $_SESSION['registro_mensaje'] = $mensaje;
+    $_SESSION['registro_tipo'] = $ok ? 'success' : 'error';
+    header('Location: ' . buildUrl('/public/login.php?modo=verificar', true));
+} catch (Throwable $e) {
+    error_log('Google: no se pudo completar el acceso o iniciar la verificación.');
+    header('Location: ' . buildUrl('/public/login.php?error=database', true));
+} finally {
+    mysqli_report($reportAnterior);
 }
-
-$_SESSION['usuario_logueado'] = $nombre;
-
-// Guardar ID en sesión para gestión de usuarios
-$stmt_id = $conn->prepare("SELECT id FROM usuarios WHERE nombre = ? LIMIT 1");
-$stmt_id->bind_param("s", $nombre);
-$stmt_id->execute();
-$row_id = $stmt_id->get_result()->fetch_assoc();
-$stmt_id->close();
-$_SESSION['usuario_id'] = $row_id['id'] ?? null;
-
-redirectToDashboard();
+exit;

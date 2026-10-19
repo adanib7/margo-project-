@@ -114,7 +114,7 @@ Limites actuales: comprobar y guardar son pasos separados, por lo que falta prot
 - FPDF (`includes/lib/fpdf/`): genera archivos PDF. Revisar como lo usan los comprobantes y reportes; es codigo de una libreria externa.
 - Lucide y Material Symbols: iconos de la interfaz.
 - Tailwind: utilidades y estilos base de las pantallas; tambien se usa CSS propio.
-- Google: acceso con una cuenta externa. `includes/google_auth.php` consulta la validacion del token y comprueba el destinatario antes de buscar o crear la cuenta local.
+- Google: acceso con una cuenta externa. `includes/google_auth.php` valida la credencial y busca una cuenta vinculada por su identificador `sub`. Las altas y primeras vinculaciones pasan por la confirmacion del correo antes de poder acceder.
 - Brevo: API externa de correo. `includes/mailer.php` envia JSON mediante una solicitud HTTP con cURL, o un stream si cURL no esta disponible.
 
 Conviene saber que problema resuelve cada herramienta, que datos recibe, que devuelve y que ocurre si falla. No tienen que atribuirse la implementacion interna de las librerias.
@@ -139,3 +139,53 @@ Se conservan funcionalidades, integraciones, consultas preparadas y reglas de re
 5. Dibujar dos reservas que se pisan y dos que no. Relacionarlas con las condiciones de `reservaSolapada()`.
 6. Explicar que permanece en el navegador, que queda en la sesion del servidor y que se guarda en MySQL.
 7. Distinguir el codigo propio de las librerias y contar con claridad en que se uso ayuda de IA y como se comprobo el resultado.
+
+## 11. Registro con verificacion de correo
+
+El formulario ya no inserta directamente en `usuarios`. `includes/auth.php` llama a
+`includes/registro.php`, que guarda los datos provisionales en `registro_pendientes`
+y envia un codigo mediante Brevo. La pantalla `modo=verificar` permite ingresarlo
+o pedir otro. Son formularios POST procesados por PHP, sin un endpoint JSON nuevo.
+
+La contrasena y el codigo se guardan como hashes con `password_hash()`. El codigo
+tiene seis digitos, vence en 15 minutos y se bloquea despues de cinco errores.
+Al reenviar hay que esperar 60 segundos; el nuevo codigo reemplaza al anterior.
+Se admiten hasta cinco envios por email por hora. `registro_limites` conserva limites
+por IP entre sesiones: diez solicitudes de envio y treinta confirmaciones por hora.
+Los limites por IP pueden afectar a personas que comparten conexion y se renuevan
+automaticamente. No son un bloqueo permanente ni garantizan una cuenta por persona.
+
+Ademas del codigo, el servidor vincula la solicitud con un identificador aleatorio
+guardado en la sesion. En la tabla se guarda su hash. Esto impide que una solicitud
+hecha desde otro navegador cambie las credenciales que confirma el usuario original.
+Hay que terminar el registro en el navegador donde se inicio; si se pierde la sesion,
+se puede volver a completar el formulario de registro respetando los limites.
+
+`registroConfirmar()` usa una transaccion y `SELECT ... FOR UPDATE`: bloquea el
+pendiente mientras comprueba el codigo, crea o vincula la cuenta y elimina ese
+pendiente. `commit()` confirma esos cambios juntos; `rollback()` los deshace si
+algo falla. Dos confirmaciones simultaneas no pueden consumir el mismo codigo.
+Ese bloqueo es para verificar registros; no soluciona la concurrencia de reservas.
+
+Solo despues de confirmar se crea la cuenta con rol `usuario`. No se inicia sesion
+automaticamente: se vuelve al login. Las cuentas existentes y las altas realizadas
+por el superadministrador conservan su funcionamiento. Los nuevos registros por
+Google tambien verifican el correo; despues continuan con Google. Vincular Google
+a una cuenta existente conserva su nombre, contrasena y rol.
+
+Los formularios de registro y verificacion incluyen un token CSRF: PHP comprueba que
+coincida con el de la sesion antes de procesarlos. En Google se comparan la cookie
+y el campo `g_csrf_token`, ademas de validar el token de identidad con Google.
+
+Si Brevo no esta configurado o el envio falla, la cuenta no se habilita. Los correos
+con codigos de registro no se copian al destinatario BCC de las reservas. Los
+pendientes abandonados se eliminan tras 24 horas cuando se procesa otro registro.
+En el hosting las tablas pueden importarse con `base de datos/registro_verificacion.sql`.
+
+Limites del alcance: un correo temporal puede recibir el codigo; estas medidas no
+demuestran una identidad real. No se exige verificar retroactivamente cuentas
+existentes ni se agrega aqui una verificacion de los cambios de email en Mi perfil.
+
+Para practicar: registrar una cuenta de prueba, mostrar que todavia no aparece en
+`usuarios`, provocar un codigo incorrecto, confirmar el correcto e intentar reutilizarlo.
+Verificar tambien vencimiento, espera de reenvio y acceso con una cuenta existente.

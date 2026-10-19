@@ -24,3 +24,27 @@ htdocs/includes/ en el hosting:
 
 
 Guia para estudiar la programacion y preparar la defensa: [documentacion/guia-defensa-programacion.md](documentacion/guia-defensa-programacion.md).
+
+VERIFICACION DE NUEVOS REGISTROS:
+
+El registro publico envia un codigo de seis digitos mediante Brevo. La cuenta se
+crea en `usuarios` solo al confirmar el codigo. Requiere el correo habilitado en
+`includes/mail_config.php`; si falla, el registro no se habilita.
+
+Las tablas `registro_pendientes` y `registro_limites` se preparan automaticamente.
+En un hosting sin permisos de creacion, importar antes
+`base de datos/registro_verificacion.sql` en la base existente. No modifica cuentas
+actuales. El despliegue FTP no importa este SQL automaticamente.
+
+El codigo vence en 15 minutos, admite cinco intentos y puede reenviarse tras
+60 segundos, con hasta cinco envios por correo por hora. Hay un limite adicional
+de diez solicitudes de envio y treinta confirmaciones por IP por hora. Los
+pendientes de mas de 24 horas se limpian al procesar otro registro.
+
+Google mantiene el acceso directo a cuentas ya vinculadas; las altas y primeras
+vinculaciones requieren confirmar el correo y luego volver a continuar con Google.
+Las cuentas creadas por el superadministrador mantienen su flujo administrativo.
+
+Prueba de integracion: `C:\xampp\php\php.exe tests/registro.php` con una instancia
+MySQL local de pruebas en el puerto 3317 (o la variable `TEST_MYSQL_PORT`). Crea y
+elimina una base temporal, simula el correo y no usa la base del restaurante.

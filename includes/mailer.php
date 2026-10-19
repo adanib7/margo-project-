@@ -37,7 +37,7 @@ function mailHabilitado(): bool
 /**
  * Manda un correo. Devuelve [ok(bool), detalle(string)]. Nunca lanza excepción.
  */
-function enviarCorreoBrevo(string $paraEmail, string $paraNombre, string $asunto, string $html): array
+function enviarCorreoBrevo(string $paraEmail, string $paraNombre, string $asunto, string $html, bool $permitirCopia = true): array
 {
     $c = mailConfig();
 
@@ -54,7 +54,7 @@ function enviarCorreoBrevo(string $paraEmail, string $paraNombre, string $asunto
         'subject'     => $asunto,
         'htmlContent' => $html,
     ];
-    if (!empty($c['bcc']) && filter_var($c['bcc'], FILTER_VALIDATE_EMAIL)) {
+    if ($permitirCopia && !empty($c['bcc']) && filter_var($c['bcc'], FILTER_VALIDATE_EMAIL)) {
         $payload['bcc'] = [['email' => $c['bcc']]];
     }
 
@@ -299,4 +299,15 @@ function correoCodigoRecuperacion(string $nombre, string $codigo, int $minutos):
         . 'Si no pediste cambiar la contraseña, ignorá este correo: tu cuenta sigue igual.</p>';
 
     return ['Tu código para cambiar la contraseña: ' . $codigo, correoLayout('Tu código es ' . $codigo, $cuerpo)];
+}
+
+function correoCodigoRegistro(string $nombre, string $codigo, int $minutos): array
+{
+    $cuerpo = '<p>Hola, ' . e_($nombre) . ':</p>'
+        . '<p>Para terminar tu registro en ' . e_(localNombreCorreo()) . ', ingresá este código en la página:</p>'
+        . '<p style="font-size:34px;font-family:monospace;letter-spacing:8px;text-align:center;color:#2d5f3f;">'
+        . e_($codigo) . '</p>'
+        . '<p>Vence en ' . $minutos . ' minutos y sirve una sola vez. No lo compartas.</p>'
+        . '<p>Tu cuenta se habilita después de verificar el correo. Si no pediste registrarte, ignorá este mensaje.</p>';
+    return ['Verificá tu correo · ' . localNombreCorreo(), correoLayout('Completá tu registro', $cuerpo)];
 }
