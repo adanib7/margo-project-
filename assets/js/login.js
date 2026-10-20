@@ -48,7 +48,7 @@ const recPaso2  = document.getElementById('recPaso2');
 const recMsj    = document.getElementById('recMensaje');
 const recEmail  = document.getElementById('rec-email');
 const reenviar  = document.getElementById('recReenviar');
-const API_REC   = '../api/recuperar_password.php';
+const API_REC   = formRec.dataset.api;
 
 function mostrarMensaje(contenedor, texto, exito) {
   contenedor.className = 'login-mensaje' + (exito ? ' exito' : '');

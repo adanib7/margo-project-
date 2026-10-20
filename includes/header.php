@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="light" lang="es">
 <head>
-  <link rel="icon" href="../image.ico" type="image/x-icon">
+  <link rel="icon" href="<?= buildUrl('/image.ico') ?>" type="image/x-icon">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -23,10 +23,11 @@
       // Cache-buster: la versión cambia con la fecha de modificación del archivo,
       // para que el navegador (y el caché estático de InfinityFree) siempre sirvan
       // el CSS actualizado después de un deploy en vez de una copia vieja.
-      $cssAbsPath = dirname($_SERVER['SCRIPT_FILENAME']) . '/' . $pageCSS;
+      $cssPath = '/' . preg_replace('~^(\.\./)+~', '', $pageCSS);
+      $cssAbsPath = __DIR__ . '/..' . $cssPath;
       $cssVersion = is_file($cssAbsPath) ? filemtime($cssAbsPath) : time();
     ?>
-    <link rel="stylesheet" href="<?= htmlspecialchars($pageCSS, ENT_QUOTES, 'UTF-8') ?>?v=<?= $cssVersion ?>" />
+    <link rel="stylesheet" href="<?= htmlspecialchars(buildUrl($cssPath), ENT_QUOTES, 'UTF-8') ?>?v=<?= $cssVersion ?>" />
   <?php endif; ?>
   <title><?= htmlspecialchars($pageTitle ?? 'Margo Project', ENT_QUOTES, 'UTF-8') ?></title>
 </head>

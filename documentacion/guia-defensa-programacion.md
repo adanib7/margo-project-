@@ -202,3 +202,18 @@ existentes ni se agrega aqui una verificacion de los cambios de email en Mi perf
 Para practicar: registrar una cuenta de prueba, mostrar que todavia no aparece en
 `usuarios`, provocar un codigo incorrecto, confirmar el correcto e intentar reutilizarlo.
 Verificar tambien vencimiento, espera de reenvio y acceso con una cuenta existente.
+
+## 12. URLs amigables
+
+Una direccion como `/usuarios` ejecuta internamente
+`dashboards/gestion-usuarios.php`. Apache aplica las reglas de `.htaccess`: no se
+mueven los archivos ni se cambian los controles de permisos de las pantallas.
+`includes/rutas.php` relaciona los archivos con sus nombres publicos y detecta la
+carpeta base; `buildUrl()` genera los enlaces limpios conservando consultas y anclas.
+En el hosting la base es vacia; en XAMPP puede ser `/margo-project-`.
+
+Cuando se abre un enlace antiguo por GET o HEAD, `config.php` responde con una
+redireccion 302 hacia la direccion nueva. Los POST no se redirigen: deben conservar
+su cuerpo y seguir procesando formularios y cambios del plano. Las API, descargas
+y el callback de Google conservan sus direcciones. Las imagenes, CSS y solicitudes
+JavaScript usan rutas desde la base para funcionar tambien desde las URLs amigables.

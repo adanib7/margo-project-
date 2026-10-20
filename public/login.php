@@ -38,12 +38,12 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 <div class="login">
   <!-- ── Mitad izquierda: foto y marca (igual que la portada) ── -->
   <aside class="login-marca">
-    <img class="login-foto" src="../assets/img/hero.jpg" alt="">
+    <img class="login-foto" src="<?= buildUrl('/assets/img/hero.jpg') ?>" alt="">
     <div class="login-marca-contenido">
-      <a href="../index.php" class="login-volver">
+      <a href="<?= buildUrl('/') ?>" class="login-volver">
         <span class="material-symbols-outlined">arrow_back</span> Volver al inicio
       </a>
-      <img src="../assets/img/logo-horizontal-verde.png" alt="<?= $h(cfg('local.nombre')) ?>" class="login-logo">
+      <img src="<?= buildUrl('/assets/img/logo-horizontal-verde.png') ?>" alt="<?= $h(cfg('local.nombre')) ?>" class="login-logo">
       <span class="login-eyebrow"><?= $h(implode(' · ', array_filter([cfg('local.ciudad'), cfg('local.provincia')]))) ?></span>
       <h1 class="login-titulo">Tu mesa te espera</h1>
       <ul class="login-ventajas">
@@ -177,7 +177,7 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
         </form>
 
         <!-- Recuperar contraseña: se maneja con JavaScript (api/recuperar_password.php) -->
-        <form class="login-vista <?= $activa('recuperar') ?>" data-vista="recuperar" id="formRecuperar" novalidate>
+        <form class="login-vista <?= $activa('recuperar') ?>" data-vista="recuperar" id="formRecuperar" data-api="<?= buildUrl('/api/recuperar_password.php') ?>" novalidate>
           <h2 class="login-form-titulo">Recuperar contraseña</h2>
           <p class="login-intro" id="recIntro">Escribí el email de tu cuenta y te mandamos un código para elegir una contraseña nueva.</p>
           <div class="login-mensaje" id="recMensaje" hidden></div>

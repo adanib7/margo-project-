@@ -6,32 +6,16 @@ if (function_exists('date_default_timezone_set')) {
     date_default_timezone_set('Europe/Madrid');
 }
 
-// Detectar BASE_URL de forma simple y confiable
-$scriptPath = $_SERVER['SCRIPT_NAME'];
-// str_replace normaliza el separador '\' que dirname() devuelve en Windows (dev local)
-$scriptDir = str_replace('\\', '/', dirname($scriptPath));
-
-// Eliminar caracteres de ruta no deseados y normalizar
-$basePath = rtrim($scriptDir, '/');
-
-// Si la ruta termina en /includes, /dashboards, /api o /public, subir un nivel
-if (preg_match('/(\/includes|\/dashboards|\/api|\/public)$/', $basePath)) {
-    $basePath = str_replace('\\', '/', dirname($basePath));
-}
-
-// Si está vacío o es la raíz ("/", ".") después de todo, es raíz
-if (empty($basePath) || $basePath === '.' || $basePath === '/') {
-    $basePath = '';
-}
-
-define('BASE_URL', $basePath);
+require_once __DIR__ . '/rutas.php';
+// Funciona tanto en el dominio raíz como en /margo-project- de XAMPP.
+define('BASE_URL', baseDesdeScript($_SERVER['SCRIPT_NAME'] ?? '/index.php'));
 define('GOOGLE_CLIENT_ID', '191789640459-kt1mfd30prke6f6i97ttvm4tg58b57ka.apps.googleusercontent.com');
 
 // Función auxiliar para construir URLs seguras
 function buildUrl(string $path, bool $absolute = false): string {
     $base = rtrim(BASE_URL, '/');
     // Asegurar que el path comience con / y no tenga barras duplicadas
-    $path = '/' . ltrim($path, '/');
+    $path = rutaPublica($path);
 
     $url = $base . $path;
     
@@ -61,6 +45,19 @@ function jsUrl(string $file): string {
     $path = __DIR__ . '/../assets/js/' . $file;
     $version = is_file($path) ? filemtime($path) : time();
     return buildUrl('/assets/js/' . $file) . '?v=' . $version;
+}
+
+// Los enlaces guardados con .php siguen funcionando. No redirigir POST:
+// se conserva el cuerpo de formularios y de las operaciones del plano.
+$requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+if (in_array($_SERVER['REQUEST_METHOD'] ?? '', ['GET', 'HEAD'], true)
+    && is_string($requestPath) && str_starts_with($requestPath, BASE_URL . '/')) {
+    $rutaAnterior = substr($requestPath, strlen(BASE_URL));
+    if (isset(rutasPantallas()[$rutaAnterior])) {
+        $consulta = $_SERVER['QUERY_STRING'] ?? '';
+        header('Location: ' . buildUrl($rutaAnterior) . ($consulta !== '' ? '?' . $consulta : ''), true, 302);
+        exit;
+    }
 }
 
 $conn = null;

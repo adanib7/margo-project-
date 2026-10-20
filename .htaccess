@@ -8,3 +8,18 @@ RedirectMatch 404 (?i)\.(sql|md|docx|log)$
 
 # Archivos con contraseñas: nunca se sirven por la web.
 RedirectMatch 404 (?i)/includes/(db_config|mail_config)(\.example)?\.php$
+
+# URLs de las pantallas. La sustitución es interna y conserva los parámetros.
+RewriteEngine On
+RewriteRule ^ingresar/?$ public/login.php [L]
+RewriteRule ^panel/?$ dashboards/user.php [L]
+RewriteRule ^admin/?$ dashboards/admin.php [L]
+RewriteRule ^superadmin/?$ dashboards/superadmin.php [L]
+RewriteRule ^usuarios/?$ dashboards/gestion-usuarios.php [L]
+RewriteRule ^reservas/?$ dashboards/reservas.php [L]
+RewriteRule ^plano/?$ dashboards/admin_plano.php [L]
+RewriteRule ^inventario/?$ dashboards/inventario.php [L]
+RewriteRule ^reportes/?$ dashboards/reportes.php [L]
+RewriteRule ^configuracion/?$ dashboards/configuracion.php [L]
+RewriteRule ^mi-perfil/?$ dashboards/mi_perfil.php [L]
+RewriteRule ^mis-reservas/?$ dashboards/mis-reservas.php [L]

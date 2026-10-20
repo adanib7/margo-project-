@@ -49,3 +49,18 @@ Las cuentas creadas por el superadministrador mantienen su flujo administrativo.
 Prueba de integracion: `C:\xampp\php\php.exe tests/registro.php` con una instancia
 MySQL local de pruebas en el puerto 3317 (o la variable `TEST_MYSQL_PORT`). Crea y
 elimina una base temporal, simula el correo y no usa la base del restaurante.
+
+URLS AMIGABLES:
+
+Las pantallas usan `/ingresar`, `/panel`, `/admin`, `/superadmin`, `/usuarios`,
+`/reservas`, `/plano`, `/inventario`, `/reportes`, `/configuracion`, `/mi-perfil`
+y `/mis-reservas`. En XAMPP se agrega delante `/margo-project-`, por ejemplo:
+`http://localhost/margo-project-/usuarios`.
+
+Subir tambien `.htaccess` e `includes/rutas.php` al publicar estos cambios.
+Apache debe tener `mod_rewrite` y permitir las reglas de `.htaccess`.
+Las direcciones anteriores redirigen a las nuevas conservando los parametros en
+GET/HEAD; los POST antiguos siguen procesandose sin perder los datos enviados.
+Las API, los comprobantes y el callback de Google mantienen sus direcciones.
+
+Prueba de correspondencia de rutas: `C:\xampp\php\php.exe tests/rutas.php`.

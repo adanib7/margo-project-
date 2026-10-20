@@ -235,7 +235,7 @@ function activarRotacion(el, handle) {
 
 /* --- Cargar / Guardar --- */
 async function cargarPlano() {
-  const res = await fetch('admin_plano.php?action=cargar');
+  const res = await fetch(window.location.pathname + '?action=cargar');
   const mesas = await res.json();
   mesas.forEach(crearMesa);
 }
@@ -253,7 +253,7 @@ async function guardarPlano() {
     rotacion: el._rot,
   }));
 
-  const res = await fetch('admin_plano.php', {
+  const res = await fetch(window.location.pathname, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'guardar', mesas, eliminadas }),
