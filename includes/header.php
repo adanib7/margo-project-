@@ -18,6 +18,11 @@
     };
   </script>
   <script src="<?= jsUrl('comun.js') ?>"></script>
+  <?php if (sesionAutenticada()): ?>
+    <script src="<?= jsUrl('sesion.js') ?>" defer
+            data-api="<?= buildUrl('/api/sesion.php') ?>"
+            data-login="<?= buildUrl('/public/login.php?sesion=expirada') ?>"></script>
+  <?php endif; ?>
   <?php if (!empty($pageCSS)): ?>
     <?php
       // Cache-buster: la versión cambia con la fecha de modificación del archivo,

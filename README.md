@@ -64,3 +64,16 @@ GET/HEAD; los POST antiguos siguen procesandose sin perder los datos enviados.
 Las API, los comprobantes y el callback de Google mantienen sus direcciones.
 
 Prueba de correspondencia de rutas: `C:\xampp\php\php.exe tests/rutas.php`.
+
+SESIONES:
+
+Las sesiones vencen tras 30 minutos sin actividad o a las 8 horas del acceso.
+Los tiempos se cambian en `includes/sesion.php`. Los avisos automaticos de reservas
+y las consultas de estado no renuevan la actividad. Las pantallas protegidas
+comprueban el estado y notifican actividad real; las API rechazan sesiones vencidas
+con HTTP 401. El logout elimina los datos del servidor y la cookie de acceso.
+Al publicar este cambio, las sesiones anteriores sin marcas de tiempo requieren
+volver a iniciar sesion. Cerrar una pestana no equivale a cerrar la sesion de todas
+las pestanas; el vencimiento del servidor funciona aunque el navegador restaure cookies.
+
+Prueba sin MySQL: `C:\xampp\php\php.exe tests/sesion.php`.

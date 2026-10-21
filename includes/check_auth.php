@@ -1,7 +1,8 @@
 <?php
+require_once __DIR__ . '/sesion.php';
 function requireLogin(): void {
-    if (!isset($_SESSION['usuario_logueado'])) {
-        header('Location: ' . buildUrl('/public/login.php', true));
+    if (!sesionAutenticada()) {
+        header('Location: ' . buildUrl('/public/login.php' . (!empty($_SESSION['sesion_vencida']) ? '?sesion=expirada' : ''), true));
         exit;
     }
 }

@@ -8,7 +8,8 @@
  *
  *   GET ?desde_id=123  ->  { ok, ultimo_id, reservas: [ ... ] }
  */
-session_start();
+require_once __DIR__ . '/../includes/sesion.php';
+iniciarSesion();
 require_once '../includes/config.php';
 require_once '../includes/plano_db.php';
 

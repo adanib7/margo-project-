@@ -47,6 +47,12 @@ function jsUrl(string $file): string {
     return buildUrl('/assets/js/' . $file) . '?v=' . $version;
 }
 
+require_once __DIR__ . '/sesion.php';
+comprobarSesionRequest();
+
+// El control de sesión no necesita conexión a MySQL.
+if (str_ends_with($_SERVER['SCRIPT_NAME'] ?? '', '/api/sesion.php')) { return; }
+
 // Los enlaces guardados con .php siguen funcionando. No redirigir POST:
 // se conserva el cuerpo de formularios y de las operaciones del plano.
 $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);

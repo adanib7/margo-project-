@@ -217,3 +217,29 @@ redireccion 302 hacia la direccion nueva. Los POST no se redirigen: deben conser
 su cuerpo y seguir procesando formularios y cambios del plano. Las API, descargas
 y el callback de Google conservan sus direcciones. Las imagenes, CSS y solicitudes
 JavaScript usan rutas desde la base para funcionar tambien desde las URLs amigables.
+
+## 13. Vencimiento y cierre de sesiones
+
+`includes/sesion.php` centraliza el inicio, cierre y validacion. Al acceder con
+contrasena o Google se genera otro ID y se guardan la fecha de inicio y la ultima
+actividad. El servidor exige volver a entrar tras 30 minutos de inactividad o
+al llegar a ocho horas, incluso si se sigue usando la aplicacion.
+
+`config.php` comprueba la sesion antes de ejecutar operaciones o conectar a MySQL.
+Las API protegidas responden 401 con JSON al perder el acceso; las pantallas
+redirigen al login. `api/sesion.php` permite consultar el vencimiento con GET y
+notificar actividad con POST. Los sondeos automaticos de nuevas reservas no
+actualizan el reloj, para que dejar una pestana abierta no mantenga el acceso.
+
+`assets/js/sesion.js` detecta interaccion real y sincroniza la pantalla con el
+servidor. No es quien decide los permisos: aunque se desactive JavaScript,
+las solicitudes posteriores siguen comprobando el vencimiento en PHP.
+Cerrar sesion elimina todos los datos, destruye el registro del servidor y borra
+la cookie; las paginas protegidas usan `Cache-Control: no-store`.
+
+La cookie no tiene una duracion persistente y usa HttpOnly, SameSite=Lax y Secure
+cuando hay HTTPS. Cerrar una pestana no cierra las otras. Un navegador puede
+restaurar cookies al reabrirse; por eso la proteccion principal es el vencimiento
+controlado por el servidor, no detectar el cierre de una ventana.
+
+Referencia: [OWASP, gestion de sesiones](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html).

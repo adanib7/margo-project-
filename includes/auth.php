@@ -1,13 +1,13 @@
 <?php
 $modo    = is_string($_GET['modo'] ?? null) ? $_GET['modo'] : 'login';
-$mensaje = "";
+$mensaje = !empty($_SESSION['sesion_vencida']) || ($_GET['sesion'] ?? '') === 'expirada'
+    ? 'Tu sesión terminó por inactividad o por alcanzar su duración máxima. Volvé a iniciar sesión.' : '';
 $tipo    = "error";
 $registroEmail = $_SESSION['registro_email'] ?? '';
 $_SESSION['registro_csrf'] ??= bin2hex(random_bytes(32));
 
 if (isset($_GET['logout'])) {
-    unset($_SESSION['usuario_logueado'], $_SESSION['rol']);
-    session_destroy();
+    cerrarSesion();
     header('Location: ' . buildUrl('/public/login.php', true));
     exit;
 }
@@ -87,10 +87,7 @@ if ($conn === null) {
             $stmt->close();
 
             if ($row && is_string($row['password']) && password_verify($pass1, $row['password'])) {
-                session_regenerate_id(true);
-                $_SESSION['usuario_logueado'] = $row['nombre'];
-                $_SESSION['rol']              = $row['rol'] ?? 'usuario';
-                $_SESSION['usuario_id']       = $row['id'];
+                autenticarSesion($row);
                 redirectToDashboard();
             } else {
                 $mensaje = "Usuario, correo o contraseña incorrectos.";

@@ -27,7 +27,8 @@ register_shutdown_function(function () {
     }
 });
 
-session_start();
+require_once __DIR__ . '/sesion.php';
+iniciarSesion();
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/check_auth.php';
 require_once __DIR__ . '/plano_db.php';

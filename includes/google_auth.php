@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once __DIR__ . '/sesion.php';
+iniciarSesion();
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/check_auth.php';
 
@@ -82,11 +83,7 @@ try {
             $stmt->close();
         }
     }
-    session_regenerate_id(true);
-    $_SESSION['usuario_logueado'] = $usuario['nombre'];
-    $_SESSION['usuario_id'] = $usuario['id'];
-    $_SESSION['rol'] = $usuario['rol'] ?? 'usuario';
-    unset($_SESSION['registro_email'], $_SESSION['registro_solicitud'], $_SESSION['registro_mensaje'], $_SESSION['registro_tipo']);
+    autenticarSesion($usuario);
     redirectToDashboard();
 } catch (Throwable $e) {
     error_log('Google: no se pudo completar el acceso.');
