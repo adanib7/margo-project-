@@ -117,7 +117,7 @@ require_once '../includes/header.php';
   </header>
 
   <div class="plano-editor">
-    <div id="canvas-wrap"><div id="plano"></div></div>
+    <div id="canvas-wrap"><div id="plano" tabindex="0" aria-label="Plano editable de mesas"></div></div>
 
     <aside class="plano-panel">
       <section class="plano-bloque">
@@ -162,5 +162,6 @@ require_once '../includes/header.php';
   </div>
 </main>
 
+<script src="<?= jsUrl('konva.min.js') ?>"></script>
 <script src="<?= jsUrl('admin_plano.js') ?>"></script>
 <?php require_once '../includes/footer.php'; ?>

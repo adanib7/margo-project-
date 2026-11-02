@@ -2313,63 +2313,6 @@ body {
   margin: 0;
 }
 
-/* Mesas */
-.mesa {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--verde);
-  border: 3px solid var(--ambar);
-  cursor: grab;
-  box-sizing: border-box;
-  touch-action: none;
-}
-.mesa:active { cursor: grabbing; }
-.mesa.cuadrada { border-radius: 8px; }
-.mesa.redonda { border-radius: 50%; }
-.mesa.seleccionada { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ambar); }
-.mesa-numero {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 20px;
-  color: var(--crema);
-  pointer-events: none;
-  line-height: 1;
-}
-
-/* Controles: solo se ven con la mesa seleccionada */
-.handle { position: absolute; display: none; z-index: 5; }
-.mesa.seleccionada .handle { display: block; }
-.handle.esquina {
-  width: 13px; height: 13px;
-  background: #fff;
-  border: 2px solid var(--ambar);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-.handle.tl { top: 0;    left: 0;    cursor: nwse-resize; }
-.handle.tr { top: 0;    left: 100%; cursor: nesw-resize; }
-.handle.bl { top: 100%; left: 0;    cursor: nesw-resize; }
-.handle.br { top: 100%; left: 100%; cursor: nwse-resize; }
-.handle.rotar {
-  width: 13px; height: 13px;
-  background: #fff;
-  border: 2px solid var(--verde);
-  border-radius: 50%;
-  top: -30px; left: 50%;
-  transform: translate(-50%, -50%);
-  cursor: grab;
-}
-.handle.rotar::after {
-  content: '';
-  position: absolute;
-  width: 2px; height: 22px;
-  background: var(--ambar);
-  left: 50%; top: 100%;
-  transform: translateX(-50%);
-}
-
 /* En pantallas angostas el lienzo (900px) se desplaza en vez de cortarse */
 @media (max-width: 1000px) {
   #canvas-wrap { overflow: auto; }

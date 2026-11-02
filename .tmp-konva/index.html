@@ -1,0 +1,59 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Prueba Konva Margo</title><link rel="stylesheet" href="../assets/css/dashboard.css"></head><body><main style="padding:20px"><h1>Prueba aislada del editor Konva</h1>  <div class="plano-editor">
+    <div id="canvas-wrap"><div id="plano"></div></div>
+
+    <aside class="plano-panel">
+      <section class="plano-bloque">
+        <h2 class="campo-etiqueta">Agregar</h2>
+        <button class="boton-secundario plano-boton" onclick="agregarMesa('cuadrada')">
+          <span class="material-symbols-outlined">crop_square</span> Mesa cuadrada
+        </button>
+        <button class="boton-secundario plano-boton" onclick="agregarMesa('redonda')">
+          <span class="material-symbols-outlined">circle</span> Mesa redonda
+        </button>
+      </section>
+
+      <section id="panel-mesa" class="plano-bloque">
+        <h2 class="campo-etiqueta">Mesa seleccionada</h2>
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="in-numero">Número</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">tag</span>
+            <input class="campo-input" type="number" id="in-numero" min="1">
+          </div>
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="in-capacidad">Capacidad (personas)</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">group</span>
+            <input class="campo-input" type="number" id="in-capacidad" min="1" max="20">
+          </div>
+        </div>
+        <button class="boton-peligro plano-boton" onclick="eliminarSeleccionada()">
+          <span class="material-symbols-outlined">delete</span> Eliminar mesa
+        </button>
+      </section>
+
+      <section class="plano-bloque">
+        <button class="boton-accion plano-boton" onclick="guardarPlano()">
+          <span class="material-symbols-outlined">save</span> Guardar plano
+        </button>
+        <p id="aviso"></p>
+        <p class="campo-ayuda">Arrastrá el cuerpo para mover · esquinas para cambiar el tamaño · el círculo de arriba para girar · Supr para eliminar.</p>
+      </section>
+    </aside>
+  </div>
+<pre id="resultado" style="white-space:pre-wrap"></pre></main><script>
+let mesasPrueba=[{id:1,numero:1,capacidad:4,forma:'cuadrada',pos_x:140,pos_y:140,ancho:100,alto:70,rotacion:0},{id:2,numero:2,capacidad:6,forma:'redonda',pos_x:350,pos_y:160,ancho:90,alto:90,rotacion:0},{id:3,numero:3,capacidad:2,forma:'cuadrada',pos_x:600,pos_y:350,ancho:80,alto:50,rotacion:45}];
+let siguienteId=10;
+window.fetch=async(url,opciones)=>{
+ if(opciones?.method==='POST'){
+  const datos=JSON.parse(opciones.body);window.ultimoGuardado=datos;
+  const protegidas=datos.eliminadas.filter(id=>Number(id)===2);
+  mesasPrueba=datos.mesas.map(m=>({...m,id:m.id||siguienteId++}));
+  if(protegidas.length)mesasPrueba.push({id:2,numero:2,capacidad:6,forma:'redonda',pos_x:350,pos_y:160,ancho:90,alto:90,rotacion:0});
+  document.getElementById('resultado').textContent=JSON.stringify(datos);
+  return {ok:true,json:async()=>({ok:true,no_eliminadas:protegidas})};
+ }
+ return {ok:true,json:async()=>JSON.parse(JSON.stringify(mesasPrueba))};
+};
+</script><script src="../assets/js/konva.min.js"></script><script src="../assets/js/admin_plano.js"></script></body></html>
