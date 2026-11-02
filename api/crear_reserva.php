@@ -64,6 +64,8 @@ if (!$fechaObj || $fechaObj->format('Y-m-d') !== $fecha) {
 
 if (!preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $hora)) {
     $errores['hora'] = 'Seleccioná un horario válido.';
+} elseif (!in_array($hora, horarioTodosLosSlots(), true)) {
+    $errores['hora'] = 'Elegí uno de los horarios de servicio disponibles.';
 }
 
 $maxPersonas = cfgInt('reservas.max_personas');

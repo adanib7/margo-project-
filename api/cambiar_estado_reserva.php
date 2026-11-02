@@ -61,6 +61,17 @@ if ($reserva['estado'] === $estado) {
     exit;
 }
 
+// Al cancelar se libera la mesa. Antes de reactivarla hay que comprobar
+// que otra reserva no la haya tomado durante ese tiempo.
+if ($reserva['estado'] === 'cancelada' && $estado !== 'cancelada' && !empty($reserva['mesa_id'])) {
+    $choque = reservaSolapada($conn, (int) $reserva['mesa_id'], $reserva['fecha'], $reserva['hora'], $id);
+    if ($choque) {
+        http_response_code(409);
+        echo json_encode(['ok' => false, 'mensaje' => 'No se puede reactivar: la mesa ya está ocupada en ese horario.']);
+        exit;
+    }
+}
+
 $stmt = $conn->prepare("UPDATE reservas SET estado = ? WHERE id = ?");
 $stmt->bind_param('si', $estado, $id);
 

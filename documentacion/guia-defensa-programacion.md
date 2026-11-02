@@ -243,3 +243,39 @@ restaurar cookies al reabrirse; por eso la proteccion principal es el vencimient
 controlado por el servidor, no detectar el cierre de una ventana.
 
 Referencia: [OWASP, gestion de sesiones](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html).
+
+## 14. Repaso de las simplificaciones para la predefensa
+
+En `assets/js/user.js` algunos recorridos ahora usan `for...of`, para poder leerlos
+paso por paso. No cambia el recorrido de cuatro pasos del formulario.
+
+| Funcion o bloque | Como explicarlo |
+| --- | --- |
+| `mesaSeleccionada()` | Recorre las mesas recibidas y devuelve la que tiene el ID guardado en el formulario. Si no encuentra ninguna, devuelve null. |
+| `cargarHorariosOcupados()` | Consulta la API, prepara la lista de horarios completos y oculta sus botones. Eso ayuda al usuario; PHP vuelve a validar al guardar. |
+| Respuesta `data.errores` | Recorre los campos con errores, identifica el primer paso afectado, vuelve a ese paso si corresponde y muestra los mensajes junto a los campos. |
+| `franjaReserva()` en `plano_db.php` | Separa horas y minutos con explode, los convierte en enteros y suma la duracion configurada para calcular el final. |
+
+`includes()` comprueba si un valor esta en un arreglo. `slice(0, 5)` toma los
+primeros cinco caracteres: transforma por ejemplo `12:00:00` en `12:00`.
+El ID identifica la mesa; su numero es el que se muestra al cliente. No son
+necesariamente el mismo valor.
+
+Tambien se corrigieron dos validaciones puntuales:
+
+- `api/crear_reserva.php` comprueba que la hora pertenezca a los turnos configurados.
+  Una hora puede tener formato valido, como 03:00, y no ser un horario de servicio.
+  Por eso se compara con `horarioTodosLosSlots()` antes de insertar.
+- `api/cambiar_estado_reserva.php` vuelve a consultar solapamientos antes de reactivar
+  una reserva cancelada con mesa asignada. Si otra reserva tomo esa mesa, devuelve
+  HTTP 409 y conserva el estado cancelado. Se comprueba tanto al confirmar como al
+  pasar a pendiente, porque ambos estados ocupan mesa.
+
+Estos controles no resuelven la carrera entre peticiones simultaneas: comprobar
+disponibilidad y escribir siguen siendo pasos separados en reservas.
+
+Para exponer, empezar por `user.js` -> `crear_reserva.php` -> `plano_db.php` ->
+MySQL, explicando entrada, validacion y resultado. Despues mostrar una consulta
+preparada y el control de roles. La geometria avanzada del editor y la conversion
+de caracteres del PDF siguen siendo partes que requieren una explicacion aparte;
+no se eliminaron ni se reemplazaron en esta simplificacion.
