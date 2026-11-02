@@ -77,3 +77,12 @@ volver a iniciar sesion. Cerrar una pestana no equivale a cerrar la sesion de to
 las pestanas; el vencimiento del servidor funciona aunque el navegador restaure cookies.
 
 Prueba sin MySQL: `C:\xampp\php\php.exe tests/sesion.php`.
+
+EDITOR DE MESAS:
+
+El editor administrativo usa Konva 9.3.22, incluido en `assets/js/konva.min.js`
+con su licencia en `assets/js/konva.LICENSE.txt`. Subir ambos archivos junto al
+editor al publicar. No requiere instalar paquetes ni cargar Konva desde un CDN.
+Se selecciona al apoyar el puntero y se arrastra el cuerpo. Las manijas cambian
+tamano y giro; el panel tambien permite escribir los grados. Las flechas mueven
+una unidad, Mayus con flechas mueve diez y Mayus al soltar ajusta a la grilla.

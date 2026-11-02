@@ -124,6 +124,7 @@ Limites actuales: comprobar y guardar son pasos separados, por lo que falta prot
 - FPDF (`includes/lib/fpdf/`): genera archivos PDF. Revisar como lo usan los comprobantes y reportes; es codigo de una libreria externa.
 - Lucide y Material Symbols: iconos de la interfaz.
 - Tailwind: utilidades y estilos base de las pantallas; tambien se usa CSS propio.
+- Konva 9.3.22 (`assets/js/konva.min.js`): lienzo y controles del editor administrativo de mesas. La biblioteca se carga localmente; `admin_plano.js` conecta sus objetos con los formularios y el guardado PHP.
 - Google: acceso con una cuenta externa. `includes/google_auth.php` valida la credencial y busca una cuenta vinculada por su identificador `sub`. Permite crear la cuenta e iniciar sesion directamente, sin un codigo adicional del sitio.
 - Brevo: API externa de correo. `includes/mailer.php` envia JSON mediante una solicitud HTTP con cURL, o un stream si cURL no esta disponible.
 
@@ -276,6 +277,43 @@ disponibilidad y escribir siguen siendo pasos separados en reservas.
 
 Para exponer, empezar por `user.js` -> `crear_reserva.php` -> `plano_db.php` ->
 MySQL, explicando entrada, validacion y resultado. Despues mostrar una consulta
-preparada y el control de roles. La geometria avanzada del editor y la conversion
-de caracteres del PDF siguen siendo partes que requieren una explicacion aparte;
-no se eliminaron ni se reemplazaron en esta simplificacion.
+preparada y el control de roles. El editor administrativo utiliza Konva para
+resolver las interacciones graficas; la conversion de caracteres del PDF sigue
+siendo una parte especializada que requiere una explicacion aparte.
+
+## 15. Editor administrativo con Konva
+
+`dashboards/admin_plano.php` carga primero la biblioteca local y luego
+`assets/js/admin_plano.js`. El editor dibuja en un canvas; el selector de mesas del
+cliente en `user.js` sigue usando botones HTML. Ambos usan los mismos datos de MySQL.
+
+| Objeto de Konva | Uso en el editor |
+| --- | --- |
+| `Stage` | El lienzo de 900 por 560 unidades. |
+| `Layer` | La capa que contiene las mesas y sus controles. |
+| `Group` | Una mesa: agrupa su figura, su numero y sus datos. |
+| `Rect` / `Ellipse` | La forma cuadrada o redonda de la mesa. |
+| `Text` | El numero que se dibuja sobre la figura. |
+| `Transformer` | Las manijas para cambiar el tamano y girar. |
+
+La biblioteca calcula los movimientos y las transformaciones. El codigo propio
+selecciona la mesa al apoyar el puntero, actualiza los campos del panel, limita
+posiciones y tamanos y prepara el JSON para guardar. No implementamos Konva ni
+su geometria interna.
+
+Para mover se arrastra el cuerpo; al soltar no hay ajuste automatico a la grilla,
+salvo que se mantenga Mayus. Las flechas mueven una unidad y Mayus con flechas,
+diez. Se puede girar con la manija superior o escribir los grados en el panel.
+Las mesas nuevas buscan un espacio libre para no apilarse todas en el centro.
+
+Al redimensionar, Konva modifica `scaleX` y `scaleY`. Nuestro controlador
+`transformend` multiplica ancho y alto por esas escalas, guarda el nuevo tamano
+y restablece ambas escalas a uno. Asi no se vuelve a multiplicar el tamano en la
+siguiente edicion. Para guardar se envian ID, numero, capacidad, forma, centro X/Y,
+ancho, alto y rotacion al mismo endpoint PHP que ya usa el plano.
+
+La comprobacion de que una mesa con reservas no se borre sigue estando en PHP.
+Eliminarla del dibujo no garantiza que el servidor acepte borrarla de MySQL;
+si la rechaza, la recarga muestra la mesa nuevamente.
+
+Referencia: [Konva, Transformer](https://konvajs.org/docs/select_and_transform/Basic_demo.html).

@@ -146,6 +146,13 @@ require_once '../includes/header.php';
             <input class="campo-input" type="number" id="in-capacidad" min="1" max="20">
           </div>
         </div>
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="in-rotacion">Giro (grados)</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">rotate_right</span>
+            <input class="campo-input" type="number" id="in-rotacion" min="0" max="359" step="1">
+          </div>
+        </div>
         <button class="boton-peligro plano-boton" onclick="eliminarSeleccionada()">
           <span class="material-symbols-outlined">delete</span> Eliminar mesa
         </button>
@@ -156,7 +163,7 @@ require_once '../includes/header.php';
           <span class="material-symbols-outlined">save</span> Guardar plano
         </button>
         <p id="aviso"></p>
-        <p class="campo-ayuda">Arrastrá el cuerpo para mover · esquinas para cambiar el tamaño · el círculo de arriba para girar · Supr para eliminar.</p>
+        <p class="campo-ayuda">Arrastrá el centro para mover. Usá las esquinas para cambiar el tamaño y la manija superior para girar. También podés escribir el giro o mover con las flechas del teclado (Mayús: 10 px). Mayús al soltar ajusta a la grilla. Supr elimina.</p>
       </section>
     </aside>
   </div>
