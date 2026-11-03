@@ -63,7 +63,7 @@ function crearMesa(datos) {
   const alto = parseFloat(datos.alto) || 70;
   const forma = datos.forma === 'redonda' ? 'redonda' : 'cuadrada';
   const grupo = new Konva.Group({
-    name: 'mesa', draggable: true, dragDistance: 2,
+    name: 'mesa', draggable: true, dragDistance: 5,
     x: parseFloat(datos.pos_x) || 100,
     y: parseFloat(datos.pos_y) || 100,
     rotation: parseFloat(datos.rotacion) || 0,
@@ -72,8 +72,19 @@ function crearMesa(datos) {
     capacidad: parseInt(datos.capacidad, 10) || 4,
     forma, ancho, alto,
   });
-  const estilo = { name: 'figura', fill: VERDE, stroke: AMBAR, strokeWidth: 3, hitStrokeWidth: 12 };
+  const estilo = { name: 'figura', fill: VERDE, stroke: AMBAR, strokeWidth: 3, hitStrokeWidth: 0 };
   const figura = forma === 'redonda' ? new Konva.Ellipse(estilo) : new Konva.Rect({ ...estilo, cornerRadius: 8 });
+  // Un rectángulo invisible amplía el clic 10 unidades alrededor de la mesa.
+  // Solo cambia la detección: no agranda el dibujo ni las medidas guardadas.
+  figura.hitFunc((contexto, formaMesa) => {
+    const ancho = grupo.getAttr('ancho'), alto = grupo.getAttr('alto');
+    const x = forma === 'redonda' ? -ancho / 2 : 0;
+    const y = forma === 'redonda' ? -alto / 2 : 0;
+    contexto.beginPath();
+    contexto.rect(x - 10, y - 10, ancho + 20, alto + 20);
+    contexto.closePath();
+    contexto.fillStrokeShape(formaMesa);
+  });
   const numero = new Konva.Text({
     name: 'numero', text: String(grupo.getAttr('numero')), fontFamily: 'Montserrat, sans-serif',
     fontSize: 20, fontStyle: 'bold', fill: CREMA,
@@ -83,7 +94,7 @@ function crearMesa(datos) {
   actualizarTamano(grupo, ancho, alto);
   // Seleccionar al apoyar el puntero, antes de empezar el arrastre.
   // Reordenar el grupo durante dragstart podía interferir con el primer movimiento.
-  grupo.on('mousedown touchstart', e => {
+  grupo.on('mousedown touchstart click tap', e => {
     e.cancelBubble = true;
     escenario.container().focus({ preventScroll: true });
     seleccionar(grupo);

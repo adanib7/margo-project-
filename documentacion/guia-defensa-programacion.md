@@ -301,6 +301,11 @@ selecciona la mesa al apoyar el puntero, actualiza los campos del panel, limita
 posiciones y tamanos y prepara el JSON para guardar. No implementamos Konva ni
 su geometria interna.
 
+`hitFunc` define una zona invisible de clic: un rectangulo que cubre la mesa y
+10 unidades extra por lado. Facilita seleccionar tambien los bordes y las esquinas
+de mesas redondas, sin cambiar su dibujo ni las medidas guardadas. El arrastre
+empieza despues de mover cinco unidades, para tolerar pequenos movimientos al hacer clic.
+
 Para mover se arrastra el cuerpo; al soltar no hay ajuste automatico a la grilla,
 salvo que se mantenga Mayus. Las flechas mueven una unidad y Mayus con flechas,
 diez. Se puede girar con la manija superior o escribir los grados en el panel.
