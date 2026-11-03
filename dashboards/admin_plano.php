@@ -116,6 +116,20 @@ require_once '../includes/header.php';
     </div>
   </header>
 
+  <section class="plano-herramientas" aria-label="Herramientas del plano">
+    <fieldset class="plano-modos">
+      <legend class="campo-etiqueta">Acción del mouse</legend>
+      <label><input type="radio" name="modo-plano" value="mover" checked> Mover mesas</label>
+      <label><input type="radio" name="modo-plano" value="transformar"> Tamaño y giro</label>
+    </fieldset>
+    <div class="campo-grupo">
+      <label class="campo-etiqueta" for="selector-mesa">Seleccionar por número</label>
+      <select id="selector-mesa" class="campo-input">
+        <option value="">Elegí una mesa</option>
+      </select>
+    </div>
+  </section>
+
   <div class="plano-editor">
     <div id="canvas-wrap"><div id="plano" tabindex="0" aria-label="Plano editable de mesas"></div></div>
 
@@ -163,7 +177,7 @@ require_once '../includes/header.php';
           <span class="material-symbols-outlined">save</span> Guardar plano
         </button>
         <p id="aviso"></p>
-        <p class="campo-ayuda">Arrastrá el centro para mover. Usá las esquinas para cambiar el tamaño y la manija superior para girar. También podés escribir el giro o mover con las flechas del teclado (Mayús: 10 px). Mayús al soltar ajusta a la grilla. Supr elimina.</p>
+        <p class="campo-ayuda">En Mover mesas, arrastrá la mesa desde su cuerpo. Activá Tamaño y giro para usar las manijas. Si están juntas o superpuestas, elegí una por número y movela con las flechas (Mayús: 10 px). También podés escribir el giro en el panel. Mayús al soltar ajusta a la grilla. Supr elimina.</p>
       </section>
     </aside>
   </div>

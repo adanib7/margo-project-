@@ -2238,6 +2238,25 @@ body {
 }
 
 /* ===== PLANO DE MESAS (dashboards/admin_plano.php) ===== */
+.plano-herramientas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem 2rem;
+  margin-bottom: 1rem;
+}
+.plano-modos {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+.plano-modos label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+.plano-modos legend { margin-bottom: 0.5rem; }
+.plano-herramientas .campo-grupo { min-width: 220px; margin: 0; }
+
 .plano-editor {
   /* Colores de las mesas; admin_plano.js también usa --verde y --rojo para el aviso */
   --verde: #2D5F3F;
@@ -2252,7 +2271,7 @@ body {
 
 #canvas-wrap {
   max-width: 100%;
-  overflow: hidden;
+  overflow: auto;
   background: #ffffff;
   border: 1px solid rgba(115, 121, 111, 0.25);
   border-radius: 0.75rem;
@@ -2311,11 +2330,6 @@ body {
   font-weight: 600;
   min-height: 1.2em;
   margin: 0;
-}
-
-/* En pantallas angostas el lienzo (900px) se desplaza en vez de cortarse */
-@media (max-width: 1000px) {
-  #canvas-wrap { overflow: auto; }
 }
 
 /* ===== AVISOS EN VIVO DE RESERVAS NUEVAS (assets/js/avisos.js) =====

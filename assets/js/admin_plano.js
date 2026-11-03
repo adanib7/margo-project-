@@ -8,10 +8,12 @@ const inNumero = document.getElementById('in-numero');
 const inCapacidad = document.getElementById('in-capacidad');
 const inRotacion = document.getElementById('in-rotacion');
 const aviso = document.getElementById('aviso');
+const selectorMesa = document.getElementById('selector-mesa');
 const escenario = new Konva.Stage({ container: 'plano', width: ANCHO, height: ALTO });
 const capa = new Konva.Layer();
 escenario.add(capa);
 const controles = new Konva.Transformer({
+  resizeEnabled: false, rotateEnabled: false, listening: false,
   enabledAnchors: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
   rotationSnaps: [0, 45, 90, 135, 180, 225, 270, 315],
   rotationSnapTolerance: 3,
@@ -132,15 +134,47 @@ function seleccionar(grupo) {
   seleccionada = grupo;
   controles.nodes(grupo ? [grupo] : []);
   panelMesa.classList.toggle('visible', !!grupo);
+  // Volver a mover al cambiar de mesa: las manijas solo se activan a pedido.
+  document.querySelector('input[name="modo-plano"][value="mover"]').checked = true;
+  cambiarModo('mover');
   if (grupo) {
-    grupo.moveToTop();
     controles.moveToTop();
     controles.keepRatio(grupo.getAttr('forma') === 'redonda');
     inNumero.value = grupo.getAttr('numero');
     inCapacidad.value = grupo.getAttr('capacidad');
     inRotacion.value = anguloNormalizado(grupo.rotation());
   }
+  actualizarListaMesas();
 }
+
+function cambiarModo(modo) {
+  const transformar = modo === 'transformar';
+  controles.resizeEnabled(transformar);
+  controles.rotateEnabled(transformar);
+  // El marco de selección no recibe clics cuando solo queremos mover mesas.
+  controles.listening(transformar);
+}
+
+for (const opcion of document.querySelectorAll('input[name="modo-plano"]')) {
+  opcion.addEventListener('change', () => cambiarModo(opcion.value));
+}
+
+function actualizarListaMesas() {
+  selectorMesa.replaceChildren(new Option('Elegí una mesa', ''));
+  let indice = 0;
+  for (const mesa of capa.find('.mesa')) {
+    const opcion = new Option('Mesa ' + mesa.getAttr('numero'), String(indice));
+    opcion.selected = mesa === seleccionada;
+    selectorMesa.add(opcion);
+    indice++;
+  }
+}
+
+selectorMesa.addEventListener('change', () => {
+  const mesas = capa.find('.mesa');
+  seleccionar(selectorMesa.value === '' ? null : mesas[Number(selectorMesa.value)]);
+  escenario.container().focus({ preventScroll: true });
+});
 
 escenario.on('mousedown touchstart', () => escenario.container().focus({ preventScroll: true }));
 escenario.on('click tap', e => {
@@ -167,6 +201,7 @@ inNumero.addEventListener('input', e => {
   const numero = parseInt(e.target.value, 10) || 1;
   seleccionada.setAttr('numero', numero);
   seleccionada.findOne('.numero').text(String(numero));
+  actualizarListaMesas();
 });
 inCapacidad.addEventListener('input', e => {
   if (seleccionada) seleccionada.setAttr('capacidad', parseInt(e.target.value, 10) || 1);
@@ -226,6 +261,7 @@ async function cargarPlano() {
     seleccionar(null);
     for (const mesa of capa.find('.mesa')) mesa.destroy();
     for (const datos of mesas) crearMesa(datos);
+    actualizarListaMesas();
   } catch (error) {
     aviso.style.color = 'var(--rojo)';
     aviso.textContent = error.message;

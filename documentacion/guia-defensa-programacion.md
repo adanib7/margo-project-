@@ -306,6 +306,16 @@ su geometria interna.
 de mesas redondas, sin cambiar su dibujo ni las medidas guardadas. El arrastre
 empieza despues de mover cinco unidades, para tolerar pequenos movimientos al hacer clic.
 
+El modo inicial es Mover mesas: el marco se dibuja, pero no recibe clics y no
+muestra manijas. Asi los controles de una mesa no interceptan clics sobre otras
+cercanas. Tamano y giro activa las manijas con `resizeEnabled`, `rotateEnabled`
+y `listening`. Al seleccionar otra mesa se vuelve al modo Mover mesas.
+
+La lista Seleccionar por numero permite elegir incluso una mesa tapada por otra.
+Al elegirla, el foco vuelve al plano para poder moverla con las flechas. Cambiar
+la seleccion no cambia el orden en que se dibujan las mesas. El contenedor permite
+desplazamiento si la pantalla no alcanza para mostrar todo el plano.
+
 Para mover se arrastra el cuerpo; al soltar no hay ajuste automatico a la grilla,
 salvo que se mantenga Mayus. Las flechas mueven una unidad y Mayus con flechas,
 diez. Se puede girar con la manija superior o escribir los grados en el panel.

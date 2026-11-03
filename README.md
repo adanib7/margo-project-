@@ -83,6 +83,7 @@ EDITOR DE MESAS:
 El editor administrativo usa Konva 9.3.22, incluido en `assets/js/konva.min.js`
 con su licencia en `assets/js/konva.LICENSE.txt`. Subir ambos archivos junto al
 editor al publicar. No requiere instalar paquetes ni cargar Konva desde un CDN.
-Se selecciona al apoyar el puntero y se arrastra el cuerpo. Las manijas cambian
-tamano y giro; el panel tambien permite escribir los grados. Las flechas mueven
+Se selecciona al apoyar el puntero y se arrastra el cuerpo en Mover mesas.
+Tamano y giro activa las manijas; el panel tambien permite escribir los grados.
+La lista por numero permite seleccionar mesas superpuestas. Las flechas mueven
 una unidad, Mayus con flechas mueve diez y Mayus al soltar ajusta a la grilla.
