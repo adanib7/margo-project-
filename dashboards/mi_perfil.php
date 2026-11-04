@@ -93,6 +93,16 @@ require_once '../includes/nav.php';
 
 <main class="contenido-principal">
   <header class="seccion-encabezado">
+    <script type="text/javascript">
+(function(g,i,v,e){
+  i.gfConfig={token:"32d9710e-6f72-43d7-9d09-ae80372f9147"};
+  v=g.getElementsByTagName('head')[0];
+  e=g.createElement('script');
+  e.async=true;
+  e.src="https://app.givefeedback.io/extension/givefeedback.min.js";
+  v.appendChild(e);
+})(document,window);
+</script>
     <div>
       <h1 class="titulo-pagina">Mi perfil</h1>
       <p class="subtitulo-pagina">Revisá y actualizá tus datos de usuario.</p>

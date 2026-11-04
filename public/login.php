@@ -35,7 +35,16 @@ if (isset($erroresGoogle[$_GET['error'] ?? ''])) {
 $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 ?>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-
+<script type="text/javascript">
+(function(g,i,v,e){
+  i.gfConfig={token:"32d9710e-6f72-43d7-9d09-ae80372f9147"};
+  v=g.getElementsByTagName('head')[0];
+  e=g.createElement('script');
+  e.async=true;
+  e.src="https://app.givefeedback.io/extension/givefeedback.min.js";
+  v.appendChild(e);
+})(document,window);
+</script>
 <div class="login">
   <!-- ── Mitad izquierda: foto y marca (igual que la portada) ── -->
   <aside class="login-marca">
