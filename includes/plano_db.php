@@ -139,7 +139,10 @@ function franjaReserva(string $hora): array
 {
     $horas = function_exists('cfgInt') ? max(1, cfgInt('reservas.duracion_horas')) : 2;
 
-    [$h, $m] = array_map('intval', array_pad(explode(':', substr($hora, 0, 5)), 2, 0));
+    // Separar "21:30" y convertir sus dos partes a números.
+    $partes = explode(':', substr($hora, 0, 5));
+    $h = (int) $partes[0];
+    $m = (int) ($partes[1] ?? 0);
 
     // TIME admite horas mayores a 23 para reservas que terminan pasada medianoche.
     return [
@@ -161,6 +164,8 @@ function reservaSolapada(mysqli $conn, int $mesaId, string $fecha, string $hora,
 {
     $f = franjaReserva($hora);
 
+    // Se pisan si la otra empieza antes de nuestro fin y termina después
+    // de nuestro inicio. Las canceladas no ocupan la mesa.
     $sql = "SELECT codigo, hora FROM reservas
             WHERE mesa_id = ? AND fecha = ? AND estado != 'cancelada'
               AND hora < ? AND ADDTIME(hora, ?) > ?";

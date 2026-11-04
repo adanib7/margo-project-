@@ -144,7 +144,8 @@ body {
   box-shadow: var(--shadow-sm);
   transition: transform 350ms var(--ease-out);
 }
-.login-caja[data-modo="registro"] .login-tabs-indicador { transform: translateX(100%); }
+.login-caja[data-modo="registro"] .login-tabs-indicador,
+.login-caja[data-modo="verificar"] .login-tabs-indicador { transform: translateX(100%); }
 
 .login-tabs a {
   position: relative; /* por encima del indicador */
@@ -160,7 +161,10 @@ body {
 }
 .login-caja[data-modo="login"]     .login-tabs a[data-modo="login"],
 .login-caja[data-modo="recuperar"] .login-tabs a[data-modo="login"],
-.login-caja[data-modo="registro"]  .login-tabs a[data-modo="registro"] { color: var(--verde-700); }
+.login-caja[data-modo="registro"]  .login-tabs a[data-modo="registro"],
+.login-caja[data-modo="verificar"] .login-tabs a[data-modo="registro"] { color: var(--verde-700); }
+
+.login-boton-secundario { margin-top: 12px; }
 
 /* Los dos formularios ocupan la misma celda: la caja siempre mide lo que el
    más alto, así al cambiar de pestaña no se mueve nada de la página. */

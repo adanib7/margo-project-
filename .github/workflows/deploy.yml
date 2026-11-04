@@ -26,4 +26,5 @@ jobs:
             **/node_modules/**
             base de datos/**
             documentacion/**
+            tests/**
             README.md

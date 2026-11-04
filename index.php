@@ -18,6 +18,16 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 <title><?= $h($LOC_NOMBRE) ?> · Restaurante y llagar en <?= $h($LOC_CIUPRO) ?></title>
 <link rel="stylesheet" href="assets/css/colors_and_type.css">
 <script src="assets/js/lucide.min.js" defer></script>
+<script type="text/javascript">
+(function(g,i,v,e){
+  i.gfConfig={token:"32d9710e-6f72-43d7-9d09-ae80372f9147"};
+  v=g.getElementsByTagName('head')[0];
+  e=g.createElement('script');
+  e.async=true;
+  e.src="https://app.givefeedback.io/extension/givefeedback.min.js";
+  v.appendChild(e);
+})(document,window);
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;overflow-x:hidden}
@@ -255,7 +265,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
         <button class="lang-btn" data-lang="fr">FR</button>
         <button class="lang-btn" data-lang="pt">PT</button>
       </div>
-      <a href="public/login.php" class="btn btn-accent btn-reservar-top" data-i18n="cta_reservar">Reservar</a>
+      <a href="<?= buildUrl('/public/login.php') ?>" class="btn btn-accent btn-reservar-top" data-i18n="cta_reservar">Reservar</a>
       <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobileMenu">
         <span></span><span></span><span></span>
       </button>
@@ -302,7 +312,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
     <h1 data-i18n="hero_title">Conoce nuestro restaurante</h1>
     <p class="lede" data-i18n="hero_lede">Cocina asturiana de siempre en la villa de Nava. Elige día y hora — te esperamos.</p>
     <div class="hero-cta">
-      <a href="public/login.php" class="btn btn-accent btn-lg"><i data-lucide="calendar-check"></i><span data-i18n="cta_reservar_mesa">Reservar mesa</span></a>
+      <a href="<?= buildUrl('/public/login.php') ?>" class="btn btn-accent btn-lg"><i data-lucide="calendar-check"></i><span data-i18n="cta_reservar_mesa">Reservar mesa</span></a>
     </div>
     <div class="hero-meta">
       <div class="item"><i data-lucide="map-pin"></i><div><div class="k"><?= $h($LOC_CIUPRO) ?></div><div class="s" data-i18n="meta_dir"><?= $h($LOC_CALLE) ?></div></div></div>
@@ -422,7 +432,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
         <i data-lucide="calendar-check" style="width:40px;height:40px;color:var(--verde-700)"></i>
         <h3 style="font-family:var(--font-display);font-weight:600;font-size:22px;color:var(--verde-800)" data-i18n="cont_card_title">Elige tu mesa</h3>
         <p style="font-size:15px;line-height:1.6;color:var(--fg-muted)" data-i18n="cont_card_sub">Inicia sesión o crea tu cuenta gratis para reservar mesa, día y hora en el plano del salón.</p>
-        <a href="public/login.php" class="btn btn-primary btn-lg" style="width:100%"><i data-lucide="calendar-check"></i><span data-i18n="f_enviar">Reservar mesa</span></a>
+        <a href="<?= buildUrl('/public/login.php') ?>" class="btn btn-primary btn-lg" style="width:100%"><i data-lucide="calendar-check"></i><span data-i18n="f_enviar">Reservar mesa</span></a>
       </div>
     </div>
   </div>
@@ -451,7 +461,7 @@ footer .bottom a{color:rgba(245,239,224,.7)}
         <ul>
           <li><a href="#cocina" data-i18n="nav_cocina">La cocina</a></li>
           <li><a href="#historia" data-i18n="nav_historia">Historia</a></li>
-          <li><a href="public/login.php" data-i18n="cta_reservar">Reservar</a></li>
+          <li><a href="<?= buildUrl('/public/login.php') ?>" data-i18n="cta_reservar">Reservar</a></li>
         </ul>
       </div>
     </div>

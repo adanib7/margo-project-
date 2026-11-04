@@ -21,7 +21,8 @@ register_shutdown_function(function () {
     }
 });
 
-session_start();
+require_once __DIR__ . '/../includes/sesion.php';
+iniciarSesion();
 require_once '../includes/config.php';
 require_once '../includes/check_auth.php';
 require_once '../includes/reportes_db.php';

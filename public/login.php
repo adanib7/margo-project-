@@ -1,12 +1,18 @@
 <?php
-session_start();
+require_once __DIR__ . '/../includes/sesion.php';
+iniciarSesion();
 require_once '../includes/config.php';
 require_once '../includes/check_auth.php';
 require_once '../includes/auth.php';
-// Las tres vistas de esta página; cualquier otro valor en la URL vuelve al login.
-$titulosModo = ['login' => 'Iniciar sesión', 'registro' => 'Crear cuenta', 'recuperar' => 'Recuperar contraseña'];
+// Cualquier otro valor en la URL vuelve al login.
+$titulosModo = ['login' => 'Iniciar sesión', 'registro' => 'Crear cuenta', 'recuperar' => 'Recuperar contraseña', 'verificar' => 'Verificar correo'];
 if (!isset($titulosModo[$modo])) {
     $modo = 'login';
+}
+if ($modo === 'verificar' && $registroEmail === '') {
+    $modo = 'registro';
+    $mensaje = 'Completá el registro para recibir un código de verificación.';
+    $tipo = 'error';
 }
 $activa = static fn(string $vista) => $vista === $modo ? 'activa' : '';
 
@@ -19,6 +25,7 @@ $erroresGoogle = [
     'google'   => 'No se pudo iniciar sesión con Google.',
     'token'    => 'Token de Google inválido.',
     'database' => 'No se pudo conectar con la base de datos.',
+    'google_cuenta' => 'Ese correo ya tiene una cuenta que no se puede vincular automáticamente. Iniciá sesión con tu usuario o correo y contraseña.',
 ];
 if (isset($erroresGoogle[$_GET['error'] ?? ''])) {
     $mensaje = $erroresGoogle[$_GET['error']];
@@ -28,16 +35,25 @@ if (isset($erroresGoogle[$_GET['error'] ?? ''])) {
 $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 ?>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-
+<script type="text/javascript">
+(function(g,i,v,e){
+  i.gfConfig={token:"32d9710e-6f72-43d7-9d09-ae80372f9147"};
+  v=g.getElementsByTagName('head')[0];
+  e=g.createElement('script');
+  e.async=true;
+  e.src="https://app.givefeedback.io/extension/givefeedback.min.js";
+  v.appendChild(e);
+})(document,window);
+</script>
 <div class="login">
   <!-- ── Mitad izquierda: foto y marca (igual que la portada) ── -->
   <aside class="login-marca">
-    <img class="login-foto" src="../assets/img/hero.jpg" alt="">
+    <img class="login-foto" src="<?= buildUrl('/assets/img/hero.jpg') ?>" alt="">
     <div class="login-marca-contenido">
-      <a href="../index.php" class="login-volver">
+      <a href="<?= buildUrl('/') ?>" class="login-volver">
         <span class="material-symbols-outlined">arrow_back</span> Volver al inicio
       </a>
-      <img src="../assets/img/logo-horizontal-verde.png" alt="<?= $h(cfg('local.nombre')) ?>" class="login-logo">
+      <img src="<?= buildUrl('/assets/img/logo-horizontal-verde.png') ?>" alt="<?= $h(cfg('local.nombre')) ?>" class="login-logo">
       <span class="login-eyebrow"><?= $h(implode(' · ', array_filter([cfg('local.ciudad'), cfg('local.provincia')]))) ?></span>
       <h1 class="login-titulo">Tu mesa te espera</h1>
       <ul class="login-ventajas">
@@ -51,6 +67,9 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
   <!-- ── Mitad derecha: los formularios, uno encima del otro ── -->
   <main class="login-panel">
     <div class="login-caja" data-modo="<?= $h($modo) ?>">
+      <?php if ($modo === 'verificar' && $mensaje === '' && isset($_SESSION['registro_mensaje'])): ?>
+        <?php $mensaje = $_SESSION['registro_mensaje']; $tipo = $_SESSION['registro_tipo'] ?? 'error'; unset($_SESSION['registro_mensaje'], $_SESSION['registro_tipo']); ?>
+      <?php endif; ?>
       <div class="login-tabs" role="tablist">
         <span class="login-tabs-indicador" aria-hidden="true"></span>
         <a href="?modo=login"    data-modo="login"    role="tab">Iniciar sesión</a>
@@ -69,11 +88,11 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
           <?php endif; ?>
           <input type="hidden" name="accion" value="login">
 
-          <label class="login-label" for="usuario">Usuario</label>
+          <label class="login-label" for="usuario">Usuario o correo electrónico</label>
           <div class="login-campo">
             <span class="material-symbols-outlined">person</span>
             <input type="text" id="usuario" name="usuario" required autocomplete="username"
-                   value="<?= $h($modo === 'login' ? ($_POST['usuario'] ?? '') : '') ?>" placeholder="Tu usuario">
+                   value="<?= $h($modo === 'login' ? ($_POST['usuario'] ?? '') : '') ?>" placeholder="Tu usuario o correo electrónico">
           </div>
 
           <label class="login-label" for="pass">Contraseña</label>
@@ -102,6 +121,7 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
             </div>
           <?php endif; ?>
           <input type="hidden" name="accion" value="registro">
+          <input type="hidden" name="csrf" value="<?= $h($_SESSION['registro_csrf']) ?>">
 
           <label class="login-label" for="r-usuario">Usuario</label>
           <div class="login-campo">
@@ -123,7 +143,7 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
             <input type="password" id="r-pass" name="contraseña" required autocomplete="new-password" placeholder="Mínimo 6 caracteres">
             <button type="button" class="login-ojo" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
           </div>
-          <p class="login-ayuda">Solo letras y números. Al menos 6 caracteres, una mayúscula y un número.</p>
+          <p class="login-ayuda">Al menos 6 caracteres, una mayúscula y un número. Podés incluir símbolos, pero no son obligatorios.</p>
 
           <label class="login-label" for="r-confirmar">Confirmar contraseña</label>
           <div class="login-campo">
@@ -132,16 +152,42 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
             <button type="button" class="login-ojo" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
           </div>
 
-          <button type="submit" class="login-boton">Crear cuenta</button>
+          <p class="login-ayuda">Te enviaremos un código para verificar el correo antes de habilitar tu cuenta.</p>
+          <button type="submit" class="login-boton">Recibir código</button>
           <p class="login-alternativa">¿Ya tenés cuenta? <a href="?modo=login" data-modo="login">Iniciá sesión</a></p>
+          <?php if ($registroEmail !== ''): ?>
+            <p class="login-alternativa"><a href="?modo=verificar" data-modo="verificar">Ya tengo un código pendiente</a></p>
+          <?php endif; ?>
 
           <p class="login-separador"><span>o continuá con</span></p>
           <div class="login-google g_id_signin" data-type="standard" data-size="large" data-theme="outline"
                data-text="continue_with" data-shape="rectangular" data-logo_alignment="center" data-width="300"></div>
         </form>
 
+        <!-- Confirmación del registro: PHP controla los códigos y los límites. -->
+        <form class="login-vista <?= $activa('verificar') ?>" data-vista="verificar" method="post" action="?modo=verificar">
+          <h2 class="login-form-titulo">Verificá tu correo</h2>
+          <p class="login-intro">Ingresá el código enviado a <strong><?= $h($registroEmail) ?></strong>. Revisá también spam.</p>
+          <?php if ($mensaje !== '' && $modo === 'verificar'): ?>
+            <div class="login-mensaje <?= $tipo === 'success' ? 'exito' : '' ?>" role="status">
+              <span class="material-symbols-outlined"><?= $tipo === 'success' ? 'check_circle' : 'error' ?></span>
+              <?= $h($mensaje) ?>
+            </div>
+          <?php endif; ?>
+          <input type="hidden" name="csrf" value="<?= $h($_SESSION['registro_csrf']) ?>">
+          <label class="login-label" for="registro-codigo">Código de seis números</label>
+          <div class="login-campo">
+            <span class="material-symbols-outlined">pin</span>
+            <input type="text" id="registro-codigo" name="codigo" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required placeholder="000000">
+          </div>
+          <p class="login-ayuda">Vence en 15 minutos. Tenés hasta cinco intentos por código. Para reenviarlo hay que esperar un minuto.</p>
+          <button type="submit" class="login-boton" name="accion" value="verificar_registro">Verificar correo</button>
+          <button type="submit" class="login-boton login-boton-secundario" name="accion" value="reenviar_registro" formnovalidate>Reenviar código</button>
+          <p class="login-alternativa"><a href="?modo=registro" data-modo="registro">Cambiar correo o volver a registrarme</a></p>
+        </form>
+
         <!-- Recuperar contraseña: se maneja con JavaScript (api/recuperar_password.php) -->
-        <form class="login-vista <?= $activa('recuperar') ?>" data-vista="recuperar" id="formRecuperar" novalidate>
+        <form class="login-vista <?= $activa('recuperar') ?>" data-vista="recuperar" id="formRecuperar" data-api="<?= buildUrl('/api/recuperar_password.php') ?>" novalidate>
           <h2 class="login-form-titulo">Recuperar contraseña</h2>
           <p class="login-intro" id="recIntro">Escribí el email de tu cuenta y te mandamos un código para elegir una contraseña nueva.</p>
           <div class="login-mensaje" id="recMensaje" hidden></div>
@@ -169,7 +215,7 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
               <button type="button" class="login-ojo" aria-label="Mostrar contraseña"><span class="material-symbols-outlined">visibility</span></button>
             </div>
             <span class="login-error" data-error="password"></span>
-            <p class="login-ayuda">Solo letras y números. Al menos 6 caracteres, una mayúscula y un número.</p>
+            <p class="login-ayuda">Al menos 6 caracteres, una mayúscula y un número. Podés incluir símbolos, pero no son obligatorios.</p>
 
             <label class="login-label" for="rec-confirmar">Confirmar contraseña</label>
             <div class="login-campo">

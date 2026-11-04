@@ -158,7 +158,11 @@
 
   function mesaSeleccionada() {
     if (!inputMesa.value || !planoData) return null;
-    return planoData.mesas.find(x => String(x.id) === String(inputMesa.value)) || null;
+    // Buscar en los datos la mesa cuyo ID está guardado en el formulario.
+    for (const mesa of planoData.mesas) {
+      if (String(mesa.id) === String(inputMesa.value)) return mesa;
+    }
+    return null;
   }
 
   function actualizarCapacidadHint() {
@@ -213,15 +217,19 @@
       const data = await res.json();
       if (!data.ok || !Array.isArray(data.horarios)) return;
 
-      const ocupados = new Set(data.horarios.map(h => h.slice(0, 5)));
-      horarioChips.forEach(chip => {
-        if (ocupados.has(chip.dataset.hora)) {
+      // La API devuelve los horarios completos. Ocultamos sus botones.
+      const ocupados = [];
+      for (const hora of data.horarios) {
+        ocupados.push(hora.slice(0, 5));
+      }
+      for (const chip of horarioChips) {
+        if (ocupados.includes(chip.dataset.hora)) {
           chip.style.display = 'none';
           chip.classList.remove('horario-chip-activo');
           chip.classList.add('horario-chip-ocupado');
           chip.title = 'Horario ocupado';
         }
-      });
+      }
     } catch (error) {
       // Si falla la carga de horarios ocupados, no bloqueamos la reserva.
     }
@@ -515,10 +523,19 @@
           personas: ['rPersonas', 'rErrorPersonas'],
           telefono: ['rTelefono', 'rErrorTelefono'],
         };
-        const campos = Object.keys(data.errores).filter(c => map[c]);
-        const pasoConError = Math.min(...campos.map(c => PASO_DE_CAMPO[c] || TOTAL_PASOS));
+        // Volver al primer paso que contiene un error reconocido del servidor.
+        const campos = [];
+        let pasoConError = TOTAL_PASOS;
+        for (const campo of Object.keys(data.errores)) {
+          if (!map[campo]) continue;
+          campos.push(campo);
+          const paso = PASO_DE_CAMPO[campo] || TOTAL_PASOS;
+          if (paso < pasoConError) pasoConError = paso;
+        }
         if (pasoConError < pasoActual) irAPaso(pasoConError);
-        campos.forEach(campo => marcarError(map[campo][0], map[campo][1], data.errores[campo]));
+        for (const campo of campos) {
+          marcarError(map[campo][0], map[campo][1], data.errores[campo]);
+        }
         setLoading(false);
       } else {
         mostrarToast(data.mensaje || 'Error inesperado.', 'error');

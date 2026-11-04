@@ -9,7 +9,8 @@
  * El código se guarda encriptado (como las contraseñas), vence a los 15 minutos,
  * sirve una sola vez y se anula después de 5 intentos fallidos.
  */
-session_start();
+require_once __DIR__ . '/../includes/sesion.php';
+iniciarSesion();
 require_once '../includes/config.php';
 require_once '../includes/check_auth.php';
 require_once '../includes/mailer.php';

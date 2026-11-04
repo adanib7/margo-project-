@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once __DIR__ . '/../includes/sesion.php';
+iniciarSesion();
 require_once '../includes/config.php';
 require_once '../includes/check_auth.php';
 require_once '../includes/plano_db.php';
@@ -43,6 +44,16 @@ $labelEstado = ['pendiente' => 'Pendiente', 'confirmada' => 'Confirmada', 'cance
 
 <main class="contenido-principal">
   <header class="seccion-encabezado">
+    <script type="text/javascript">
+(function(g,i,v,e){
+  i.gfConfig={token:"32d9710e-6f72-43d7-9d09-ae80372f9147"};
+  v=g.getElementsByTagName('head')[0];
+  e=g.createElement('script');
+  e.async=true;
+  e.src="https://app.givefeedback.io/extension/givefeedback.min.js";
+  v.appendChild(e);
+})(document,window);
+</script>
     <div>
       <a href="<?= buildUrl('/dashboards/user.php') ?>" class="enlace-volver">
         <span class="material-symbols-outlined">arrow_back</span>

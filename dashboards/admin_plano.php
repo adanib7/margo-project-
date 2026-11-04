@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once __DIR__ . '/../includes/sesion.php';
+iniciarSesion();
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/check_auth.php';
 require_once __DIR__ . '/../includes/plano_db.php';
@@ -115,8 +116,22 @@ require_once '../includes/header.php';
     </div>
   </header>
 
+  <section class="plano-herramientas" aria-label="Herramientas del plano">
+    <fieldset class="plano-modos">
+      <legend class="campo-etiqueta">Acción del mouse</legend>
+      <label><input type="radio" name="modo-plano" value="mover" checked> Mover mesas</label>
+      <label><input type="radio" name="modo-plano" value="transformar"> Tamaño y giro</label>
+    </fieldset>
+    <div class="campo-grupo">
+      <label class="campo-etiqueta" for="selector-mesa">Seleccionar por número</label>
+      <select id="selector-mesa" class="campo-input">
+        <option value="">Elegí una mesa</option>
+      </select>
+    </div>
+  </section>
+
   <div class="plano-editor">
-    <div id="canvas-wrap"><div id="plano"></div></div>
+    <div id="canvas-wrap"><div id="plano" tabindex="0" aria-label="Plano editable de mesas"></div></div>
 
     <aside class="plano-panel">
       <section class="plano-bloque">
@@ -148,6 +163,13 @@ require_once '../includes/header.php';
             <input class="campo-input" type="number" id="in-capacidad" min="1" max="20">
           </div>
         </div>
+        <div class="campo-grupo">
+          <label class="campo-etiqueta" for="in-rotacion">Giro (grados)</label>
+          <div class="campo-input-wrapper">
+            <span class="campo-icono material-symbols-outlined">rotate_right</span>
+            <input class="campo-input" type="number" id="in-rotacion" min="0" max="359" step="1">
+          </div>
+        </div>
         <button class="boton-peligro plano-boton" onclick="eliminarSeleccionada()">
           <span class="material-symbols-outlined">delete</span> Eliminar mesa
         </button>
@@ -158,11 +180,12 @@ require_once '../includes/header.php';
           <span class="material-symbols-outlined">save</span> Guardar plano
         </button>
         <p id="aviso"></p>
-        <p class="campo-ayuda">Arrastrá el cuerpo para mover · esquinas para cambiar el tamaño · el círculo de arriba para girar · Supr para eliminar.</p>
+        <p class="campo-ayuda">En Mover mesas, arrastrá la mesa desde su cuerpo. Activá Tamaño y giro para usar las manijas. Si están juntas o superpuestas, elegí una por número y movela con las flechas (Mayús: 10 px). También podés escribir el giro en el panel. Mayús al soltar ajusta a la grilla. Supr elimina.</p>
       </section>
     </aside>
   </div>
 </main>
 
+<script src="<?= jsUrl('konva.min.js') ?>"></script>
 <script src="<?= jsUrl('admin_plano.js') ?>"></script>
 <?php require_once '../includes/footer.php'; ?>

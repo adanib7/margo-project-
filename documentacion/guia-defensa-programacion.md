@@ -17,6 +17,16 @@ Esta guia conecta el codigo real con los apuntes del curso. Sirve para estudiar 
 
 PHP se ejecuta en el servidor. JavaScript se ejecuta en el navegador. MySQL guarda los datos entre visitas. JSON es el formato de intercambio; no es la base de datos del proyecto.
 
+El login acepta el nombre de usuario o el correo en un mismo campo. La consulta
+preparada busca por `nombre = ? OR email = ?`. La sesion siempre conserva el nombre
+real obtenido de la base, aunque se haya escrito el correo. Si la entrada coincide
+con dos cuentas diferentes, se rechaza el acceso para no elegir una arbitrariamente.
+
+Las contrasenas nuevas admiten simbolos opcionales: se mantienen el minimo de seis
+caracteres, una mayuscula y un numero. `validarPassword()` se comparte entre registro,
+perfil y recuperacion. Al iniciar sesion se verifica el hash guardado, sin volver a
+exigir las reglas de creacion a contrasenas existentes.
+
 ## 2. Recorrido que deben poder explicar: crear una reserva
 
 1. El usuario inicia sesion. PHP guarda su identificador y rol en `$_SESSION`.
@@ -114,7 +124,8 @@ Limites actuales: comprobar y guardar son pasos separados, por lo que falta prot
 - FPDF (`includes/lib/fpdf/`): genera archivos PDF. Revisar como lo usan los comprobantes y reportes; es codigo de una libreria externa.
 - Lucide y Material Symbols: iconos de la interfaz.
 - Tailwind: utilidades y estilos base de las pantallas; tambien se usa CSS propio.
-- Google: acceso con una cuenta externa. `includes/google_auth.php` consulta la validacion del token y comprueba el destinatario antes de buscar o crear la cuenta local.
+- Konva 9.3.22 (`assets/js/konva.min.js`): lienzo y controles del editor administrativo de mesas. La biblioteca se carga localmente; `admin_plano.js` conecta sus objetos con los formularios y el guardado PHP.
+- Google: acceso con una cuenta externa. `includes/google_auth.php` valida la credencial y busca una cuenta vinculada por su identificador `sub`. Permite crear la cuenta e iniciar sesion directamente, sin un codigo adicional del sitio.
 - Brevo: API externa de correo. `includes/mailer.php` envia JSON mediante una solicitud HTTP con cURL, o un stream si cURL no esta disponible.
 
 Conviene saber que problema resuelve cada herramienta, que datos recibe, que devuelve y que ocurre si falla. No tienen que atribuirse la implementacion interna de las librerias.
@@ -139,3 +150,185 @@ Se conservan funcionalidades, integraciones, consultas preparadas y reglas de re
 5. Dibujar dos reservas que se pisan y dos que no. Relacionarlas con las condiciones de `reservaSolapada()`.
 6. Explicar que permanece en el navegador, que queda en la sesion del servidor y que se guarda en MySQL.
 7. Distinguir el codigo propio de las librerias y contar con claridad en que se uso ayuda de IA y como se comprobo el resultado.
+
+## 11. Registro con verificacion de correo
+
+El formulario ya no inserta directamente en `usuarios`. `includes/auth.php` llama a
+`includes/registro.php`, que guarda los datos provisionales en `registro_pendientes`
+y envia un codigo mediante Brevo. La pantalla `modo=verificar` permite ingresarlo
+o pedir otro. Son formularios POST procesados por PHP, sin un endpoint JSON nuevo.
+
+La contrasena y el codigo se guardan como hashes con `password_hash()`. El codigo
+tiene seis digitos, vence en 15 minutos y se bloquea despues de cinco errores.
+Al reenviar hay que esperar 60 segundos; el nuevo codigo reemplaza al anterior.
+Se admiten hasta cinco envios por email por hora. `registro_limites` conserva limites
+por IP entre sesiones: diez solicitudes de envio y treinta confirmaciones por hora.
+Los limites por IP pueden afectar a personas que comparten conexion y se renuevan
+automaticamente. No son un bloqueo permanente ni garantizan una cuenta por persona.
+
+Ademas del codigo, el servidor vincula la solicitud con un identificador aleatorio
+guardado en la sesion. En la tabla se guarda su hash. Esto impide que una solicitud
+hecha desde otro navegador cambie las credenciales que confirma el usuario original.
+Hay que terminar el registro en el navegador donde se inicio; si se pierde la sesion,
+se puede volver a completar el formulario de registro respetando los limites.
+
+`registroConfirmar()` usa una transaccion y `SELECT ... FOR UPDATE`: bloquea el
+pendiente mientras comprueba el codigo, crea la cuenta y elimina ese
+pendiente. `commit()` confirma esos cambios juntos; `rollback()` los deshace si
+algo falla. Dos confirmaciones simultaneas no pueden consumir el mismo codigo.
+Ese bloqueo es para verificar registros; no soluciona la concurrencia de reservas.
+
+Solo despues de confirmar se crea la cuenta con rol `usuario`. No se inicia sesion
+automaticamente: se vuelve al login. Las cuentas existentes y las altas realizadas
+por el superadministrador conservan su funcionamiento. El registro con Google no
+usa este codigo: el servidor valida la credencial de Google y permite entrar
+directamente. La vinculacion automatica a una cuenta local con el mismo email solo
+se hace si Google administra ese correo (Gmail o Workspace); conserva nombre,
+contrasena y rol. Si es un correo externo y existe una cuenta local sin vincular,
+se solicita usar el acceso local para evitar una vinculacion insegura.
+
+Los formularios de registro y verificacion incluyen un token CSRF: PHP comprueba que
+coincida con el de la sesion antes de procesarlos. En Google se comparan la cookie
+y el campo `g_csrf_token`, ademas de validar el token de identidad con Google.
+
+Si Brevo no esta configurado o el envio falla, la cuenta no se habilita. Los correos
+con codigos de registro no se copian al destinatario BCC de las reservas. Los
+pendientes abandonados se eliminan tras 24 horas cuando se procesa otro registro.
+En el hosting las tablas pueden importarse con `base de datos/registro_verificacion.sql`.
+
+Limites del alcance: un correo temporal puede recibir el codigo; estas medidas no
+demuestran una identidad real. No se exige verificar retroactivamente cuentas
+existentes ni se agrega aqui una verificacion de los cambios de email en Mi perfil.
+
+Para practicar: registrar una cuenta de prueba, mostrar que todavia no aparece en
+`usuarios`, provocar un codigo incorrecto, confirmar el correcto e intentar reutilizarlo.
+Verificar tambien vencimiento, espera de reenvio y acceso con una cuenta existente.
+
+## 12. URLs amigables
+
+Una direccion como `/usuarios` ejecuta internamente
+`dashboards/gestion-usuarios.php`. Apache aplica las reglas de `.htaccess`: no se
+mueven los archivos ni se cambian los controles de permisos de las pantallas.
+`includes/rutas.php` relaciona los archivos con sus nombres publicos y detecta la
+carpeta base; `buildUrl()` genera los enlaces limpios conservando consultas y anclas.
+En el hosting la base es vacia; en XAMPP puede ser `/margo-project-`.
+
+Cuando se abre un enlace antiguo por GET o HEAD, `config.php` responde con una
+redireccion 302 hacia la direccion nueva. Los POST no se redirigen: deben conservar
+su cuerpo y seguir procesando formularios y cambios del plano. Las API, descargas
+y el callback de Google conservan sus direcciones. Las imagenes, CSS y solicitudes
+JavaScript usan rutas desde la base para funcionar tambien desde las URLs amigables.
+
+## 13. Vencimiento y cierre de sesiones
+
+`includes/sesion.php` centraliza el inicio, cierre y validacion. Al acceder con
+contrasena o Google se genera otro ID y se guardan la fecha de inicio y la ultima
+actividad. El servidor exige volver a entrar tras 30 minutos de inactividad o
+al llegar a ocho horas, incluso si se sigue usando la aplicacion.
+
+`config.php` comprueba la sesion antes de ejecutar operaciones o conectar a MySQL.
+Las API protegidas responden 401 con JSON al perder el acceso; las pantallas
+redirigen al login. `api/sesion.php` permite consultar el vencimiento con GET y
+notificar actividad con POST. Los sondeos automaticos de nuevas reservas no
+actualizan el reloj, para que dejar una pestana abierta no mantenga el acceso.
+
+`assets/js/sesion.js` detecta interaccion real y sincroniza la pantalla con el
+servidor. No es quien decide los permisos: aunque se desactive JavaScript,
+las solicitudes posteriores siguen comprobando el vencimiento en PHP.
+Cerrar sesion elimina todos los datos, destruye el registro del servidor y borra
+la cookie; las paginas protegidas usan `Cache-Control: no-store`.
+
+La cookie no tiene una duracion persistente y usa HttpOnly, SameSite=Lax y Secure
+cuando hay HTTPS. Cerrar una pestana no cierra las otras. Un navegador puede
+restaurar cookies al reabrirse; por eso la proteccion principal es el vencimiento
+controlado por el servidor, no detectar el cierre de una ventana.
+
+Referencia: [OWASP, gestion de sesiones](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html).
+
+## 14. Repaso de las simplificaciones para la predefensa
+
+En `assets/js/user.js` algunos recorridos ahora usan `for...of`, para poder leerlos
+paso por paso. No cambia el recorrido de cuatro pasos del formulario.
+
+| Funcion o bloque | Como explicarlo |
+| --- | --- |
+| `mesaSeleccionada()` | Recorre las mesas recibidas y devuelve la que tiene el ID guardado en el formulario. Si no encuentra ninguna, devuelve null. |
+| `cargarHorariosOcupados()` | Consulta la API, prepara la lista de horarios completos y oculta sus botones. Eso ayuda al usuario; PHP vuelve a validar al guardar. |
+| Respuesta `data.errores` | Recorre los campos con errores, identifica el primer paso afectado, vuelve a ese paso si corresponde y muestra los mensajes junto a los campos. |
+| `franjaReserva()` en `plano_db.php` | Separa horas y minutos con explode, los convierte en enteros y suma la duracion configurada para calcular el final. |
+
+`includes()` comprueba si un valor esta en un arreglo. `slice(0, 5)` toma los
+primeros cinco caracteres: transforma por ejemplo `12:00:00` en `12:00`.
+El ID identifica la mesa; su numero es el que se muestra al cliente. No son
+necesariamente el mismo valor.
+
+Tambien se corrigieron dos validaciones puntuales:
+
+- `api/crear_reserva.php` comprueba que la hora pertenezca a los turnos configurados.
+  Una hora puede tener formato valido, como 03:00, y no ser un horario de servicio.
+  Por eso se compara con `horarioTodosLosSlots()` antes de insertar.
+- `api/cambiar_estado_reserva.php` vuelve a consultar solapamientos antes de reactivar
+  una reserva cancelada con mesa asignada. Si otra reserva tomo esa mesa, devuelve
+  HTTP 409 y conserva el estado cancelado. Se comprueba tanto al confirmar como al
+  pasar a pendiente, porque ambos estados ocupan mesa.
+
+Estos controles no resuelven la carrera entre peticiones simultaneas: comprobar
+disponibilidad y escribir siguen siendo pasos separados en reservas.
+
+Para exponer, empezar por `user.js` -> `crear_reserva.php` -> `plano_db.php` ->
+MySQL, explicando entrada, validacion y resultado. Despues mostrar una consulta
+preparada y el control de roles. El editor administrativo utiliza Konva para
+resolver las interacciones graficas; la conversion de caracteres del PDF sigue
+siendo una parte especializada que requiere una explicacion aparte.
+
+## 15. Editor administrativo con Konva
+
+`dashboards/admin_plano.php` carga primero la biblioteca local y luego
+`assets/js/admin_plano.js`. El editor dibuja en un canvas; el selector de mesas del
+cliente en `user.js` sigue usando botones HTML. Ambos usan los mismos datos de MySQL.
+
+| Objeto de Konva | Uso en el editor |
+| --- | --- |
+| `Stage` | El lienzo de 900 por 560 unidades. |
+| `Layer` | La capa que contiene las mesas y sus controles. |
+| `Group` | Una mesa: agrupa su figura, su numero y sus datos. |
+| `Rect` / `Ellipse` | La forma cuadrada o redonda de la mesa. |
+| `Text` | El numero que se dibuja sobre la figura. |
+| `Transformer` | Las manijas para cambiar el tamano y girar. |
+
+La biblioteca calcula los movimientos y las transformaciones. El codigo propio
+selecciona la mesa al apoyar el puntero, actualiza los campos del panel, limita
+posiciones y tamanos y prepara el JSON para guardar. No implementamos Konva ni
+su geometria interna.
+
+`hitFunc` define una zona invisible de clic: un rectangulo que cubre la mesa y
+10 unidades extra por lado. Facilita seleccionar tambien los bordes y las esquinas
+de mesas redondas, sin cambiar su dibujo ni las medidas guardadas. El arrastre
+empieza despues de mover cinco unidades, para tolerar pequenos movimientos al hacer clic.
+
+El modo inicial es Mover mesas: el marco se dibuja, pero no recibe clics y no
+muestra manijas. Asi los controles de una mesa no interceptan clics sobre otras
+cercanas. Tamano y giro activa las manijas con `resizeEnabled`, `rotateEnabled`
+y `listening`. Al seleccionar otra mesa se vuelve al modo Mover mesas.
+
+La lista Seleccionar por numero permite elegir incluso una mesa tapada por otra.
+Al elegirla, el foco vuelve al plano para poder moverla con las flechas. Cambiar
+la seleccion no cambia el orden en que se dibujan las mesas. El contenedor permite
+desplazamiento si la pantalla no alcanza para mostrar todo el plano.
+
+Para mover se arrastra el cuerpo; al soltar no hay ajuste automatico a la grilla,
+salvo que se mantenga Mayus. Las flechas mueven una unidad y Mayus con flechas,
+diez. Se puede girar con la manija superior o escribir los grados en el panel.
+Las mesas nuevas buscan un espacio libre para no apilarse todas en el centro.
+
+Al redimensionar, Konva modifica `scaleX` y `scaleY`. Nuestro controlador
+`transformend` multiplica ancho y alto por esas escalas, guarda el nuevo tamano
+y restablece ambas escalas a uno. Asi no se vuelve a multiplicar el tamano en la
+siguiente edicion. Para guardar se envian ID, numero, capacidad, forma, centro X/Y,
+ancho, alto y rotacion al mismo endpoint PHP que ya usa el plano.
+
+La comprobacion de que una mesa con reservas no se borre sigue estando en PHP.
+Eliminarla del dibujo no garantiza que el servidor acepte borrarla de MySQL;
+si la rechaza, la recarga muestra la mesa nuevamente.
+
+Referencia: [Konva, Transformer](https://konvajs.org/docs/select_and_transform/Basic_demo.html).

@@ -121,7 +121,7 @@
           + '<span class="material-symbols-outlined">delete</span></button>');
       }
 
-      const contacto = [r.telefono, r.email].filter(Boolean).map(esc).join(' · ') || '—';
+      const contacto = [r.telefono, r.email].filter(Boolean).map(escaparHtml).join(' · ') || '—';
       const chipHoy  = esHoy(r.fecha) ? ' <span class="res-chip-hoy">hoy</span>' : '';
 
       const casilla = cancelada ? '' : '<input type="checkbox" class="res-sel" value="' + r.id + '" aria-label="Seleccionar ' + escaparHtml(r.codigo) + '">';

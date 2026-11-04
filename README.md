@@ -24,3 +24,66 @@ htdocs/includes/ en el hosting:
 
 
 Guia para estudiar la programacion y preparar la defensa: [documentacion/guia-defensa-programacion.md](documentacion/guia-defensa-programacion.md).
+
+VERIFICACION DE NUEVOS REGISTROS:
+
+El registro con usuario y contrasena envia un codigo de seis digitos mediante Brevo. La cuenta se
+crea en `usuarios` solo al confirmar el codigo. Requiere el correo habilitado en
+`includes/mail_config.php`; si falla, el registro no se habilita.
+
+Las tablas `registro_pendientes` y `registro_limites` se preparan automaticamente.
+En un hosting sin permisos de creacion, importar antes
+`base de datos/registro_verificacion.sql` en la base existente. No modifica cuentas
+actuales. El despliegue FTP no importa este SQL automaticamente.
+
+El codigo vence en 15 minutos, admite cinco intentos y puede reenviarse tras
+60 segundos, con hasta cinco envios por correo por hora. Hay un limite adicional
+de diez solicitudes de envio y treinta confirmaciones por IP por hora. Los
+pendientes de mas de 24 horas se limpian al procesar otro registro.
+
+Google permite entrar y crear cuentas directamente, sin un codigo adicional del
+sitio. Se conserva la validacion del token de Google. La vinculacion automatica a
+una cuenta local solo se permite cuando Google administra el correo (Gmail o Workspace).
+Las cuentas creadas por el superadministrador mantienen su flujo administrativo.
+
+Prueba de integracion: `C:\xampp\php\php.exe tests/registro.php` con una instancia
+MySQL local de pruebas en el puerto 3317 (o la variable `TEST_MYSQL_PORT`). Crea y
+elimina una base temporal, simula el correo y no usa la base del restaurante.
+
+URLS AMIGABLES:
+
+Las pantallas usan `/ingresar`, `/panel`, `/admin`, `/superadmin`, `/usuarios`,
+`/reservas`, `/plano`, `/inventario`, `/reportes`, `/configuracion`, `/mi-perfil`
+y `/mis-reservas`. En XAMPP se agrega delante `/margo-project-`, por ejemplo:
+`http://localhost/margo-project-/usuarios`.
+
+Subir tambien `.htaccess` e `includes/rutas.php` al publicar estos cambios.
+Apache debe tener `mod_rewrite` y permitir las reglas de `.htaccess`.
+Las direcciones anteriores redirigen a las nuevas conservando los parametros en
+GET/HEAD; los POST antiguos siguen procesandose sin perder los datos enviados.
+Las API, los comprobantes y el callback de Google mantienen sus direcciones.
+
+Prueba de correspondencia de rutas: `C:\xampp\php\php.exe tests/rutas.php`.
+
+SESIONES:
+
+Las sesiones vencen tras 30 minutos sin actividad o a las 8 horas del acceso.
+Los tiempos se cambian en `includes/sesion.php`. Los avisos automaticos de reservas
+y las consultas de estado no renuevan la actividad. Las pantallas protegidas
+comprueban el estado y notifican actividad real; las API rechazan sesiones vencidas
+con HTTP 401. El logout elimina los datos del servidor y la cookie de acceso.
+Al publicar este cambio, las sesiones anteriores sin marcas de tiempo requieren
+volver a iniciar sesion. Cerrar una pestana no equivale a cerrar la sesion de todas
+las pestanas; el vencimiento del servidor funciona aunque el navegador restaure cookies.
+
+Prueba sin MySQL: `C:\xampp\php\php.exe tests/sesion.php`.
+
+EDITOR DE MESAS:
+
+El editor administrativo usa Konva 9.3.22, incluido en `assets/js/konva.min.js`
+con su licencia en `assets/js/konva.LICENSE.txt`. Subir ambos archivos junto al
+editor al publicar. No requiere instalar paquetes ni cargar Konva desde un CDN.
+Se selecciona al apoyar el puntero y se arrastra el cuerpo en Mover mesas.
+Tamano y giro activa las manijas; el panel tambien permite escribir los grados.
+La lista por numero permite seleccionar mesas superpuestas. Las flechas mueven
+una unidad, Mayus con flechas mueve diez y Mayus al soltar ajusta a la grilla.

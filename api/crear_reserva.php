@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once __DIR__ . '/../includes/sesion.php';
+iniciarSesion();
 require_once '../includes/config.php';
 require_once '../includes/plano_db.php';
 require_once '../includes/config_app.php';
@@ -63,6 +64,8 @@ if (!$fechaObj || $fechaObj->format('Y-m-d') !== $fecha) {
 
 if (!preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $hora)) {
     $errores['hora'] = 'Seleccioná un horario válido.';
+} elseif (!in_array($hora, horarioTodosLosSlots(), true)) {
+    $errores['hora'] = 'Elegí uno de los horarios de servicio disponibles.';
 }
 
 $maxPersonas = cfgInt('reservas.max_personas');

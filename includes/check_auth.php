@@ -1,7 +1,8 @@
 <?php
+require_once __DIR__ . '/sesion.php';
 function requireLogin(): void {
-    if (!isset($_SESSION['usuario_logueado'])) {
-        header('Location: ' . buildUrl('/public/login.php', true));
+    if (!sesionAutenticada()) {
+        header('Location: ' . buildUrl('/public/login.php' . (!empty($_SESSION['sesion_vencida']) ? '?sesion=expirada' : ''), true));
         exit;
     }
 }
@@ -26,9 +27,11 @@ function redirectToDashboard(): void {
 
 // Reglas de contraseña (registro, Mi perfil y recuperar contraseña).
 function validarPassword(string $p): string {
+    // Bcrypt admite hasta 72 bytes y no acepta el byte nulo.
+    if (strlen($p) > 72)                     return "La contraseña es demasiado larga (máximo 72 bytes).";
+    if (str_contains($p, "\0"))              return "La contraseña contiene un carácter no permitido.";
     if (strlen($p) < 6)                       return "La contraseña debe tener mínimo 6 caracteres.";
     if (!preg_match('/[A-Z]/', $p))           return "La contraseña debe tener al menos una mayúscula.";
     if (!preg_match('/[0-9]/', $p))           return "La contraseña debe tener al menos un número.";
-    if (!preg_match('/^[a-zA-Z0-9]+$/', $p)) return "Solo se permiten letras y números.";
     return "";
 }
