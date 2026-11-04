@@ -18,6 +18,16 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 <title><?= $h($LOC_NOMBRE) ?> · Restaurante y llagar en <?= $h($LOC_CIUPRO) ?></title>
 <link rel="stylesheet" href="assets/css/colors_and_type.css">
 <script src="assets/js/lucide.min.js" defer></script>
+<script type="text/javascript">
+(function(g,i,v,e){
+  i.gfConfig={token:"32d9710e-6f72-43d7-9d09-ae80372f9147"};
+  v=g.getElementsByTagName('head')[0];
+  e=g.createElement('script');
+  e.async=true;
+  e.src="https://app.givefeedback.io/extension/givefeedback.min.js";
+  v.appendChild(e);
+})(document,window);
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;overflow-x:hidden}
