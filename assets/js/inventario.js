@@ -23,6 +23,31 @@
   const btnSubmit = document.getElementById('btnSubmitItem');
   const selectorMoneda = document.getElementById('invMoneda');
   const avisoCotizacion = document.getElementById('invCotizacion');
+  const infoDivisas = document.getElementById('invInfoDivisas');
+  const botonInfo = document.getElementById('invInfoBoton');
+  const detalleMoneda = document.getElementById('invInfoMoneda');
+
+  function mostrarInfoMoneda(visible) {
+    detalleMoneda.hidden = !visible;
+    botonInfo.setAttribute('aria-expanded', String(visible));
+  }
+  botonInfo.addEventListener('pointerenter', e => {
+    if (e.pointerType === 'mouse') mostrarInfoMoneda(true);
+  });
+  infoDivisas.addEventListener('pointerleave', () => {
+    if (document.activeElement !== botonInfo) mostrarInfoMoneda(false);
+  });
+  botonInfo.addEventListener('focus', () => {
+    if (botonInfo.matches(':focus-visible')) mostrarInfoMoneda(true);
+  });
+  botonInfo.addEventListener('blur', () => mostrarInfoMoneda(false));
+  botonInfo.addEventListener('click', () => mostrarInfoMoneda(detalleMoneda.hidden));
+  document.addEventListener('click', e => {
+    if (!infoDivisas.contains(e.target)) mostrarInfoMoneda(false);
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') mostrarInfoMoneda(false);
+  });
 
   const CAMPOS = {
     nombre:          ['iNombre',       'iErrorNombre'],
@@ -81,6 +106,7 @@
     } catch {
       selectorMoneda.value = monedaActual;
       avisoCotizacion.textContent = `No se pudo obtener la cotización. Se mantienen los valores en ${monedaActual}. Volvé a intentarlo.`;
+      mostrarToast(avisoCotizacion.textContent, 'error');
     } finally {
       clearTimeout(espera);
       selectorMoneda.disabled = false;

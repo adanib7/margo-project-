@@ -356,10 +356,14 @@ La primera conversion consulta las cinco tasas juntas y las conserva en memoria
 hasta recargar la pagina. Cambiar de moneda o filtrar no vuelve a consultarlas si
 ya estan disponibles. EUR usa tasa uno y funciona sin consultar la API externa.
 La pantalla muestra la fecha de la tasa elegida: pueden ser distintas entre monedas.
+La informacion se consulta desde el icono junto a Mostrar valores en. El recuadro
+se abre al pasar el mouse, enfocar el boton con el teclado o tocarlo; Escape lo
+cierra. La cotizacion dentro del recuadro cambia con la moneda seleccionada.
 
 Mientras se consulta se desactiva el selector. Si falla la conexion, la respuesta
 es invalida o tarda mas de diez segundos, se conserva la moneda anterior y se
 permite reintentar. La conversion es orientativa; no representa una compra de divisas.
+Los errores tambien se muestran en un aviso visible, aunque el recuadro este cerrado.
 Frankfurter no requiere clave para su API publica. No se agregan tablas a MySQL.
 
 Para practicar: pasar de EUR a UYU y ver el GET en Red, explicar el JSON y la

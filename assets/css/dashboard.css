@@ -1614,8 +1614,43 @@ body {
   margin-bottom: 1.5rem;
 }
 .inv-divisas .campo-grupo { width: 290px; max-width: 100%; margin: 0; }
-.inv-divisas-info { flex: 1; min-width: min(250px, 100%); }
-.inv-divisas-info .campo-ayuda { margin: 0.25rem 0; }
+.inv-divisas-titulo { position: relative; display: flex; align-items: center; gap: 0.4rem; }
+.inv-divisas-titulo .campo-etiqueta { margin: 0; }
+.inv-info-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #52634b;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.inv-info-boton .material-symbols-outlined { font-size: 19px; }
+.inv-info-boton:hover { background: #e9eee5; color: #264220; }
+.inv-info-boton:focus-visible { outline: 2px solid #264220; outline-offset: 2px; }
+.inv-divisas-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 20;
+  width: min(340px, calc(100vw - 2rem));
+  box-sizing: border-box;
+  padding: 0.9rem 1rem;
+  border: 1px solid #d4dece;
+  border-radius: 0.65rem;
+  background: #fff;
+  color: #434840;
+  box-shadow: 0 5px 18px rgba(26, 28, 25, 0.12);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.inv-divisas-tooltip p { margin: 0; }
+.inv-divisas-tooltip p + p { margin-top: 0.6rem; color: #52634b; }
 
 .inv-form-fila {
   display: grid;

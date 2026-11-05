@@ -38,7 +38,18 @@ require_once '../includes/header.php';
 
   <section class="inv-divisas" aria-label="Moneda del inventario">
     <div class="campo-grupo">
-      <label class="campo-etiqueta" for="invMoneda">Mostrar valores en</label>
+      <div class="inv-divisas-titulo" id="invInfoDivisas">
+        <label class="campo-etiqueta" for="invMoneda">Mostrar valores en</label>
+        <button type="button" class="inv-info-boton" id="invInfoBoton"
+                aria-label="Información sobre la conversión de monedas"
+                aria-expanded="false" aria-controls="invInfoMoneda" aria-describedby="invInfoMoneda">
+          <span class="material-symbols-outlined" aria-hidden="true">info</span>
+        </button>
+        <div class="inv-divisas-tooltip" id="invInfoMoneda" role="tooltip" hidden>
+          <p>Los precios se ingresan y guardan en euros. La conversión es orientativa.</p>
+          <p id="invCotizacion">Mostrando precios originales en EUR.</p>
+        </div>
+      </div>
       <div class="campo-input-wrapper">
         <span class="campo-icono material-symbols-outlined">currency_exchange</span>
         <select class="campo-input campo-select" id="invMoneda" aria-describedby="invCotizacion">
@@ -50,10 +61,6 @@ require_once '../includes/header.php';
           <option value="GBP">GBP (£) — Libra esterlina</option>
         </select>
       </div>
-    </div>
-    <div class="inv-divisas-info">
-      <p class="campo-ayuda">Los precios se ingresan y guardan en euros. La conversión es orientativa.</p>
-      <p class="campo-ayuda" id="invCotizacion" role="status">Mostrando precios originales en EUR.</p>
     </div>
   </section>
 
