@@ -83,9 +83,11 @@ EDITOR DE MESAS:
 El editor administrativo usa Konva 9.3.22, incluido en `assets/js/konva.min.js`
 con su licencia en `assets/js/konva.LICENSE.txt`. Subir ambos archivos junto al
 editor al publicar. No requiere instalar paquetes ni cargar Konva desde un CDN.
-Se selecciona al apoyar el puntero y se arrastra el cuerpo en Mover mesas.
+Arrastrar mueve la mesa desde su cuerpo. Tocar destino permite elegirla y tocar
+un espacio vacio para colocarla; es el modo inicial en punteros tactiles.
 Se pueden agregar mesas cuadradas, redondas y triangulares; las tres formas
 se conservan al guardar y se muestran en el plano de reservas del cliente.
-Tamano y giro activa las manijas; el panel tambien permite escribir los grados.
+El plano se adapta a la pantalla y tiene zoom y botones de ajuste fino.
+Tamano y giro activa las manijas; el panel permite escribir grados, ancho y alto.
 La lista por numero permite seleccionar mesas superpuestas. Las flechas mueven
 una unidad, Mayus con flechas mueve diez y Mayus al soltar ajusta a la grilla.

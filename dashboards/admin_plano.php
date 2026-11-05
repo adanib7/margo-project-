@@ -118,8 +118,9 @@ require_once '../includes/header.php';
 
   <section class="plano-herramientas" aria-label="Herramientas del plano">
     <fieldset class="plano-modos">
-      <legend class="campo-etiqueta">Acción del mouse</legend>
-      <label><input type="radio" name="modo-plano" value="mover" checked> Mover mesas</label>
+      <legend class="campo-etiqueta">Cómo mover</legend>
+      <label><input type="radio" name="modo-plano" value="colocar"> Tocar destino</label>
+      <label><input type="radio" name="modo-plano" value="mover" checked> Arrastrar</label>
       <label><input type="radio" name="modo-plano" value="transformar"> Tamaño y giro</label>
     </fieldset>
     <div class="campo-grupo">
@@ -131,7 +132,36 @@ require_once '../includes/header.php';
   </section>
 
   <div class="plano-editor">
-    <div id="canvas-wrap"><div id="plano" tabindex="0" aria-label="Plano editable de mesas"></div></div>
+    <div class="plano-area">
+      <div class="plano-vista">
+        <div class="plano-zoom" role="group" aria-label="Zoom del plano">
+          <button type="button" class="boton-secundario" id="zoomMenos" aria-label="Alejar plano">−</button>
+          <output id="zoomValor" aria-label="Escala del plano">100%</output>
+          <button type="button" class="boton-secundario" id="zoomMas" aria-label="Acercar plano">+</button>
+          <button type="button" class="boton-secundario" id="zoomAjustar">Ver todo</button>
+        </div>
+        <button type="button" class="boton-accion" onclick="guardarPlano()">Guardar plano</button>
+      </div>
+      <p class="campo-ayuda plano-instruccion" id="planoInstruccion" role="status">Elegí una mesa para empezar.</p>
+      <div id="canvas-wrap"><div id="plano" tabindex="0" aria-label="Plano editable de mesas" aria-describedby="planoInstruccion"></div></div>
+      <div class="plano-ajuste" id="planoAjuste" hidden>
+        <span id="mesaActiva">Mesa seleccionada</span>
+        <div class="plano-flechas" role="group" aria-label="Mover la mesa seleccionada">
+          <button type="button" class="boton-secundario" data-mover="-1,0" aria-label="Mover mesa a la izquierda">←</button>
+          <button type="button" class="boton-secundario" data-mover="0,-1" aria-label="Mover mesa hacia arriba">↑</button>
+          <button type="button" class="boton-secundario" data-mover="0,1" aria-label="Mover mesa hacia abajo">↓</button>
+          <button type="button" class="boton-secundario" data-mover="1,0" aria-label="Mover mesa a la derecha">→</button>
+        </div>
+        <label class="plano-paso">Paso
+          <select id="pasoMesa" aria-label="Distancia de cada movimiento">
+            <option value="10">10</option>
+            <option value="1">1</option>
+          </select>
+        </label>
+        <button type="button" class="boton-secundario" id="deseleccionarMesa">Soltar mesa</button>
+      </div>
+      <p id="aviso" role="status"></p>
+    </div>
 
     <aside class="plano-panel">
       <section class="plano-bloque">
@@ -170,17 +200,23 @@ require_once '../includes/header.php';
             <input class="campo-input" type="number" id="in-rotacion" min="0" max="359" step="1">
           </div>
         </div>
+        <div class="plano-medidas">
+          <div class="campo-grupo">
+            <label class="campo-etiqueta" for="in-ancho">Ancho</label>
+            <input class="campo-input" type="number" id="in-ancho" min="30" max="400" step="1" inputmode="numeric">
+          </div>
+          <div class="campo-grupo">
+            <label class="campo-etiqueta" for="in-alto">Alto</label>
+            <input class="campo-input" type="number" id="in-alto" min="30" max="400" step="1" inputmode="numeric">
+          </div>
+        </div>
         <button class="boton-peligro plano-boton" onclick="eliminarSeleccionada()">
           <span class="material-symbols-outlined">delete</span> Eliminar mesa
         </button>
       </section>
 
       <section class="plano-bloque">
-        <button class="boton-accion plano-boton" onclick="guardarPlano()">
-          <span class="material-symbols-outlined">save</span> Guardar plano
-        </button>
-        <p id="aviso"></p>
-        <p class="campo-ayuda">En Mover mesas, arrastrá la mesa desde su cuerpo. Activá Tamaño y giro para usar las manijas. Si están juntas o superpuestas, elegí una por número y movela con las flechas (Mayús: 10 px). También podés escribir el giro en el panel. Mayús al soltar ajusta a la grilla. Supr elimina.</p>
+        <p class="campo-ayuda">Tocar destino: elegí una mesa y tocá un espacio vacío para colocarla. Podés ampliar el plano y deslizarlo con el dedo. Arrastrar: mové la mesa sin soltar. Las flechas permiten ajustes pequeños. Si hay mesas superpuestas, elegí una por número. Tamaño y giro activa las manijas; también podés escribir las medidas. Mayús al soltar ajusta a la grilla. Supr elimina.</p>
       </section>
     </aside>
   </div>

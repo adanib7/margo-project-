@@ -302,20 +302,38 @@ selecciona la mesa al apoyar el puntero, actualiza los campos del panel, limita
 posiciones y tamanos y prepara el JSON para guardar. No implementamos Konva ni
 su geometria interna.
 
-`hitFunc` define una zona invisible de clic: un rectangulo que cubre la mesa y
-10 unidades extra por lado. Facilita seleccionar tambien los bordes y las esquinas
-de mesas redondas, sin cambiar su dibujo ni las medidas guardadas. El arrastre
-empieza despues de mover cinco unidades, para tolerar pequenos movimientos al hacer clic.
+Hay dos formas de mover: Arrastrar y Tocar destino. La segunda permite elegir una
+mesa y tocar un espacio vacio para colocarla, sin mantener el dedo o mouse apretado.
+En dispositivos con puntero tactil (`pointer: coarse`) se inicia en Tocar destino;
+en los demas se inicia en Arrastrar. Se puede elegir cualquiera de los dos modos.
+Las zonas invisibles rectangulares de clic se quitaron porque podian tapar una
+mesa cercana. Se conserva una pequena tolerancia en el borde de cada figura.
+El arrastre empieza despues de mover cinco pixeles.
 
-El modo inicial es Mover mesas: el marco se dibuja, pero no recibe clics y no
-muestra manijas. Asi los controles de una mesa no interceptan clics sobre otras
-cercanas. Tamano y giro activa las manijas con `resizeEnabled`, `rotateEnabled`
-y `listening`. Al seleccionar otra mesa se vuelve al modo Mover mesas.
+El marco de seleccion no recibe clics ni muestra manijas mientras se mueven mesas.
+Tamano y giro activa las manijas con `resizeEnabled`, `rotateEnabled` y `listening`.
+Al elegir otra mesa se vuelve al ultimo modo de movimiento elegido. Tambien se
+pueden escribir ancho, alto y giro en el panel, sin depender de las manijas.
 
 La lista Seleccionar por numero permite elegir incluso una mesa tapada por otra.
 Al elegirla, el foco vuelve al plano para poder moverla con las flechas. Cambiar
-la seleccion no cambia el orden en que se dibujan las mesas. El contenedor permite
-desplazamiento si la pantalla no alcanza para mostrar todo el plano.
+la seleccion no cambia el orden en que se dibujan las mesas. Los botones de flechas
+permiten ajustes de una o diez unidades incluso sin teclado. Soltar mesa quita la
+seleccion sin desplazar ninguna mesa.
+
+`ajustarVista()` adapta el canvas al ancho disponible y permite ampliarlo hasta
+cuatro veces respecto de la vista completa. Se escala el Stage, no las medidas
+guardadas. `getRelativePointerPosition()` convierte el toque en coordenadas reales
+del plano. Por eso el JSON sigue usando las mismas 900 por 560 unidades aunque
+el usuario cambie el zoom o gire la pantalla. Las manijas mantienen su tamano en
+pantalla y los limites de posicion tienen en cuenta la rotacion de la mesa.
+
+En Tocar destino, `preventDefault(false)` permite deslizar la vista ampliada con
+el dedo. En Arrastrar, el canvas captura el gesto para mover la mesa. Se detectan
+deslizamientos y eventos `pointercancel` para no convertir un recorrido del plano
+en una colocacion accidental. Los controles tactiles tienen al menos 44 pixeles;
+los campos usan 16 pixeles de fuente en punteros tactiles para evitar el zoom de
+foco de Safari. Estas interacciones tambien deben comprobarse en un celular real.
 
 Para mover se arrastra el cuerpo; al soltar no hay ajuste automatico a la grilla,
 salvo que se mantenga Mayus. Las flechas mueven una unidad y Mayus con flechas,

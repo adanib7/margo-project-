@@ -7,8 +7,13 @@ const panelMesa = document.getElementById('panel-mesa');
 const inNumero = document.getElementById('in-numero');
 const inCapacidad = document.getElementById('in-capacidad');
 const inRotacion = document.getElementById('in-rotacion');
+const inAncho = document.getElementById('in-ancho');
+const inAlto = document.getElementById('in-alto');
 const aviso = document.getElementById('aviso');
 const selectorMesa = document.getElementById('selector-mesa');
+const contenedorPlano = document.getElementById('canvas-wrap');
+const instruccion = document.getElementById('planoInstruccion');
+const ajusteMesa = document.getElementById('planoAjuste');
 const escenario = new Konva.Stage({ container: 'plano', width: ANCHO, height: ALTO });
 const capa = new Konva.Layer();
 escenario.add(capa);
@@ -30,6 +35,67 @@ controles.anchorStyleFunc(ancla => ancla.hitStrokeWidth(14));
 capa.add(controles);
 let seleccionada = null;
 const eliminadas = [];
+let modoMovimiento = window.matchMedia('(pointer: coarse)').matches ? 'colocar' : 'mover';
+let modoActual = modoMovimiento;
+let zoom = 1;
+let inicioPuntero = null;
+let gestoMovido = false;
+
+// Ajustamos la vista, pero las mesas siguen usando las 900 x 560 unidades originales.
+function ajustarVista() {
+  const escala = Math.min(1, contenedorPlano.clientWidth / ANCHO, window.innerHeight * 0.7 / ALTO) * zoom;
+  if (!escala) return;
+  escenario.size({ width: ANCHO * escala, height: ALTO * escala });
+  escenario.scale({ x: escala, y: escala });
+  escenario.container().style.width = escenario.width() + 'px';
+  escenario.container().style.backgroundSize = (40 * escala) + 'px ' + (40 * escala) + 'px';
+  // Transformer ya compensa la escala: estos tamaños son píxeles de pantalla.
+  const tactil = window.matchMedia('(pointer: coarse)').matches;
+  controles.anchorSize(tactil ? 24 : 16);
+  controles.padding(10);
+  controles.rotateAnchorOffset(44);
+  controles.anchorStyleFunc(ancla => ancla.hitStrokeWidth(tactil ? 20 : 6));
+  document.getElementById('zoomValor').textContent = Math.round(escala * 100) + '%';
+  document.getElementById('zoomMenos').disabled = zoom <= 1;
+  document.getElementById('zoomMas').disabled = zoom >= 4;
+}
+
+function cambiarZoom(valor) {
+  // Acercar la mesa elegida; si no hay selección, conservar el centro de la vista.
+  const escalaAnterior = escenario.scaleX();
+  const centro = seleccionada ? seleccionada.position() : {
+    x: (contenedorPlano.scrollLeft + contenedorPlano.clientWidth / 2) / escalaAnterior,
+    y: (contenedorPlano.scrollTop + contenedorPlano.clientHeight / 2) / escalaAnterior,
+  };
+  zoom = limitar(valor, 1, 4);
+  ajustarVista();
+  contenedorPlano.scrollLeft = centro.x * escenario.scaleX() - contenedorPlano.clientWidth / 2;
+  contenedorPlano.scrollTop = centro.y * escenario.scaleY() - contenedorPlano.clientHeight / 2;
+}
+
+document.getElementById('zoomMas').addEventListener('click', () => cambiarZoom(zoom + 0.5));
+document.getElementById('zoomMenos').addEventListener('click', () => cambiarZoom(zoom - 0.5));
+document.getElementById('zoomAjustar').addEventListener('click', () => cambiarZoom(1));
+let anchoObservado = 0;
+new ResizeObserver(entradas => {
+  const ancho = entradas[0].contentRect.width;
+  if (Math.abs(ancho - anchoObservado) > 0.5) {
+    anchoObservado = ancho;
+    ajustarVista();
+  }
+}).observe(document.querySelector('.plano-area'));
+window.addEventListener('resize', ajustarVista);
+
+// Un deslizamiento o gesto cancelado por el navegador no debe terminar en un clic.
+escenario.container().addEventListener('pointerdown', e => {
+  if (!e.isPrimary) { gestoMovido = true; return; }
+  inicioPuntero = { x: e.clientX, y: e.clientY };
+  gestoMovido = false;
+});
+escenario.container().addEventListener('pointermove', e => {
+  if (inicioPuntero && Math.hypot(e.clientX - inicioPuntero.x, e.clientY - inicioPuntero.y) > 8) gestoMovido = true;
+}, { passive: true });
+escenario.container().addEventListener('pointercancel', () => { gestoMovido = true; });
 
 function limitar(valor, minimo, maximo) {
   return Math.min(Math.max(valor, minimo), maximo);
@@ -61,10 +127,11 @@ function limitarPosicion(grupo, ajustarGrilla = false) {
     x = Math.round(x / GRILLA) * GRILLA;
     y = Math.round(y / GRILLA) * GRILLA;
   }
-  grupo.position({
-    x: limitar(x, grupo.getAttr('ancho') / 2, ANCHO - grupo.getAttr('ancho') / 2),
-    y: limitar(y, grupo.getAttr('alto') / 2, ALTO - grupo.getAttr('alto') / 2),
-  });
+  // Medir también el giro para que una esquina no se salga del salón.
+  const caja = grupo.getClientRect({ relativeTo: capa });
+  const margenX = Math.min(ANCHO / 2, Math.max(grupo.x() - caja.x, caja.x + caja.width - grupo.x()));
+  const margenY = Math.min(ALTO / 2, Math.max(grupo.y() - caja.y, caja.y + caja.height - grupo.y()));
+  grupo.position({ x: limitar(x, margenX, ANCHO - margenX), y: limitar(y, margenY, ALTO - margenY) });
 }
 
 function crearMesa(datos) {
@@ -72,7 +139,7 @@ function crearMesa(datos) {
   const alto = parseFloat(datos.alto) || 70;
   const forma = ['cuadrada', 'redonda', 'triangular'].includes(datos.forma) ? datos.forma : 'cuadrada';
   const grupo = new Konva.Group({
-    name: 'mesa', draggable: true, dragDistance: 5,
+    name: 'mesa', draggable: modoActual !== 'colocar', dragDistance: 5,
     x: parseFloat(datos.pos_x) || 100,
     y: parseFloat(datos.pos_y) || 100,
     rotation: parseFloat(datos.rotacion) || 0,
@@ -81,22 +148,12 @@ function crearMesa(datos) {
     capacidad: parseInt(datos.capacidad, 10) || 4,
     forma, ancho, alto,
   });
-  const estilo = { name: 'figura', fill: VERDE, stroke: AMBAR, strokeWidth: 3, hitStrokeWidth: 0 };
+  const estilo = { name: 'figura', fill: VERDE, stroke: AMBAR, strokeWidth: 3,
+    hitStrokeWidth: 4, preventDefault: modoActual !== 'colocar' };
   let figura;
   if (forma === 'redonda') figura = new Konva.Ellipse(estilo);
   else if (forma === 'triangular') figura = new Konva.Line({ ...estilo, closed: true, lineJoin: 'round' });
   else figura = new Konva.Rect({ ...estilo, cornerRadius: 8 });
-  // Un rectángulo invisible amplía el clic 10 unidades alrededor de la mesa.
-  // Solo cambia la detección: no agranda el dibujo ni las medidas guardadas.
-  figura.hitFunc((contexto, formaMesa) => {
-    const ancho = grupo.getAttr('ancho'), alto = grupo.getAttr('alto');
-    const x = forma === 'cuadrada' ? 0 : -ancho / 2;
-    const y = forma === 'cuadrada' ? 0 : -alto / 2;
-    contexto.beginPath();
-    contexto.rect(x - 10, y - 10, ancho + 20, alto + 20);
-    contexto.closePath();
-    contexto.fillStrokeShape(formaMesa);
-  });
   const numero = new Konva.Text({
     name: 'numero', text: String(grupo.getAttr('numero')), fontFamily: 'Montserrat, sans-serif',
     fontSize: 20, fontStyle: 'bold', fill: CREMA,
@@ -104,14 +161,15 @@ function crearMesa(datos) {
   });
   grupo.add(figura, numero);
   actualizarTamano(grupo, ancho, alto);
-  // Seleccionar al apoyar el puntero, antes de empezar el arrastre.
-  // Reordenar el grupo durante dragstart podía interferir con el primer movimiento.
-  grupo.on('mousedown touchstart click tap', e => {
-    e.cancelBubble = true;
-    escenario.container().focus({ preventScroll: true });
-    seleccionar(grupo);
+  // En arrastre se selecciona al apoyar; en colocar, solo después de un toque.
+  grupo.on('mousedown touchstart', () => {
+    if (modoActual !== 'colocar') seleccionar(grupo);
   });
-  grupo.on('dragstart', () => { escenario.container().style.cursor = 'grabbing'; });
+  grupo.on('click tap', e => {
+    e.cancelBubble = true;
+    if (!gestoMovido) seleccionar(grupo);
+  });
+  grupo.on('dragstart', () => { gestoMovido = true; escenario.container().style.cursor = 'grabbing'; });
   grupo.on('dragmove', () => limitarPosicion(grupo));
   grupo.on('dragend', e => {
     limitarPosicion(grupo, !!e.evt?.shiftKey);
@@ -126,9 +184,9 @@ function crearMesa(datos) {
     actualizarTamano(grupo, nuevoAncho, nuevoAlto);
     limitarPosicion(grupo);
     controles.forceUpdate();
-    if (seleccionada === grupo) inRotacion.value = anguloNormalizado(grupo.rotation());
+    if (seleccionada === grupo) actualizarMedidas();
   });
-  grupo.on('mouseenter', () => { escenario.container().style.cursor = 'grab'; });
+  grupo.on('mouseenter', () => { escenario.container().style.cursor = modoActual === 'colocar' ? 'pointer' : 'grab'; });
   grupo.on('mouseleave', () => { escenario.container().style.cursor = ''; });
   capa.add(grupo);
   controles.moveToTop();
@@ -141,28 +199,83 @@ function anguloNormalizado(angulo) { return Math.round(((angulo % 360) + 360) % 
 
 function seleccionar(grupo) {
   if (seleccionada === grupo) return;
+  if (seleccionada) seleccionada.findOne('.figura').fill(VERDE);
   seleccionada = grupo;
   controles.nodes(grupo ? [grupo] : []);
   panelMesa.classList.toggle('visible', !!grupo);
-  // Volver a mover al cambiar de mesa: las manijas solo se activan a pedido.
-  document.querySelector('input[name="modo-plano"][value="mover"]').checked = true;
-  cambiarModo('mover');
+  ajusteMesa.hidden = !grupo;
+  // Volver al modo de movimiento elegido, sin encender manijas al seleccionar.
+  if (modoActual === 'transformar') cambiarModo(modoMovimiento);
   if (grupo) {
     controles.moveToTop();
     controles.keepRatio(grupo.getAttr('forma') === 'redonda');
     inNumero.value = grupo.getAttr('numero');
     inCapacidad.value = grupo.getAttr('capacidad');
-    inRotacion.value = anguloNormalizado(grupo.rotation());
+    grupo.findOne('.figura').fill('#3d7a52');
+    actualizarMedidas();
+    document.getElementById('mesaActiva').textContent = 'Mesa ' + grupo.getAttr('numero');
   }
+  actualizarInstruccion();
   actualizarListaMesas();
 }
 
 function cambiarModo(modo) {
+  modoActual = modo;
+  if (modo !== 'transformar') modoMovimiento = modo;
+  document.querySelector('input[name="modo-plano"][value="' + modo + '"]').checked = true;
   const transformar = modo === 'transformar';
   controles.resizeEnabled(transformar);
   controles.rotateEnabled(transformar);
   // El marco de selección no recibe clics cuando solo queremos mover mesas.
   controles.listening(transformar);
+  escenario.container().classList.toggle('arrastrando', modo !== 'colocar');
+  for (const mesa of capa.find('.mesa')) {
+    mesa.draggable(modo !== 'colocar');
+    mesa.findOne('.figura').preventDefault(modo !== 'colocar');
+  }
+  actualizarInstruccion();
+}
+
+function actualizarInstruccion() {
+  const nombre = seleccionada ? 'Mesa ' + seleccionada.getAttr('numero') + ': ' : '';
+  if (modoActual === 'colocar') instruccion.textContent = nombre + (seleccionada
+    ? 'tocá un espacio vacío para colocarla. Deslizá el plano para recorrerlo.'
+    : 'elegí una mesa y después tocá su destino. Podés elegirla por número.');
+  else if (modoActual === 'transformar') instruccion.textContent = nombre + 'usá las manijas o escribí las medidas en el panel.';
+  else instruccion.textContent = nombre + 'arrastrá una mesa para moverla. También podés usar Tocar destino.';
+}
+
+function moverSeleccionada(dx, dy, paso) {
+  if (!seleccionada) return;
+  seleccionada.position({ x: seleccionada.x() + dx * paso, y: seleccionada.y() + dy * paso });
+  limitarPosicion(seleccionada);
+}
+for (const boton of document.querySelectorAll('[data-mover]')) {
+  boton.addEventListener('click', () => {
+    const [dx, dy] = boton.dataset.mover.split(',').map(Number);
+    moverSeleccionada(dx, dy, Number(document.getElementById('pasoMesa').value));
+  });
+}
+document.getElementById('deseleccionarMesa').addEventListener('click', () => seleccionar(null));
+
+function actualizarMedidas() {
+  inRotacion.value = anguloNormalizado(seleccionada.rotation());
+  inAncho.value = Math.round(seleccionada.getAttr('ancho'));
+  inAlto.value = Math.round(seleccionada.getAttr('alto'));
+}
+for (const campo of [inAncho, inAlto]) {
+  campo.addEventListener('change', () => {
+    if (!seleccionada) return;
+    const valor = Number(campo.value);
+    if (campo.value === '' || !Number.isFinite(valor)) { actualizarMedidas(); return; }
+    let ancho = limitar(Number(inAncho.value), MIN_TAM, MAX_TAM);
+    let alto = limitar(Number(inAlto.value), MIN_TAM, MAX_TAM);
+    if (seleccionada.getAttr('forma') === 'redonda') ancho = alto = limitar(valor, MIN_TAM, MAX_TAM);
+    actualizarTamano(seleccionada, ancho, alto);
+    limitarPosicion(seleccionada);
+    controles.forceUpdate();
+    actualizarMedidas();
+  });
 }
 
 for (const opcion of document.querySelectorAll('input[name="modo-plano"]')) {
@@ -186,19 +299,23 @@ selectorMesa.addEventListener('change', () => {
   escenario.container().focus({ preventScroll: true });
 });
 
-escenario.on('mousedown touchstart', () => escenario.container().focus({ preventScroll: true }));
+escenario.on('mousedown', () => escenario.container().focus({ preventScroll: true }));
 escenario.on('click tap', e => {
-  if (e.target === escenario) seleccionar(null);
+  if (e.target !== escenario || gestoMovido) return;
+  if (modoActual === 'colocar' && seleccionada) {
+    const destino = escenario.getRelativePointerPosition();
+    seleccionada.position(destino);
+    limitarPosicion(seleccionada);
+  } else seleccionar(null);
 });
 document.addEventListener('keydown', e => {
-  if (['INPUT', 'TEXTAREA', 'BUTTON'].includes(document.activeElement.tagName)) return;
+  if (['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT'].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) return;
   const direcciones = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
   if (seleccionada && direcciones[e.key]) {
     e.preventDefault();
     const paso = e.shiftKey ? GRILLA : 1;
     const [dx, dy] = direcciones[e.key];
-    seleccionada.position({ x: seleccionada.x() + dx * paso, y: seleccionada.y() + dy * paso });
-    limitarPosicion(seleccionada);
+    moverSeleccionada(dx, dy, paso);
     return;
   }
   if ((e.key === 'Delete' || e.key === 'Backspace') && seleccionada) {
@@ -211,6 +328,8 @@ inNumero.addEventListener('input', e => {
   const numero = parseInt(e.target.value, 10) || 1;
   seleccionada.setAttr('numero', numero);
   seleccionada.findOne('.numero').text(String(numero));
+  document.getElementById('mesaActiva').textContent = 'Mesa ' + numero;
+  actualizarInstruccion();
   actualizarListaMesas();
 });
 inCapacidad.addEventListener('input', e => {
@@ -221,6 +340,7 @@ inRotacion.addEventListener('input', e => {
   const angulo = Number(e.target.value);
   if (!Number.isFinite(angulo)) return;
   seleccionada.rotation(anguloNormalizado(angulo));
+  limitarPosicion(seleccionada);
   controles.forceUpdate();
 });
 inRotacion.addEventListener('change', () => {
@@ -306,4 +426,6 @@ async function guardarPlano() {
   }
 }
 
+cambiarModo(modoActual);
+ajustarVista();
 cargarPlano();
