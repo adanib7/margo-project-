@@ -2333,7 +2333,7 @@ body {
 .salon-ficha-titulo .texto-etiqueta { font-size: 0.65rem; margin-bottom: 0.3rem; }
 #mesaDetalle { margin: 0.25rem 0 0; color: #73796f; font-size: 0.8rem; }
 .salon-acciones-mesa { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 0.4rem; }
-.salon-acciones-mesa .boton-secundario { padding: 0.65rem 0.2rem; display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.75rem; justify-content: center; }
+.salon-acciones-mesa .boton-secundario { padding: 0.65rem 0.2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem; font-size: 0.75rem; line-height: 1.2; text-align: center; }
 .salon-acciones-mesa .material-symbols-outlined { font-size: 20px; }
 .salon-ajuste-fino, .salon-buscar, .salon-edicion-medidas { margin-top: 0.9rem; font-size: 0.8rem; color: #52604b; }
 .salon-ajuste-fino summary, .salon-buscar summary, .salon-edicion-medidas summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; gap: 0.5rem; }
