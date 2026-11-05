@@ -1,4 +1,5 @@
 // Konva dibuja las mesas. Este archivo maneja las acciones, vistas previas y guardado.
+if (window.lucide) lucide.createIcons();
 const ANCHO = 900, ALTO = 560, GRILLA = 10;
 const VERDE = '#2d5f3f', AMBAR = '#c9962e', CREMA = '#fafaf4';
 const editor = document.querySelector('.salon-editor');

@@ -130,7 +130,7 @@ require_once '../includes/header.php';
 <main class="contenido-principal corralin-plano" id="editorPlano">
   <header class="seccion-encabezado">
     <div>
-      <a href="<?= $volverUrl ?>" class="enlace-volver"><span class="material-symbols-outlined" aria-hidden="true">arrow_back</span> Panel principal</a>
+      <a href="<?= $volverUrl ?>" class="enlace-volver"><i data-lucide="arrow-left" aria-hidden="true"></i> Panel principal</a>
       <h1 class="titulo-pagina" style="margin-top:.5rem">Plano de mesas</h1>
       <p class="subtitulo-pagina">Cada mesa en su lugar. Organizá el salón a tu manera.</p>
     </div>
@@ -139,13 +139,13 @@ require_once '../includes/header.php';
   <section class="salon-editor" aria-label="Organizar el salón">
     <div class="salon-barra">
       <div class="salon-barra-acciones">
-        <button type="button" class="boton-secundario" id="btnAgregarMesa"><span class="material-symbols-outlined" aria-hidden="true">add</span> Mesa</button>
-        <button type="button" class="boton-secundario" id="btnDistribuir"><span class="material-symbols-outlined" aria-hidden="true">grid_view</span> Distribuir</button>
-        <button type="button" class="boton-accion" id="btnGuardarPlano">Guardar plano</button>
+        <button type="button" class="boton-secundario" id="btnAgregarMesa"><i data-lucide="plus" aria-hidden="true"></i><span>Mesa</span></button>
+        <button type="button" class="boton-secundario" id="btnDistribuir"><i data-lucide="layout-grid" aria-hidden="true"></i><span>Distribuir</span></button>
+        <button type="button" class="boton-accion" id="btnGuardarPlano" aria-label="Guardar plano"><i data-lucide="save" aria-hidden="true"></i><span>Guardar<span class="salon-guardar-extra"> plano</span></span></button>
       </div>
       <div class="salon-guardado">
         <span id="estadoGuardado">Cargando salón…</span>
-        <button type="button" class="salon-enlace" id="btnDeshacer" disabled><span class="material-symbols-outlined" aria-hidden="true">undo</span> Deshacer</button>
+        <button type="button" class="salon-enlace" id="btnDeshacer" disabled><i data-lucide="undo-2" aria-hidden="true"></i> Deshacer</button>
       </div>
     </div>
 
@@ -164,9 +164,9 @@ require_once '../includes/header.php';
         <div class="salon-pie-plano">
           <span class="salon-leyenda"><i></i> Mesas del restaurante</span>
           <div class="plano-zoom" role="group" aria-label="Zoom del plano">
-            <button type="button" class="salon-icono" id="zoomMenos" aria-label="Alejar plano">−</button>
+            <button type="button" class="salon-icono" id="zoomMenos" aria-label="Alejar plano"><i data-lucide="minus" aria-hidden="true"></i></button>
             <output id="zoomValor" aria-label="Escala del plano">100%</output>
-            <button type="button" class="salon-icono" id="zoomMas" aria-label="Acercar plano">+</button>
+            <button type="button" class="salon-icono" id="zoomMas" aria-label="Acercar plano"><i data-lucide="plus" aria-hidden="true"></i></button>
             <button type="button" class="salon-enlace" id="zoomAjustar">Ver todo</button>
           </div>
         </div>
@@ -177,7 +177,7 @@ require_once '../includes/header.php';
       <aside class="salon-inspector">
         <div class="salon-bienvenida" id="salonBienvenida">
           <span class="salon-sello material-symbols-outlined" aria-hidden="true">table_restaurant</span>
-          <h2>Un lugar para cada encuentro</h2>
+          <h2>Organizá tus mesas</h2>
           <p>Tocá una mesa y elegí qué querés hacer con ella.</p>
           <p class="salon-nota">¿Estás empezando? Agregá tus mesas y probá una distribución para el salón.</p>
         </div>
@@ -187,17 +187,17 @@ require_once '../includes/header.php';
             <button type="button" class="salon-icono" id="cerrarFicha" aria-label="Cerrar selección"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
           </div>
           <div class="salon-acciones-mesa">
-            <button type="button" class="boton-secundario" id="btnMoverMesa"><span class="material-symbols-outlined" aria-hidden="true">open_with</span> Mover</button>
-            <button type="button" class="boton-secundario" id="btnGirarMesa"><span class="material-symbols-outlined" aria-hidden="true">rotate_right</span> Girar</button>
+            <button type="button" class="boton-secundario" id="btnMoverMesa"><i data-lucide="move" aria-hidden="true"></i> Mover</button>
+            <button type="button" class="boton-secundario" id="btnGirarMesa"><i data-lucide="rotate-cw" aria-hidden="true"></i> Girar</button>
             <button type="button" class="boton-secundario" id="btnEditarMesa"><span class="material-symbols-outlined" aria-hidden="true">edit</span> Editar</button>
           </div>
           <details class="salon-ajuste-fino" id="ajusteFino">
             <summary>Ajuste fino</summary>
             <div class="plano-flechas" role="group" aria-label="Ajustar posición de la mesa">
-              <button type="button" class="salon-icono" data-mover="-1,0" aria-label="Mover mesa a la izquierda">←</button>
-              <button type="button" class="salon-icono" data-mover="0,-1" aria-label="Mover mesa hacia arriba">↑</button>
-              <button type="button" class="salon-icono" data-mover="0,1" aria-label="Mover mesa hacia abajo">↓</button>
-              <button type="button" class="salon-icono" data-mover="1,0" aria-label="Mover mesa a la derecha">→</button>
+              <button type="button" class="salon-icono" data-mover="-1,0" aria-label="Mover mesa a la izquierda"><i data-lucide="arrow-left" aria-hidden="true"></i></button>
+              <button type="button" class="salon-icono" data-mover="0,-1" aria-label="Mover mesa hacia arriba"><i data-lucide="arrow-up" aria-hidden="true"></i></button>
+              <button type="button" class="salon-icono" data-mover="0,1" aria-label="Mover mesa hacia abajo"><i data-lucide="arrow-down" aria-hidden="true"></i></button>
+              <button type="button" class="salon-icono" data-mover="1,0" aria-label="Mover mesa a la derecha"><i data-lucide="arrow-right" aria-hidden="true"></i></button>
               <select id="pasoMesa" aria-label="Distancia del ajuste"><option value="10">10</option><option value="1">1</option></select>
             </div>
             <button type="button" class="salon-enlace" id="btnArrastrar">Arrastrar esta mesa</button>
@@ -207,7 +207,10 @@ require_once '../includes/header.php';
         <details class="salon-buscar" id="buscarMesa">
           <summary>Elegir una mesa por número</summary>
           <label class="campo-etiqueta" for="selector-mesa">Mesa</label>
-          <select id="selector-mesa" class="campo-input"><option value="">Elegí una mesa</option></select>
+          <div class="salon-selector">
+            <select id="selector-mesa" class="campo-input"><option value="">Elegí una mesa</option></select>
+            <i data-lucide="chevron-down" class="salon-selector-flecha" aria-hidden="true"></i>
+          </div>
         </details>
       </aside>
     </div>
@@ -261,6 +264,7 @@ require_once '../includes/header.php';
   </form>
 </dialog>
 
+<script src="<?= jsUrl('lucide.min.js') ?>"></script>
 <script src="<?= jsUrl('konva.min.js') ?>"></script>
 <script src="<?= jsUrl('plano_distribucion.js') ?>"></script>
 <script src="<?= jsUrl('admin_plano.js') ?>"></script>
