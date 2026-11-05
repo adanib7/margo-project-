@@ -281,84 +281,110 @@ preparada y el control de roles. El editor administrativo utiliza Konva para
 resolver las interacciones graficas; la conversion de caracteres del PDF sigue
 siendo una parte especializada que requiere una explicacion aparte.
 
-## 15. Editor administrativo con Konva
+## 15. Asistente del salon con Konva
 
-`dashboards/admin_plano.php` carga primero la biblioteca local y luego
-`assets/js/admin_plano.js`. El editor dibuja en un canvas; el selector de mesas del
-cliente en `user.js` sigue usando botones HTML. Ambos usan los mismos datos de MySQL.
+`dashboards/admin_plano.php` carga `konva.min.js`, `plano_distribucion.js` y
+`admin_plano.js`, en ese orden. Konva se ocupa del dibujo y las transformaciones.
+El codigo propio decide que accion hacer, propone posiciones y guarda los datos.
+El selector de reservas del cliente en `user.js` sigue usando botones HTML y SVG.
 
 | Objeto de Konva | Uso en el editor |
 | --- | --- |
 | `Stage` | El lienzo de 900 por 560 unidades. |
-| `Layer` | La capa que contiene las mesas y sus controles. |
-| `Group` | Una mesa: agrupa su figura, su numero y sus datos. |
-| `Rect` / `Ellipse` | La forma cuadrada o redonda de la mesa. |
-| `Line` con `closed: true` | Une tres vertices y cierra la figura para dibujar una mesa triangular. |
-| `Text` | El numero que se dibuja sobre la figura. |
-| `Transformer` | Las manijas para cambiar el tamano y girar. |
+| `Layer` | La capa que contiene mesas, controles y vistas previas. |
+| `Group` | Una mesa: figura, numero y datos. |
+| `Rect` / `Ellipse` | La figura cuadrada o redonda. |
+| `Line` con `closed: true` | Une tres vertices y cierra la mesa triangular. |
+| `Text` | El numero de la mesa. |
+| `Transformer` | Las manijas opcionales para cambiar tamano y giro. |
 
-La biblioteca calcula los movimientos y las transformaciones. El codigo propio
-selecciona la mesa al apoyar el puntero, actualiza los campos del panel, limita
-posiciones y tamanos y prepara el JSON para guardar. No implementamos Konva ni
-su geometria interna.
+La pantalla comienza con Mesa, Distribuir y Guardar plano. Elegir una mesa abre
+su ficha con Mover, Girar y Editar. En celular se muestra abajo y en computadora
+al costado. El fondo crema, las tipografias, los botones verdes y los acentos
+dorados usan el estilo del resto del sitio. La lista por numero permite elegir
+mesas superpuestas o pequenas sin acertar en su dibujo.
 
-Hay dos formas de mover: Arrastrar y Tocar destino. La segunda permite elegir una
-mesa y tocar un espacio vacio para colocarla, sin mantener el dedo o mouse apretado.
-En dispositivos con puntero tactil (`pointer: coarse`) se inicia en Tocar destino;
-en los demas se inicia en Arrastrar. Se puede elegir cualquiera de los dos modos.
-Las zonas invisibles rectangulares de clic se quitaron porque podian tapar una
-mesa cercana. Se conserva una pequena tolerancia en el borde de cada figura.
-El arrastre empieza despues de mover cinco pixeles.
+### Agregar y modificar
 
-El marco de seleccion no recibe clics ni muestra manijas mientras se mueven mesas.
-Tamano y giro activa las manijas con `resizeEnabled`, `rotateEnabled` y `listening`.
-Al elegir otra mesa se vuelve al ultimo modo de movimiento elegido. Tambien se
-pueden escribir ancho, alto y giro en el panel, sin depender de las manijas.
+Mesa abre un dialogo HTML nativo: se elige cuadrada, redonda o triangular y la
+capacidad. El tamano inicial es una convencion visual: `40 + capacidad * 10`.
+`buscarEspacio()` recorre posiciones posibles y busca una caja libre. Si no la
+encuentra, informa el problema y no apila la mesa sobre otra. Numero y medidas
+se pueden modificar despues en Editar. Los dialogos mantienen el foco y cierran
+con Escape; no se agrega una biblioteca de ventanas.
 
-La lista Seleccionar por numero permite elegir incluso una mesa tapada por otra.
-Al elegirla, el foco vuelve al plano para poder moverla con las flechas. Cambiar
-la seleccion no cambia el orden en que se dibujan las mesas. Los botones de flechas
-permiten ajustes de una o diez unidades incluso sin teclado. Soltar mesa quita la
-seleccion sin desplazar ninguna mesa.
+Mover crea una copia semitransparente con `clone()`. Los puntos verdes sugieren
+lugares libres. Tocar el plano mueve esa copia, no la mesa original. El boton
+Colocar aqui se habilita cuando el destino entra en el salon y deja espacio con
+las demas mesas. Confirmar cambia la posicion; Cancelar descarta la copia.
 
-`ajustarVista()` adapta el canvas al ancho disponible y permite ampliarlo hasta
-cuatro veces respecto de la vista completa. Se escala el Stage, no las medidas
-guardadas. `getRelativePointerPosition()` convierte el toque en coordenadas reales
-del plano. Por eso el JSON sigue usando las mismas 900 por 560 unidades aunque
-el usuario cambie el zoom o gire la pantalla. Las manijas mantienen su tamano en
-pantalla y los limites de posicion tienen en cuenta la rotacion de la mesa.
+Girar suma 45 grados. Editar permite cambiar numero, capacidad, ancho, alto y giro.
+Los cambios se aplican juntos al confirmar el dialogo. Se rechaza un numero ya
+usado. Quitar mesa es reversible con Deshacer hasta guardar el plano.
 
-En Tocar destino, `preventDefault(false)` permite deslizar la vista ampliada con
-el dedo. En Arrastrar, el canvas captura el gesto para mover la mesa. Se detectan
-deslizamientos y eventos `pointercancel` para no convertir un recorrido del plano
-en una colocacion accidental. Los controles tactiles tienen al menos 44 pixeles;
-los campos usan 16 pixeles de fuente en punteros tactiles para evitar el zoom de
-foco de Safari. Estas interacciones tambien deben comprobarse en un celular real.
+`getClientRect({ relativeTo: capa })` obtiene la caja que ocupa una figura,
+incluyendo su giro y borde. Las cajas se comparan con una separacion de 12
+unidades. Es una comprobacion visual conservadora: no calcula el espacio real
+entre contornos curvos ni garantiza medidas fisicas de circulacion del local.
+Los numeros son unidades del dibujo, no centimetros del restaurante.
 
-Para mover se arrastra el cuerpo; al soltar no hay ajuste automatico a la grilla,
-salvo que se mantenga Mayus. Las flechas mueven una unidad y Mayus con flechas,
-diez. Se puede girar con la manija superior o escribir los grados en el panel.
-Las mesas nuevas buscan un espacio libre para no apilarse todas en el centro.
+En Ajuste fino siguen disponibles flechas, pasos de una o diez unidades, arrastre
+y manijas. Esos controles se muestran a pedido. El canvas captura los gestos solo
+en los ajustes de arrastre o transformacion; normalmente permite desplazar la
+vista con el dedo. Un deslizamiento o `pointercancel` no se interpreta como clic.
+Las flechas del teclado mueven una unidad; Mayus con flechas mueve diez. Mayus al
+soltar un arrastre ajusta a la grilla. Escape termina la accion o quita seleccion.
 
-Las mesas triangulares guardan `forma = triangular`, junto con ancho, alto,
-posicion y giro, igual que las demas. Sus vertices son la punta superior y los
-dos extremos de la base. Al cambiar el tamano se recalculan esos tres puntos.
-El numero se coloca mas cerca de la base para quedar dentro del triangulo.
-En el selector del cliente se usa un SVG dentro del boton HTML; conserva los
-colores de mesa libre, ocupada o elegida y permite mantener legible el numero.
-El servidor admite solamente cuadrada, redonda y triangular. Si la columna
-`mesas.forma` conserva un ENUM antiguo, `ensureMesaTable()` la convierte a
-VARCHAR sin borrar las mesas existentes, para permitir guardar la nueva forma.
+### Proponer una distribucion
 
-Al redimensionar, Konva modifica `scaleX` y `scaleY`. Nuestro controlador
-`transformend` multiplica ancho y alto por esas escalas, guarda el nuevo tamano
-y restablece ambas escalas a uno. Asi no se vuelve a multiplicar el tamano en la
-siguiente edicion. Para guardar se envian ID, numero, capacidad, forma, centro X/Y,
-ancho, alto y rotacion al mismo endpoint PHP que ya usa el plano.
+`proponerDistribucion()` en `assets/js/plano_distribucion.js` es una funcion propia:
+Konva no acomoda automaticamente las mesas. Recibe sus cajas, considerando los
+giros. Prueba distintas cantidades de filas y columnas. Una celda debe admitir
+la mesa mas grande mas una separacion; se conserva un margen exterior.
 
-La comprobacion de que una mesa con reservas no se borre sigue estando en PHP.
-Eliminarla del dibujo no garantiza que el servidor acepte borrarla de MySQL;
-si la rechaza, la recarga muestra la mesa nuevamente.
+En filas utiliza todas las celdas; Centro libre utiliza las del perimetro. Entre
+las opciones que entran, elige una con pocos lugares sobrantes y celdas parejas.
+Devuelve posiciones nuevas sin modificar los datos recibidos. Se conservan ID,
+numero, capacidad, forma, tamano y rotacion de cada mesa. Si ninguna opcion entra,
+devuelve null y se informa que hay que probar otra distribucion o ajustar tamanos.
+
+La propuesta se dibuja con copias y las mesas originales quedan atenuadas.
+Aplicar distribucion cambia las posiciones juntas; Volver elimina la vista previa.
+La propuesta es un punto de partida para representar el salon real.
+
+### Deshacer, zoom y guardado
+
+`estadoActual()` arma arreglos de datos simples: mesas, ID pendientes de eliminar
+y clave de la seleccion. Antes de un cambio se conserva ese estado en un historial
+de hasta 30 pasos. Deshacer reconstruye las figuras desde el estado anterior y
+restaura tambien las eliminaciones pendientes. Ctrl+Z hace lo mismo fuera de los
+formularios. Seleccionar, recorrer el plano o cambiar el zoom no crea pasos.
+
+Se escala el Stage para adaptar la vista a la pantalla; el zoom no cambia las
+medidas guardadas. `getRelativePointerPosition()` transforma un toque a las
+coordenadas originales de 900 por 560 unidades. Los campos tienen fuente de
+16 pixeles en punteros tactiles para evitar el zoom de foco de Safari. Se probaron
+gestos con emulacion tactil; el comportamiento debe comprobarse en un celular real.
+
+`firma()` convierte los datos a JSON para compararlos con el ultimo estado guardado.
+Asi se muestran Cambios sin guardar o Todo guardado. El boton Guardar plano envia
+un POST JSON al mismo PHP del editor. Hasta ese momento, los cambios son locales.
+
+El servidor conserva permisos de admin/superadmin y consultas preparadas. Usa una
+transaccion: confirma el lote completo con commit o lo revierte con rollback si
+falla una consulta. La respuesta contiene las mesas y sus ID reales. El navegador
+reconstruye el plano desde esa respuesta y limpia el historial; Deshacer no revierte
+cambios de una sesion anterior ni de un guardado ya confirmado.
+
+PHP sigue impidiendo borrar una mesa con reservas. La respuesta devuelve esas
+mesas y sus ID en `no_eliminadas`, y la pantalla explica que se conservaron.
+Las tablas antiguas con `mesas.forma` como ENUM se adaptan a VARCHAR mediante
+`ensureMesaTable()` para admitir las tres formas, sin borrar los registros.
+
+Para practicar: agregar una triangular, mover su copia y cancelar, confirmar otro
+destino, girar y deshacer. Probar ambas distribuciones y volver sin aplicar. Guardar
+una mesa nueva y comprobar en Red el ID devuelto. Explicar que es codigo de Konva,
+que es algoritmo propio y que queda en MySQL.
 
 Referencia: [Konva, Transformer](https://konvajs.org/docs/select_and_transform/Basic_demo.html).
 

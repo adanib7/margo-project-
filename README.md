@@ -83,11 +83,12 @@ EDITOR DE MESAS:
 El editor administrativo usa Konva 9.3.22, incluido en `assets/js/konva.min.js`
 con su licencia en `assets/js/konva.LICENSE.txt`. Subir ambos archivos junto al
 editor al publicar. No requiere instalar paquetes ni cargar Konva desde un CDN.
-Arrastrar mueve la mesa desde su cuerpo. Tocar destino permite elegirla y tocar
-un espacio vacio para colocarla; es el modo inicial en punteros tactiles.
-Se pueden agregar mesas cuadradas, redondas y triangulares; las tres formas
-se conservan al guardar y se muestran en el plano de reservas del cliente.
-El plano se adapta a la pantalla y tiene zoom y botones de ajuste fino.
-Tamano y giro activa las manijas; el panel permite escribir grados, ancho y alto.
-La lista por numero permite seleccionar mesas superpuestas. Las flechas mueven
-una unidad, Mayus con flechas mueve diez y Mayus al soltar ajusta a la grilla.
+El asistente muestra Mesa, Distribuir y Guardar plano. Seleccionar una mesa abre
+Mover, Girar y Editar; en celular la ficha aparece abajo. Movimiento y distribucion
+tienen vista previa y se pueden cancelar. Deshacer conserva hasta 30 cambios antes
+de guardar. Ajuste fino mantiene flechas, arrastre y manijas sin ocupar la vista inicial.
+Se admiten mesas cuadradas, redondas y triangulares y se conserva el plano del cliente.
+`assets/js/plano_distribucion.js` propone filas o centro libre; es codigo propio.
+Al publicar esta version, subir juntos `dashboards/admin_plano.php`,
+`assets/js/admin_plano.js`, `assets/js/plano_distribucion.js` y `assets/css/dashboard.css`.
+El POST devuelve las mesas con sus ID reales y guarda el lote en una transaccion.
