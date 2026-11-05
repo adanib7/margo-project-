@@ -9,6 +9,11 @@
   let modoEditar = false;
   let catLabels  = {};
   let uniLabels  = {};
+  let itemsActuales = null;
+  let totalesActuales = null;
+  let monedaActual = 'EUR';
+  let tipoCambio = 1;
+  let cotizaciones = null;
 
   // ── Refs ─────────────────────────────────────────────────────────────────
   const tablaWrap = document.getElementById('invTablaWrap');
@@ -16,6 +21,8 @@
   const formItem  = document.getElementById('formItem');
   const modalEliminar = document.getElementById('modalEliminarItem');
   const btnSubmit = document.getElementById('btnSubmitItem');
+  const selectorMoneda = document.getElementById('invMoneda');
+  const avisoCotizacion = document.getElementById('invCotizacion');
 
   const CAMPOS = {
     nombre:          ['iNombre',       'iErrorNombre'],
@@ -29,7 +36,58 @@
 
   // ── Helpers ──────────────────────────────────────────────────────────────
   const nf = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 2 });
-  const cf = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
+  const formatoTasa = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 6 });
+  let cf = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', currencyDisplay: 'code' });
+
+  function formatearImporte(euros) {
+    return cf.format(Number(euros) * tipoCambio);
+  }
+
+  // La API solo recibe códigos de moneda; los artículos y precios quedan en el sitio.
+  async function cambiarMoneda() {
+    const moneda = selectorMoneda.value;
+    selectorMoneda.disabled = true;
+    avisoCotizacion.textContent = 'Consultando cotización…';
+    const controlador = new AbortController();
+    const espera = setTimeout(() => controlador.abort(), 10000);
+    try {
+      if (moneda !== 'EUR' && !cotizaciones?.[moneda]) {
+        const respuesta = await fetch('https://api.frankfurter.dev/v2/rates?base=EUR&quotes=USD,UYU,ARS,BRL,GBP', {
+          signal: controlador.signal, credentials: 'omit',
+        });
+        if (!respuesta.ok) throw new Error('No se pudo consultar la cotización.');
+        const datos = await respuesta.json();
+        if (!Array.isArray(datos)) throw new Error('Respuesta de cotizaciones inválida.');
+        const nuevas = {};
+        for (const dato of datos) {
+          if (dato.base === 'EUR' && ['USD', 'UYU', 'ARS', 'BRL', 'GBP'].includes(dato.quote)
+              && Number.isFinite(dato.rate) && dato.rate > 0
+              && /^\d{4}-\d{2}-\d{2}$/.test(dato.date)) {
+            nuevas[dato.quote] = { tasa: dato.rate, fecha: dato.date };
+          }
+        }
+        if (!nuevas[moneda]) throw new Error('No hay cotización para esta moneda.');
+        cotizaciones = nuevas;
+      }
+      const cotizacion = cotizaciones?.[moneda];
+      monedaActual = moneda;
+      tipoCambio = moneda === 'EUR' ? 1 : cotizacion.tasa;
+      cf = new Intl.NumberFormat('es-ES', { style: 'currency', currency: moneda, currencyDisplay: 'code' });
+      avisoCotizacion.textContent = moneda === 'EUR'
+        ? 'Mostrando precios originales en EUR.'
+        : `Frankfurter · ${cotizacion.fecha} · 1 EUR = ${formatoTasa.format(tipoCambio)} ${moneda}. Valor orientativo.`;
+      if (totalesActuales) actualizarStats(totalesActuales);
+      if (itemsActuales) renderTabla(itemsActuales);
+    } catch {
+      selectorMoneda.value = monedaActual;
+      avisoCotizacion.textContent = `No se pudo obtener la cotización. Se mantienen los valores en ${monedaActual}. Volvé a intentarlo.`;
+    } finally {
+      clearTimeout(espera);
+      selectorMoneda.disabled = false;
+    }
+  }
+
+  selectorMoneda.addEventListener('change', cambiarMoneda);
 
   function formatFecha(str) {
     const d = new Date((str || '').replace(' ', 'T'));
@@ -43,6 +101,7 @@
 
   // ── Cargar inventario ────────────────────────────────────────────────────
   async function cargarInventario() {
+    itemsActuales = null;
     mostrarEstado('<span class="material-symbols-outlined icono-spin" style="font-size:2rem;color:#264220">progress_activity</span><p>Cargando…</p>');
 
     const params = new URLSearchParams();
@@ -57,6 +116,8 @@
 
       catLabels = data.categorias || {};
       uniLabels = data.unidades || {};
+      itemsActuales = data.items;
+      totalesActuales = data.totales;
       actualizarStats(data.totales);
       renderTabla(data.items);
     } catch (e) {
@@ -67,7 +128,7 @@
   function actualizarStats(t) {
     document.getElementById('statArticulos').textContent = t.articulos ?? 0;
     document.getElementById('statBajoStock').textContent = t.bajo_stock ?? 0;
-    document.getElementById('statValor').textContent     = cf.format(t.valor_total ?? 0);
+    document.getElementById('statValor').textContent     = formatearImporte(t.valor_total ?? 0);
   }
 
   // ── Render tabla ─────────────────────────────────────────────────────────
@@ -106,8 +167,8 @@
             </div>
           </td>
           <td class="gu-fecha">${nf.format(it.stock_minimo)} ${escaparHtml(uni)}</td>
-          <td>${cf.format(it.precio_unitario)}</td>
-          <td>${cf.format(it.stock * it.precio_unitario)}</td>
+          <td>${formatearImporte(it.precio_unitario)}</td>
+          <td>${formatearImporte(it.stock * it.precio_unitario)}</td>
           <td class="gu-email">${escaparHtml(it.proveedor || '—')}</td>
           <td class="gu-fecha">${formatFecha(it.actualizado_en)}</td>
           <td>

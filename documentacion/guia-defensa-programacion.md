@@ -332,3 +332,38 @@ Eliminarla del dibujo no garantiza que el servidor acepte borrarla de MySQL;
 si la rechaza, la recarga muestra la mesa nuevamente.
 
 Referencia: [Konva, Transformer](https://konvajs.org/docs/select_and_transform/Basic_demo.html).
+
+## 16. Monedas del inventario
+
+El selector de `dashboards/inventario.php` permite mostrar EUR, USD, UYU, ARS, BRL
+y GBP. Los precios de MySQL y de los formularios de alta y edicion siguen en euros.
+La conversion solo modifica lo que se muestra: precio unitario, valor por articulo
+y valor total del inventario. Las cantidades de stock no cambian.
+
+`cambiarMoneda()` en `assets/js/inventario.js` hace una solicitud GET con `fetch`
+a `https://api.frankfurter.dev/v2/rates?base=EUR&quotes=USD,UYU,ARS,BRL,GBP`.
+La API externa devuelve un arreglo JSON. Cada elemento incluye `base`, `quote`,
+`rate` y `date`: moneda original, moneda destino, tasa y fecha de la cotizacion.
+Se comprueban el estado HTTP, el formato del arreglo y que las tasas sean positivas.
+Solo se envian codigos de moneda; no se envian articulos, proveedores ni precios.
+
+La cuenta es `importeEnEuros * tipoCambio`. `Intl.NumberFormat` da formato al
+resultado y muestra el codigo de la moneda para distinguir USD, UYU y ARS.
+Se conserva la precision de la tasa para calcular; se redondea al mostrar el importe.
+Cambiar la vista nunca reemplaza `precio_unitario` en los datos originales.
+
+La primera conversion consulta las cinco tasas juntas y las conserva en memoria
+hasta recargar la pagina. Cambiar de moneda o filtrar no vuelve a consultarlas si
+ya estan disponibles. EUR usa tasa uno y funciona sin consultar la API externa.
+La pantalla muestra la fecha de la tasa elegida: pueden ser distintas entre monedas.
+
+Mientras se consulta se desactiva el selector. Si falla la conexion, la respuesta
+es invalida o tarda mas de diez segundos, se conserva la moneda anterior y se
+permite reintentar. La conversion es orientativa; no representa una compra de divisas.
+Frankfurter no requiere clave para su API publica. No se agregan tablas a MySQL.
+
+Para practicar: pasar de EUR a UYU y ver el GET en Red, explicar el JSON y la
+multiplicacion, editar un articulo y comprobar que el precio del formulario sigue
+en euros. Probar tambien un fallo de la API y volver a EUR.
+
+Referencia: [Frankfurter, documentacion oficial](https://frankfurter.dev/).

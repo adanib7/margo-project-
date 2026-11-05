@@ -36,6 +36,27 @@ require_once '../includes/header.php';
     </button>
   </header>
 
+  <section class="inv-divisas" aria-label="Moneda del inventario">
+    <div class="campo-grupo">
+      <label class="campo-etiqueta" for="invMoneda">Mostrar valores en</label>
+      <div class="campo-input-wrapper">
+        <span class="campo-icono material-symbols-outlined">currency_exchange</span>
+        <select class="campo-input campo-select" id="invMoneda" aria-describedby="invCotizacion">
+          <option value="EUR">EUR — Euro</option>
+          <option value="USD">USD — Dólar estadounidense</option>
+          <option value="UYU">UYU — Peso uruguayo</option>
+          <option value="ARS">ARS — Peso argentino</option>
+          <option value="BRL">BRL — Real brasileño</option>
+          <option value="GBP">GBP — Libra esterlina</option>
+        </select>
+      </div>
+    </div>
+    <div class="inv-divisas-info">
+      <p class="campo-ayuda">Los precios se ingresan y guardan en euros. La conversión es orientativa.</p>
+      <p class="campo-ayuda" id="invCotizacion" role="status">Mostrando precios originales en EUR.</p>
+    </div>
+  </section>
+
   <!-- ── Stats ── -->
   <div class="gu-stats">
     <div class="gu-stat">
@@ -175,6 +196,7 @@ require_once '../includes/header.php';
             <input class="campo-input" type="number" id="iPrecio" name="precio_unitario" min="0" step="0.01" placeholder="0.00" required>
           </div>
           <span class="campo-error" id="iErrorPrecio"></span>
+          <span class="campo-ayuda">Ingresá el precio en euros, aunque estés viendo otra moneda.</span>
         </div>
 
         <div class="campo-grupo">
