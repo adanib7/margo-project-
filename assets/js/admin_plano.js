@@ -24,7 +24,7 @@ let cargado = false, guardando = false, firmaGuardada = '';
 let eliminadas = [], historial = [];
 let fantasma = null, destinoFijado = false, destinoValido = false;
 let propuesta = null, antesDelGesto = null;
-let inicioPuntero = null, gestoMovido = false;
+let inicioPuntero = null, gestoMovido = false, tipoPuntero = 'mouse';
 
 function limitar(n, min, max) { return Math.min(Math.max(n, min), max); }
 function angulo(n) { return ((n % 360) + 360) % 360; }
@@ -102,11 +102,16 @@ function crearMesa(datos) {
   else figura = new Konva.Rect({ ...estilo, cornerRadius: 8 });
   mesa.add(figura, new Konva.Text({ name: 'numero', text: String(datos.numero), fontFamily: 'Montserrat, sans-serif', fontStyle: 'bold', fill: CREMA, align: 'center', verticalAlign: 'middle', listening: false }));
   actualizarTamano(mesa, Number(datos.ancho), Number(datos.alto));
+  // El mouse selecciona al presionar; el toque espera para distinguirlo de un desplazamiento.
+  mesa.on('mousedown', e => {
+    if (tipoPuntero === 'mouse' && e.evt.button === 0 && modo === 'seleccionar' && !guardando && !propuesta) seleccionar(mesa);
+  });
   mesa.on('click tap', e => {
     e.cancelBubble = true;
-    if (gestoMovido || guardando || propuesta) return;
+    if (guardando || propuesta || (tipoPuntero !== 'mouse' && gestoMovido)) return;
+    if (e.type === 'click' && e.evt.button !== 0) return;
     if (modo === 'mover') elegirDestino();
-    else if (modo === 'seleccionar') seleccionar(mesa);
+    else if (modo === 'seleccionar' && tipoPuntero !== 'mouse') seleccionar(mesa);
   });
   mesa.on('dragstart transformstart', () => { antesDelGesto = estadoActual(); gestoMovido = true; });
   mesa.on('dragend', e => {
@@ -401,15 +406,25 @@ function cambiarZoom(valor) {
 let anchoObservado = 0;
 new ResizeObserver(entradas => { const ancho = entradas[0].contentRect.width; if (Math.abs(ancho - anchoObservado) > 0.5) { anchoObservado = ancho; ajustarVista(); } }).observe(document.querySelector('.plano-area'));
 window.addEventListener('resize', ajustarVista);
-escenario.container().addEventListener('pointerdown', e => { if (!e.isPrimary) { gestoMovido = true; return; } inicioPuntero = { x: e.clientX, y: e.clientY }; gestoMovido = false; });
+escenario.container().addEventListener('pointerdown', e => {
+  tipoPuntero = e.pointerType;
+  if (!e.isPrimary) { gestoMovido = true; return; }
+  inicioPuntero = tipoPuntero === 'mouse' ? null : { x: e.clientX, y: e.clientY };
+  gestoMovido = false;
+});
 escenario.container().addEventListener('pointermove', e => { if (inicioPuntero && Math.hypot(e.clientX - inicioPuntero.x, e.clientY - inicioPuntero.y) > 8) gestoMovido = true; }, { passive: true });
-escenario.container().addEventListener('pointercancel', () => { gestoMovido = true; });
+escenario.container().addEventListener('pointercancel', () => { inicioPuntero = null; gestoMovido = true; });
+window.addEventListener('pointerup', () => { inicioPuntero = null; });
 escenario.on('mousemove', () => { if (modo === 'mover' && !destinoFijado && !guardando) mostrarDestino(escenario.getRelativePointerPosition()); });
-escenario.on('mousedown', () => escenario.container().focus({ preventScroll: true }));
+escenario.on('mousedown', e => {
+  escenario.container().focus({ preventScroll: true });
+  if (e.target === escenario && tipoPuntero === 'mouse' && e.evt.button === 0 && modo === 'seleccionar' && !guardando) seleccionar(null);
+});
 escenario.on('click tap', e => {
-  if (e.target !== escenario || gestoMovido || guardando) return;
+  if (e.target !== escenario || guardando || (tipoPuntero !== 'mouse' && gestoMovido)) return;
+  if (e.type === 'click' && e.evt.button !== 0) return;
   if (modo === 'mover') elegirDestino();
-  else if (modo === 'seleccionar') seleccionar(null);
+  else if (modo === 'seleccionar' && tipoPuntero !== 'mouse') seleccionar(null);
 });
 document.getElementById('zoomMas').addEventListener('click', () => cambiarZoom(zoom + 0.5));
 document.getElementById('zoomMenos').addEventListener('click', () => cambiarZoom(zoom - 0.5));

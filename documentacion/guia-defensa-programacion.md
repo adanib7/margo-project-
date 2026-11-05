@@ -304,6 +304,12 @@ al costado. El fondo crema, las tipografias, los botones verdes y los acentos
 dorados usan el estilo del resto del sitio. La lista por numero permite elegir
 mesas superpuestas o pequenas sin acertar en su dibujo.
 
+Con mouse, el boton izquierdo selecciona en `mousedown`, al presionarlo. Mover
+un poco el puntero o soltar fuera de la figura no cancela esa seleccion. Con el
+dedo se espera a `tap` y se descartan los deslizamientos para poder recorrer el
+plano. `pointerdown` informa el tipo de puntero: esta diferencia no depende del
+ancho de la pantalla y funciona tambien al alternar mouse y pantalla tactil.
+
 ### Agregar y modificar
 
 Mesa abre un dialogo HTML nativo: se elige cuadrada, redonda o triangular y la
