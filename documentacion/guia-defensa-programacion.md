@@ -293,6 +293,7 @@ cliente en `user.js` sigue usando botones HTML. Ambos usan los mismos datos de M
 | `Layer` | La capa que contiene las mesas y sus controles. |
 | `Group` | Una mesa: agrupa su figura, su numero y sus datos. |
 | `Rect` / `Ellipse` | La forma cuadrada o redonda de la mesa. |
+| `Line` con `closed: true` | Une tres vertices y cierra la figura para dibujar una mesa triangular. |
 | `Text` | El numero que se dibuja sobre la figura. |
 | `Transformer` | Las manijas para cambiar el tamano y girar. |
 
@@ -320,6 +321,16 @@ Para mover se arrastra el cuerpo; al soltar no hay ajuste automatico a la grilla
 salvo que se mantenga Mayus. Las flechas mueven una unidad y Mayus con flechas,
 diez. Se puede girar con la manija superior o escribir los grados en el panel.
 Las mesas nuevas buscan un espacio libre para no apilarse todas en el centro.
+
+Las mesas triangulares guardan `forma = triangular`, junto con ancho, alto,
+posicion y giro, igual que las demas. Sus vertices son la punta superior y los
+dos extremos de la base. Al cambiar el tamano se recalculan esos tres puntos.
+El numero se coloca mas cerca de la base para quedar dentro del triangulo.
+En el selector del cliente se usa un SVG dentro del boton HTML; conserva los
+colores de mesa libre, ocupada o elegida y permite mantener legible el numero.
+El servidor admite solamente cuadrada, redonda y triangular. Si la columna
+`mesas.forma` conserva un ENUM antiguo, `ensureMesaTable()` la convierte a
+VARCHAR sin borrar las mesas existentes, para permitir guardar la nueva forma.
 
 Al redimensionar, Konva modifica `scaleX` y `scaleY`. Nuestro controlador
 `transformend` multiplica ancho y alto por esas escalas, guarda el nuevo tamano

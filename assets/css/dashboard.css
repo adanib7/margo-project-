@@ -1794,6 +1794,8 @@ body {
 .plano-reserva-estado[hidden] { display: none; }
 
 .pr-mesa {
+  --mesa-fondo: #2d5f3f;
+  --mesa-borde: #c9962e;
   position: absolute;
   display: flex;
   align-items: center;
@@ -1804,8 +1806,8 @@ body {
   font-size: 22px;
   line-height: 1;
   color: #fafaf4;
-  background: #2d5f3f;
-  border: 3px solid #c9962e;
+  background: var(--mesa-fondo);
+  border: 3px solid var(--mesa-borde);
   box-sizing: border-box;
   cursor: pointer;
   transition: filter 0.12s ease, box-shadow 0.12s ease;
@@ -1814,16 +1816,20 @@ body {
 .pr-mesa.redonda  { border-radius: 50%; }
 .pr-mesa:not(.ocupada):hover { filter: brightness(1.12); }
 .pr-mesa.ocupada {
-  background: #c3c8bd;
-  border-color: #a9afa2;
+  --mesa-fondo: #c3c8bd;
+  --mesa-borde: #a9afa2;
   color: #6b6f66;
   cursor: not-allowed;
 }
 .pr-mesa.elegida {
-  background: #c9962e;
-  border-color: #244c33;
+  --mesa-fondo: #c9962e;
+  --mesa-borde: #244c33;
   box-shadow: 0 0 0 2px #fff, 0 0 0 5px #c9962e;
 }
+.pr-mesa.triangular { background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+.pr-mesa-triangulo { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.pr-mesa-triangulo polygon { fill: var(--mesa-fondo); stroke: var(--mesa-borde); stroke-width: 3px; stroke-linejoin: round; }
+.pr-mesa.triangular span { position: relative; pointer-events: none; }
 
 .plano-reserva-hint {
   font-size: 0.8rem;

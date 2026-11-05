@@ -9,6 +9,7 @@
 
 const PLANO_ANCHO = 900;
 const PLANO_ALTO  = 560;
+const PLANO_FORMAS = ['cuadrada', 'redonda', 'triangular'];
 
 /**
  * Crea la tabla `mesas` si no existe y agrega columnas que falten.
@@ -46,6 +47,12 @@ function ensureMesaTable(mysqli $conn): void
         $result = $conn->query("SHOW COLUMNS FROM mesas LIKE '{$col}'");
         if ($result && $result->num_rows === 0) {
             $conn->query("ALTER TABLE mesas ADD COLUMN {$col} {$definition}");
+        } elseif ($result && $col === 'forma') {
+            // Instalaciones antiguas usaban ENUM con solo dos formas.
+            $columna = $result->fetch_assoc();
+            if (strpos(strtolower($columna['Type']), 'enum(') === 0) {
+                $conn->query("ALTER TABLE mesas MODIFY COLUMN forma VARCHAR(20) NOT NULL DEFAULT 'cuadrada'");
+            }
         }
     }
 }
@@ -233,7 +240,7 @@ function planoMesasConOcupacion(mysqli $conn, string $fecha = '', string $hora =
                 'id'        => $id,
                 'numero'    => (int) $row['numero'],
                 'capacidad' => (int) $row['capacidad'],
-                'forma'     => $row['forma'] === 'redonda' ? 'redonda' : 'cuadrada',
+                'forma'     => in_array($row['forma'], PLANO_FORMAS, true) ? $row['forma'] : 'cuadrada',
                 'pos_x'     => (float) $row['pos_x'],
                 'pos_y'     => (float) $row['pos_y'],
                 'ancho'     => (float) $row['ancho'],

@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = isset($m['id']) && $m['id'] !== '' ? (int) $m['id'] : null;
             $numero = (int) ($m['numero'] ?? 1);
             $capacidad = (int) ($m['capacidad'] ?? 4);
-            $forma = $m['forma'] ?? 'cuadrada';
+            $forma = in_array($m['forma'] ?? '', PLANO_FORMAS, true) ? $m['forma'] : 'cuadrada';
             $posX = (float) ($m['pos_x'] ?? 100);
             $posY = (float) ($m['pos_y'] ?? 100);
             $ancho = (float) ($m['ancho'] ?? 70);
@@ -142,8 +142,8 @@ require_once '../includes/header.php';
         <button class="boton-secundario plano-boton" onclick="agregarMesa('redonda')">
           <span class="material-symbols-outlined">circle</span> Mesa redonda
         </button>
-        <button type="button" onclick="agregarMesa('triangular')">
-          <span class="material-symbols-outlined">flag</span> Mesa triangular
+        <button type="button" class="boton-secundario plano-boton" onclick="agregarMesa('triangular')">
+          <span class="material-symbols-outlined" aria-hidden="true">change_history</span> Mesa triangular
         </button>
       </section>
 

@@ -125,7 +125,8 @@
     mesas.forEach(m => {
       const el = document.createElement('button');
       el.type = 'button';
-      el.className = 'pr-mesa ' + (m.forma === 'redonda' ? 'redonda' : 'cuadrada') + (m.ocupada ? ' ocupada' : '');
+      const forma = ['cuadrada', 'redonda', 'triangular'].includes(m.forma) ? m.forma : 'cuadrada';
+      el.className = 'pr-mesa ' + forma + (m.ocupada ? ' ocupada' : '');
       el.dataset.id = m.id;
       el.style.width  = m.ancho + 'px';
       el.style.height = m.alto + 'px';
@@ -133,6 +134,15 @@
       el.style.top    = (m.pos_y - m.alto / 2) + 'px';
       el.style.transform = 'rotate(' + m.rotacion + 'deg)';
       el.textContent = m.numero;
+      if (forma === 'triangular') {
+        // SVG conserva el borde triangular sin recortar el número ni el botón.
+        el.innerHTML = '<svg class="pr-mesa-triangulo" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points="50,0 100,100 0,100" vector-effect="non-scaling-stroke" /></svg>';
+        const numero = document.createElement('span');
+        numero.textContent = m.numero;
+        numero.style.transform = 'translateY(' + m.alto / 6 + 'px)';
+        numero.style.fontSize = Math.min(20, m.ancho / 3, m.alto / 3) + 'px';
+        el.appendChild(numero);
+      }
       el.title = m.ocupada
         ? `Mesa ${m.numero} · ocupada en esta franja`
         : `Mesa ${m.numero} · hasta ${m.capacidad} personas`;

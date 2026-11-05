@@ -41,11 +41,18 @@ function actualizarTamano(grupo, ancho, alto) {
   if (grupo.getAttr('forma') === 'redonda') {
     figura.radiusX(ancho / 2);
     figura.radiusY(alto / 2);
+  } else if (grupo.getAttr('forma') === 'triangular') {
+    // Tres vértices: punta superior y dos extremos de la base.
+    figura.points([0, -alto / 2, ancho / 2, alto / 2, -ancho / 2, alto / 2]);
   } else {
     figura.size({ width: ancho, height: alto });
     figura.offset({ x: ancho / 2, y: alto / 2 });
   }
   grupo.findOne('.numero').setAttrs({ x: -ancho / 2, y: -alto / 2, width: ancho, height: alto });
+  if (grupo.getAttr('forma') === 'triangular') {
+    // El centro visual del triángulo está más cerca de su base.
+    grupo.findOne('.numero').setAttrs({ y: -alto / 6, height: alto * 2 / 3, fontSize: Math.min(20, ancho / 3, alto / 3) });
+  }
 }
 
 function limitarPosicion(grupo, ajustarGrilla = false) {
@@ -63,7 +70,7 @@ function limitarPosicion(grupo, ajustarGrilla = false) {
 function crearMesa(datos) {
   const ancho = parseFloat(datos.ancho) || 70;
   const alto = parseFloat(datos.alto) || 70;
-  const forma = datos.forma === 'redonda' ? 'redonda' : 'cuadrada';
+  const forma = ['cuadrada', 'redonda', 'triangular'].includes(datos.forma) ? datos.forma : 'cuadrada';
   const grupo = new Konva.Group({
     name: 'mesa', draggable: true, dragDistance: 5,
     x: parseFloat(datos.pos_x) || 100,
@@ -75,13 +82,16 @@ function crearMesa(datos) {
     forma, ancho, alto,
   });
   const estilo = { name: 'figura', fill: VERDE, stroke: AMBAR, strokeWidth: 3, hitStrokeWidth: 0 };
-  const figura = forma === 'redonda' ? new Konva.Ellipse(estilo) : new Konva.Rect({ ...estilo, cornerRadius: 8 });
+  let figura;
+  if (forma === 'redonda') figura = new Konva.Ellipse(estilo);
+  else if (forma === 'triangular') figura = new Konva.Line({ ...estilo, closed: true, lineJoin: 'round' });
+  else figura = new Konva.Rect({ ...estilo, cornerRadius: 8 });
   // Un rectángulo invisible amplía el clic 10 unidades alrededor de la mesa.
   // Solo cambia la detección: no agranda el dibujo ni las medidas guardadas.
   figura.hitFunc((contexto, formaMesa) => {
     const ancho = grupo.getAttr('ancho'), alto = grupo.getAttr('alto');
-    const x = forma === 'redonda' ? -ancho / 2 : 0;
-    const y = forma === 'redonda' ? -alto / 2 : 0;
+    const x = forma === 'cuadrada' ? 0 : -ancho / 2;
+    const y = forma === 'cuadrada' ? 0 : -alto / 2;
     contexto.beginPath();
     contexto.rect(x - 10, y - 10, ancho + 20, alto + 20);
     contexto.closePath();
