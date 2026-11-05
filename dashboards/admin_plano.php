@@ -151,7 +151,7 @@ require_once '../includes/header.php';
 
     <div class="salon-cuerpo">
       <div class="plano-area">
-        <div class="salon-lienzo-cabecera"><span class="texto-etiqueta">El salón</span><span id="resumenSalon"></span></div>
+        <div class="salon-lienzo-cabecera"><span id="resumenSalon"></span></div>
         <p id="planoInstruccion" class="salon-instruccion" role="status">Elegí una mesa para moverla, girarla o editarla.</p>
         <div class="salon-contexto" id="accionPlano" hidden>
           <span id="accionTexto"></span>
@@ -235,7 +235,7 @@ require_once '../includes/header.php';
 
 <dialog class="salon-dialogo" id="dialogoDistribuir" aria-labelledby="tituloDistribuir">
   <form id="formDistribuir">
-    <div class="salon-dialogo-titulo"><div><p class="texto-etiqueta">Una nueva disposición</p><h2 id="tituloDistribuir">Distribuir el salón</h2></div><button type="button" class="salon-icono" data-cerrar="dialogoDistribuir" aria-label="Cerrar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></div>
+    <div class="salon-dialogo-titulo"><div><h2 id="tituloDistribuir">Distribuir el salón</h2></div><button type="button" class="salon-icono" data-cerrar="dialogoDistribuir" aria-label="Cerrar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></div>
     <p>Probá una propuesta con tus mesas actuales. Podés verla antes de decidir.</p>
     <fieldset class="salon-distribuciones"><legend class="campo-etiqueta">¿Cómo las acomodamos?</legend>
       <label><input type="radio" name="distribucion" value="filas" checked><span class="salon-miniatura filas" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><strong>En filas</strong><span>Una disposición pareja y ordenada.</span></label>
@@ -249,7 +249,7 @@ require_once '../includes/header.php';
 
 <dialog class="salon-dialogo" id="dialogoEditar" aria-labelledby="tituloEditar">
   <form id="formEditarMesa">
-    <div class="salon-dialogo-titulo"><div><p class="texto-etiqueta">Los detalles</p><h2 id="tituloEditar">Editar mesa</h2></div><button type="button" class="salon-icono" data-cerrar="dialogoEditar" aria-label="Cerrar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></div>
+    <div class="salon-dialogo-titulo"><div><p class="texto-etiqueta">Detalles</p><h2 id="tituloEditar">Editar mesa</h2></div><button type="button" class="salon-icono" data-cerrar="dialogoEditar" aria-label="Cerrar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></div>
     <div class="plano-medidas">
       <div><label class="campo-etiqueta" for="in-numero">Número</label><input class="campo-input" type="number" id="in-numero" min="1" max="9999" required inputmode="numeric"></div>
       <div><label class="campo-etiqueta" for="in-capacidad">Personas</label><input class="campo-input" type="number" id="in-capacidad" min="1" max="20" required inputmode="numeric"></div>
