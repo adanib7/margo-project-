@@ -142,6 +142,9 @@ require_once '../includes/header.php';
         <button class="boton-secundario plano-boton" onclick="agregarMesa('redonda')">
           <span class="material-symbols-outlined">circle</span> Mesa redonda
         </button>
+        <button type="button" onclick="agregarMesa('triangular')">
+          <span class="material-symbols-outlined">flag</span> Mesa triangular
+        </button>
       </section>
 
       <section id="panel-mesa" class="plano-bloque">
