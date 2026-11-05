@@ -42,12 +42,12 @@ require_once '../includes/header.php';
       <div class="campo-input-wrapper">
         <span class="campo-icono material-symbols-outlined">currency_exchange</span>
         <select class="campo-input campo-select" id="invMoneda" aria-describedby="invCotizacion">
-          <option value="EUR">EUR — Euro</option>
-          <option value="USD">USD — Dólar estadounidense</option>
-          <option value="UYU">UYU — Peso uruguayo</option>
-          <option value="ARS">ARS — Peso argentino</option>
-          <option value="BRL">BRL — Real brasileño</option>
-          <option value="GBP">GBP — Libra esterlina</option>
+          <option value="EUR">EUR (€) — Euro</option>
+          <option value="USD">USD (US$) — Dólar estadounidense</option>
+          <option value="UYU">UYU ($U) — Peso uruguayo</option>
+          <option value="ARS">ARS (AR$) — Peso argentino</option>
+          <option value="BRL">BRL (R$) — Real brasileño</option>
+          <option value="GBP">GBP (£) — Libra esterlina</option>
         </select>
       </div>
     </div>
