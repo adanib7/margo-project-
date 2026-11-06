@@ -232,6 +232,12 @@ require_once '../includes/header.php';
         <textarea class="campo-textarea" id="rComentario" rows="2" maxlength="500"></textarea>
       </div>
 
+      <div id="rVerificacionHosting" hidden>
+        <p class="campo-error" role="alert">El hosting necesita verificar el navegador antes de guardar.</p>
+        <a class="boton-secundario" href="<?= buildUrl('/dashboards/reservas.php') ?>" target="_blank" rel="noopener">Verificar navegador <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span></a>
+        <p class="campo-ayuda">Se abre otra pestaña. Cuando termine de cargar, volvé aquí y presioná Guardar cambios. Tus datos siguen en este formulario.</p>
+      </div>
+
       <div class="modal-acciones">
         <button type="button" class="boton-secundario" id="btnCancelarModalReserva">Cancelar</button>
         <button type="submit" class="boton-accion boton-modal-submit" id="btnSubmitReserva">

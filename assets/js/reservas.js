@@ -247,6 +247,7 @@
   function cerrarModal(m) { m.classList.remove('modal-visible'); document.body.classList.remove('modal-abierto'); }
 
   function limpiarErrores() {
+    document.getElementById('rVerificacionHosting').hidden = true;
     Object.values(CAMPOS).forEach(par => document.getElementById(par[1]).textContent = '');
     modalReserva.querySelectorAll('.campo-wrapper-error').forEach(el => el.classList.remove('campo-wrapper-error'));
   }
@@ -330,21 +331,36 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
+      const textoRespuesta = await res.text();
+      if (textoRespuesta.trim().startsWith('<') && textoRespuesta.includes('/aes.js') && textoRespuesta.includes('__test=')) {
+        document.getElementById('rVerificacionHosting').hidden = false;
+        throw new Error('El hosting necesita verificar el navegador. Usá el botón Verificar navegador y después volvé a guardar.');
+      }
+      let data;
+      try {
+        data = JSON.parse(textoRespuesta);
+      } catch {
+        throw new Error(res.ok
+          ? 'El servidor devolvió una respuesta inválida al guardar la reserva.'
+          : 'No se pudo guardar la reserva. El servidor respondió con un error HTTP ' + res.status + '.');
+      }
+      if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw new Error('El servidor devolvió una respuesta inválida al guardar la reserva.');
+      }
 
-      if (data.ok) {
+      if (res.ok && data.ok) {
         cerrarModalReserva();
         mostrarToast(data.mensaje, 'exito');
         cargar();
       } else if (data.errores) {
         Object.keys(data.errores).forEach(c => marcarError(c, data.errores[c]));
-        setLoading(false);
       } else {
         mostrarToast(data.mensaje || 'Error inesperado.', 'error');
-        setLoading(false);
       }
-    } catch {
-      mostrarToast('No se pudo conectar con el servidor.', 'error');
+    } catch (error) {
+      console.error('Error al editar la reserva:', error);
+      mostrarToast(error instanceof TypeError ? 'No se pudo conectar con el servidor. Comprobá tu conexión.' : error.message, 'error');
+    } finally {
       setLoading(false);
     }
   });

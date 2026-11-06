@@ -43,114 +43,115 @@ if ($id <= 0) {
     exit;
 }
 
-$stmt = $conn->prepare("SELECT id FROM reservas WHERE id = ?");
-$stmt->bind_param('i', $id);
-$stmt->execute();
-$stmt->store_result();
-$existe = $stmt->num_rows > 0;
-$stmt->close();
+// En esta API, un fallo SQL debe llegar al catch y devolver JSON, no un error HTML.
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+try {
+    $stmt = $conn->prepare("SELECT id FROM reservas WHERE id = ?");
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $stmt->store_result();
+    $existe = $stmt->num_rows > 0;
+    $stmt->close();
 
-if (!$existe) {
-    http_response_code(404);
-    echo json_encode(['ok' => false, 'mensaje' => 'Reserva no encontrada.']);
-    exit;
-}
-
-$errores    = [];
-$mesaNumero = null;
-$conMesa    = planoLigadoAReservas($conn);
-
-if ($nombre === '') {
-    $errores['nombre'] = 'El nombre es obligatorio.';
-}
-
-if ($telefono !== '' && !preg_match('/^[0-9+()\s-]{6,25}$/', $telefono)) {
-    $errores['telefono'] = 'Ingresá un teléfono válido.';
-}
-
-$fechaObj = DateTime::createFromFormat('Y-m-d', $fecha);
-if (!$fechaObj || $fechaObj->format('Y-m-d') !== $fecha) {
-    $errores['fecha'] = 'Ingresá una fecha válida.';
-}
-
-if (!preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $hora)) {
-    $errores['hora'] = 'Seleccioná un horario válido.';
-}
-
-// El admin puede pasarse del máximo público, pero no del tope absoluto.
-$maxPersonas = max(cfgInt('reservas.max_personas'), 1);
-if ($personas < 1 || $personas > $maxPersonas) {
-    $errores['personas'] = "Ingresá entre 1 y {$maxPersonas} personas.";
-}
-
-if (!in_array($estado, ['pendiente', 'confirmada', 'cancelada'], true)) {
-    $errores['estado'] = 'Estado no válido.';
-}
-
-// Mesa: solo se valida si el plano existe. El admin puede dejarla sin asignar.
-if ($conMesa && $mesaId > 0) {
-    $q = $conn->prepare("SELECT numero, capacidad FROM mesas WHERE id = ?");
-    $q->bind_param('i', $mesaId);
-    $q->execute();
-    $mesa = $q->get_result()->fetch_assoc();
-    $q->close();
-
-    if (!$mesa) {
-        $errores['mesa'] = 'La mesa elegida ya no existe.';
-    } else {
-        $mesaNumero = (int) $mesa['numero'];
-        if ($personas > (int) $mesa['capacidad']) {
-            $errores['personas'] = "La mesa {$mesaNumero} admite hasta {$mesa['capacidad']} personas.";
-        }
-    }
-}
-
-if ($errores) {
-    http_response_code(422);
-    echo json_encode(['ok' => false, 'errores' => $errores]);
-    exit;
-}
-
-// Choque por solapamiento con otra reserva activa de la misma mesa.
-if ($conMesa && $mesaId > 0 && $estado !== 'cancelada') {
-    $choque = reservaSolapada($conn, $mesaId, $fecha, $hora, $id);
-
-    if ($choque) {
-        $desde = substr((string) $choque['hora'], 0, 5);
-        http_response_code(409);
-        echo json_encode(['ok' => false, 'errores' => [
-            'mesa' => "La mesa {$mesaNumero} ya está ocupada desde las {$desde} (reserva {$choque['codigo']}).",
-        ]]);
+    if (!$existe) {
+        http_response_code(404);
+        echo json_encode(['ok' => false, 'mensaje' => 'Reserva no encontrada.']);
         exit;
     }
-}
 
-if ($conMesa) {
-    $mesaParam = $mesaId > 0 ? $mesaId : null;
-    $stmt = $conn->prepare(
-        "UPDATE reservas SET nombre = ?, telefono = ?, fecha = ?, hora = ?, personas = ?, comentario = ?, estado = ?, mesa_id = ?
-         WHERE id = ?"
-    );
-    $stmt->bind_param('ssssissii', $nombre, $telefono, $fecha, $hora, $personas, $comentario, $estado, $mesaParam, $id);
-} else {
-    $stmt = $conn->prepare(
-        "UPDATE reservas SET nombre = ?, telefono = ?, fecha = ?, hora = ?, personas = ?, comentario = ?, estado = ?
-         WHERE id = ?"
-    );
-    $stmt->bind_param('ssssissi', $nombre, $telefono, $fecha, $hora, $personas, $comentario, $estado, $id);
-}
+    $errores    = [];
+    $mesaNumero = null;
+    $conMesa    = planoLigadoAReservas($conn);
 
-if ($stmt === false) {
-    http_response_code(500);
-    echo json_encode(['ok' => false, 'mensaje' => 'No se pudo preparar la actualización: ' . $conn->error]);
-    exit;
-}
+    if ($nombre === '') {
+        $errores['nombre'] = 'El nombre es obligatorio.';
+    }
 
-if ($stmt->execute()) {
+    if ($telefono !== '' && !preg_match('/^[0-9+()\s-]{6,25}$/', $telefono)) {
+        $errores['telefono'] = 'Ingresá un teléfono válido.';
+    }
+
+    $fechaObj = DateTime::createFromFormat('Y-m-d', $fecha);
+    if (!$fechaObj || $fechaObj->format('Y-m-d') !== $fecha) {
+        $errores['fecha'] = 'Ingresá una fecha válida.';
+    }
+
+    if (!preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $hora)) {
+        $errores['hora'] = 'Seleccioná un horario válido.';
+    }
+
+    // El admin puede pasarse del máximo público, pero no del tope absoluto.
+    $maxPersonas = max(cfgInt('reservas.max_personas'), 1);
+    if ($personas < 1 || $personas > $maxPersonas) {
+        $errores['personas'] = "Ingresá entre 1 y {$maxPersonas} personas.";
+    }
+
+    if (!in_array($estado, ['pendiente', 'confirmada', 'cancelada'], true)) {
+        $errores['estado'] = 'Estado no válido.';
+    }
+
+    // Mesa: solo se valida si el plano existe. El admin puede dejarla sin asignar.
+    if ($conMesa && $mesaId > 0) {
+        $q = $conn->prepare("SELECT numero, capacidad FROM mesas WHERE id = ?");
+        $q->bind_param('i', $mesaId);
+        $q->execute();
+        $mesa = $q->get_result()->fetch_assoc();
+        $q->close();
+
+        if (!$mesa) {
+            $errores['mesa'] = 'La mesa elegida ya no existe.';
+        } else {
+            $mesaNumero = (int) $mesa['numero'];
+            if ($personas > (int) $mesa['capacidad']) {
+                $errores['personas'] = "La mesa {$mesaNumero} admite hasta {$mesa['capacidad']} personas.";
+            }
+        }
+    }
+
+    if ($errores) {
+        http_response_code(422);
+        echo json_encode(['ok' => false, 'errores' => $errores]);
+        exit;
+    }
+
+    // Choque por solapamiento con otra reserva activa de la misma mesa.
+    if ($conMesa && $mesaId > 0 && $estado !== 'cancelada') {
+        $choque = reservaSolapada($conn, $mesaId, $fecha, $hora, $id);
+
+        if ($choque) {
+            $desde = substr((string) $choque['hora'], 0, 5);
+            http_response_code(409);
+            echo json_encode(['ok' => false, 'errores' => [
+                'mesa' => "La mesa {$mesaNumero} ya está ocupada desde las {$desde} (reserva {$choque['codigo']}).",
+            ]]);
+            exit;
+        }
+    }
+
+    if ($conMesa) {
+        $mesaParam = $mesaId > 0 ? $mesaId : null;
+        $stmt = $conn->prepare(
+            "UPDATE reservas SET nombre = ?, telefono = ?, fecha = ?, hora = ?, personas = ?, comentario = ?, estado = ?, mesa_id = ?
+             WHERE id = ?"
+        );
+        $stmt->bind_param('ssssissii', $nombre, $telefono, $fecha, $hora, $personas, $comentario, $estado, $mesaParam, $id);
+    } else {
+        $stmt = $conn->prepare(
+            "UPDATE reservas SET nombre = ?, telefono = ?, fecha = ?, hora = ?, personas = ?, comentario = ?, estado = ?
+             WHERE id = ?"
+        );
+        $stmt->bind_param('ssssissi', $nombre, $telefono, $fecha, $hora, $personas, $comentario, $estado, $id);
+    }
+
+    $stmt->execute();
     $stmt->close();
     echo json_encode(['ok' => true, 'mensaje' => "Reserva de «{$nombre}» actualizada."]);
-} else {
-    $stmt->close();
+} catch (Throwable $error) {
+    error_log('editar_reserva.php: ' . $error->getMessage());
     http_response_code(500);
-    echo json_encode(['ok' => false, 'mensaje' => 'Error interno al guardar los cambios.']);
+    $mensaje = 'El servidor no pudo guardar los cambios de la reserva. Volvé a intentarlo.';
+    if ($error instanceof mysqli_sql_exception && in_array($error->getCode(), [1054, 1146], true)) {
+        $mensaje = 'La base de datos del servidor está incompleta para editar reservas. Revisá la estructura de la tabla reservas.';
+    }
+    echo json_encode(['ok' => false, 'mensaje' => $mensaje]);
 }
