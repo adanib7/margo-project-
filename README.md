@@ -22,6 +22,21 @@ htdocs/includes/ en el hosting:
 - includes/db_config.php   (copiar de includes/db_config.example.php)
 - includes/mail_config.php (copiar de includes/mail_config.example.php)
 
+Si se borraron archivos del hosting y hace falta subir de nuevo todo el sitio:
+
+1. Guardar los cambios del proyecto y subirlos a la rama main de GitHub.
+2. Abrir Actions -> Deploy a InfinityFree -> Run workflow.
+3. Elegir main, dejar marcada la opcion "Volver a subir todos los archivos del sitio"
+   y ejecutar Run workflow. Esperar a que termine correctamente.
+4. Si tambien se borraron, restaurar a mano `htdocs/includes/db_config.php` y
+   `htdocs/includes/mail_config.php` con la configuracion real del hosting.
+
+La subida completa elimina solamente `.ftp-deploy-sync-state.json`, que registra
+lo ya subido, para que la accion vuelva a transferir todos los archivos publicables.
+Al terminar se crea un registro nuevo para los siguientes despliegues normales.
+No se importa ni se restaura la base de datos mediante este workflow. Si tambien
+se perdieron sus datos, hace falta recuperar una copia de seguridad de MySQL.
+
 
 Guia para estudiar la programacion y preparar la defensa: [documentacion/guia-defensa-programacion.md](documentacion/guia-defensa-programacion.md).
 
