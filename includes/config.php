@@ -99,20 +99,47 @@ if ($esLocal) {
         // GitHub (.gitignore). En el hosting se sube a mano una sola vez.
         $dbFile = __DIR__ . '/db_config.php';
         if (!is_file($dbFile)) {
-            throw new RuntimeException('Falta includes/db_config.php');
+            throw new RuntimeException('Falta includes/db_config.php', -1);
         }
         $db = require $dbFile;
+        if (!is_array($db)) {
+            throw new RuntimeException('Configuracion de MySQL invalida', -2);
+        }
+        foreach (['host', 'usuario', 'password', 'base'] as $campo) {
+            if (!isset($db[$campo]) || !is_string($db[$campo]) || $db[$campo] === '') {
+                throw new RuntimeException('Configuracion de MySQL incompleta', -2);
+            }
+        }
 
         // @: la falla de red ya se detecta manualmente vía connect_error; sin esto
         // PHP emite un warning nativo que corrompe las respuestas JSON de la API.
         $conn = @new mysqli($db['host'], $db['usuario'], $db['password'], $db['base']);
         if ($conn->connect_error) {
-            throw new RuntimeException($conn->connect_error);
+            throw new RuntimeException($conn->connect_error, $conn->connect_errno);
         }
         $conn->set_charset('utf8mb4');
     } catch (Throwable $e) {
         $conn = null;
-        $dbErrorMessage = 'No se pudo conectar con la base de datos remota. Verifica la configuración de conexión.';
+        // Informar la causa sin publicar contraseñas, nombres de cuenta ni el error nativo.
+        $mensajesConexion = [
+            -1 => 'Falta includes/db_config.php en este sitio. Subilo a la carpeta includes de esta copia.',
+            -2 => 'Revisá includes/db_config.php: debe devolver un arreglo con host, usuario, password y base completos.',
+            1044 => 'El usuario MySQL no tiene acceso a la base indicada. Revisá que ambos pertenezcan a la cuenta de alojamiento correcta.',
+            1045 => 'MySQL rechazó el usuario o la contraseña. Usá los datos de la cuenta de alojamiento de esta copia.',
+            1049 => 'La base indicada en db_config.php no existe en ese servidor. Copiá su nombre exacto desde MySQL Databases.',
+            2002 => 'No se pudo acceder al servidor MySQL. Revisá el MySQL Host Name de esta cuenta de alojamiento.',
+            2003 => 'No se pudo acceder al servidor MySQL. Revisá el MySQL Host Name de esta cuenta de alojamiento.',
+            2005 => 'No se encontró el servidor MySQL indicado. Copiá el MySQL Host Name desde el panel del hosting.',
+        ];
+        if ($e instanceof ParseError) {
+            $dbErrorMessage = 'Hay un error de sintaxis en la configuración de conexión. Revisá las comillas, comas y el punto y coma de includes/db_config.php.';
+        } else {
+            $dbErrorMessage = $mensajesConexion[$e->getCode()]
+                ?? 'No se pudo conectar con la base de datos remota. Verifica la configuración de conexión.';
+        }
+        // Solo datos técnicos del fallo: nunca publicar getMessage(), que puede contener credenciales.
+        $dbErrorMessage .= ' [BD: ' . get_class($e) . ', código ' . (int) $e->getCode()
+            . ', línea ' . $e->getLine() . ']';
     }
 }
 

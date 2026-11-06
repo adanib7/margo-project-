@@ -1,0 +1,71 @@
+name: Deploy de pruebas
+on:
+  push:
+    branches:
+      - pruebas
+  workflow_dispatch:
+    inputs:
+      resubir_todo:
+        description: 'Volver a subir todos los archivos del sitio'
+        type: boolean
+        default: true
+
+# Evita que dos despliegues modifiquen el mismo registro FTP a la vez.
+concurrency:
+  group: deploy-infinityfree-pruebas
+  cancel-in-progress: false
+
+jobs:
+  web-deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener el código
+        uses: actions/checkout@v4
+
+      - name: Reiniciar el registro para resubir todos los archivos
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.resubir_todo }}
+        env:
+          FTP_SERVER: ${{ secrets.PRUEBAS_FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.PRUEBAS_FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.PRUEBAS_FTP_PASSWORD }}
+        run: |
+          python - <<'PY'
+          import ftplib
+          import os
+
+          with ftplib.FTP() as ftp:
+              ftp.connect(os.environ['FTP_SERVER'], 21, timeout=60)
+              ftp.login(os.environ['FTP_USERNAME'], os.environ['FTP_PASSWORD'])
+              ftp.cwd('/htdocs/')
+              # Solo se elimina el registro de sincronizacion, no los archivos del sitio.
+              try:
+                  ftp.delete('.ftp-deploy-sync-state.json')
+                  print('Registro reiniciado. Se subiran todos los archivos del sitio.')
+              except ftplib.error_perm as error:
+                  mensaje = str(error).lower()
+                  if mensaje.startswith('550') and ('no such file' in mensaje or 'not found' in mensaje):
+                      print('No existe un registro anterior. Se realizara una subida completa.')
+                  else:
+                      raise
+          PY
+
+      - name: Sincronizar archivos vía FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.PRUEBAS_FTP_SERVER }}
+          username: ${{ secrets.PRUEBAS_FTP_USERNAME }}
+          password: ${{ secrets.PRUEBAS_FTP_PASSWORD }}
+          server-dir: /htdocs/
+          # No se suben al hosting: lo de git, los .sql, la documentación y el README.
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            .tmp*/**
+            includes/db_config.php
+            includes/mail_config.php
+            base de datos/**
+            documentacion/**
+            tests/**
+            README.md

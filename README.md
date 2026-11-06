@@ -3,7 +3,21 @@ CRUD PRUEBA SEMESTRAL DE PROGRAMACION
 
 COMO USAR:
 
-En XAMPP, crear o seleccionar la base `margo-project-` e importar `base de datos/margo-project-.sql` y luego `base de datos/reservas.sql` en una instalacion nueva.
+Para una instalacion nueva o una base sin tablas, seleccionar la base del sitio
+en phpMyAdmin e importar `base de datos/instalacion_vacia.sql`. En XAMPP, crear o
+seleccionar primero la base `margo-project-`.
+
+Ese archivo crea las ocho tablas actuales, con telefono en reservas y soporte
+para Google, verificaciones y recuperacion de contrasena. No incluye cuentas ni
+reservas anteriores: reconstruir la estructura y restaurar una copia con datos
+son operaciones diferentes. Si se encuentra una copia SQL con los datos del sitio,
+usarla para la restauracion.
+
+Despues de una instalacion vacia, cerrar la sesion anterior y registrar una cuenta propia (Google o correo
+con verificacion habilitada). Para recuperar la administracion del proyecto,
+editar en phpMyAdmin esa fila de `usuarios` y poner `superadmin` en su campo `rol`;
+despues cerrar sesion y volver a entrar. Las mesas y la configuracion del local se
+cargan desde sus pantallas. El modulo inventario agrega ejemplos si esta vacio.
 
 El codigo actual usa la tabla `mesas` (plural) y la crea al abrir los modulos del plano o de reservas. `plano.sql` es un script antiguo para la tabla `mesa`; no corresponde al esquema actual. Las bases existentes pueden requerir los ajustes de esquema que comprueba el propio PHP.
 
@@ -42,6 +56,35 @@ lo ya subido, para que la accion vuelva a transferir todos los archivos publicab
 Al terminar se crea un registro nuevo para los siguientes despliegues normales.
 No se importa ni se restaura la base de datos mediante este workflow. Si tambien
 se perdieron sus datos, hace falta recuperar una copia de seguridad de MySQL.
+
+SITIO DE PRUEBAS:
+
+Crear otra cuenta de alojamiento en InfinityFree, dentro del mismo perfil, con
+su propio subdominio y base MySQL. Cargar la estructura actual y datos ficticios
+en esa base. El sitio de pruebas usa sus propios archivos en /htdocs/.
+
+El workflow `.github/workflows/deploy-pruebas.yml` publica los pushes de la rama
+`pruebas`. Tambien admite ejecucion manual para publicar la rama seleccionada
+cuando el archivo del workflow este disponible en la rama predeterminada de GitHub.
+En GitHub -> Settings -> Secrets and variables -> Actions, agregar las credenciales
+FTP de la nueva cuenta con estos nombres:
+
+- PRUEBAS_FTP_SERVER
+- PRUEBAS_FTP_USERNAME
+- PRUEBAS_FTP_PASSWORD
+
+En el hosting de pruebas, subir a mano `includes/db_config.php` con los datos de
+su base de pruebas. En Configuracion -> Direccion web, guardar el dominio de pruebas.
+Para las pruebas sin correo, usar `includes/mail_config.php` basado en el ejemplo,
+con `enabled` en false. En ese modo no se puede completar el registro por codigo;
+para probarlo, configurar el correo y usar cuentas de prueba del equipo.
+
+Para probar el acceso con Google, autorizar el origen HTTPS del nuevo sitio y su
+URL `/includes/google_auth.php` en el cliente OAuth de Google.
+
+Crear la rama local con `git switch -c pruebas` y publicarla con
+`git push -u origin pruebas`. Trabajar y hacer push en esa rama publica en el sitio
+de pruebas. Los pushes a `main` siguen publicando en el sitio principal.
 
 
 Guia para estudiar la programacion y preparar la defensa: [documentacion/guia-defensa-programacion.md](documentacion/guia-defensa-programacion.md).
