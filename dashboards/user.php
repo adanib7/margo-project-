@@ -241,9 +241,6 @@ $franjasHorarias = horarioFranjas();
         <a class="boton-accion" id="exitoPdf" href="#" target="_blank" rel="noopener">
           <span class="material-symbols-outlined">picture_as_pdf</span> Descargar comprobante (PDF)
         </a>
-        <a class="boton-secundario" id="exitoCalendario" href="#" target="_blank" rel="noopener">
-          <span class="material-symbols-outlined">event</span> Agregar al calendario
-        </a>
         <a class="boton-secundario" id="exitoComprobante" href="#" target="_blank" rel="noopener">
           <span class="material-symbols-outlined">receipt_long</span> Ver comprobante
         </a>

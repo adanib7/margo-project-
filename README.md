@@ -7,6 +7,12 @@ En XAMPP, crear o seleccionar la base `margo-project-` e importar `base de datos
 
 El codigo actual usa la tabla `mesas` (plural) y la crea al abrir los modulos del plano o de reservas. `plano.sql` es un script antiguo para la tabla `mesa`; no corresponde al esquema actual. Las bases existentes pueden requerir los ajustes de esquema que comprueba el propio PHP.
 
+Si una base antigua permite listar reservas pero falla al editarlas, comprobar
+`SHOW COLUMNS FROM reservas;`. Si falta `telefono`, ejecutar una vez
+`base de datos/reservas_telefono.sql` en esa base. El campo es opcional y las
+reservas existentes quedan con telefono NULL. Las instalaciones nuevas ya lo
+incluyen en `reservas.sql`.
+
 UNA VEZ VISTA LA LANDING PAGE, HACER CLICK EN RESERVAR
 
 Las credenciales del superadmin se entregan por privado (no se publican en el repositorio).

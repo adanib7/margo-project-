@@ -304,7 +304,7 @@ require_once '../includes/header.php';
             <input class="campo-input" type="number" id="duracion" min="1" max="8"
                    value="<?= cfgInt('reservas.duracion_horas') ?>">
           </div>
-          <span class="campo-ayuda">Se usa en el evento de calendario que descarga el cliente.</span>
+          <span class="campo-ayuda">Tiempo que queda ocupada la mesa por cada reserva.</span>
           <span class="campo-error" id="err_reservas.duracion_horas"></span>
         </div>
 

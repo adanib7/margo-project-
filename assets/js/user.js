@@ -394,7 +394,6 @@
     document.getElementById('exitoTelefono').textContent = reserva.telefono || '—';
     const cod = encodeURIComponent(reserva.codigo);
     document.getElementById('exitoPdf').href         = BASE + '/includes/comprobante_pdf.php?codigo=' + cod;
-    document.getElementById('exitoCalendario').href  = BASE + '/api/reserva_ics.php?codigo=' + cod;
     document.getElementById('exitoComprobante').href = BASE + '/includes/comprobante.php?codigo=' + cod;
   }
 
