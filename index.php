@@ -17,6 +17,13 @@ $h = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= $h($LOC_NOMBRE) ?> · Restaurante y llagar en <?= $h($LOC_CIUPRO) ?></title>
 <link rel="stylesheet" href="assets/css/colors_and_type.css">
+<link rel="stylesheet" href="assets/css/portada_entrada.css?v=<?= filemtime(__DIR__ . '/assets/css/portada_entrada.css') ?>">
+<script>
+  document.documentElement.classList.add('entrada-preparando');
+  // Si falla el script, la portada vuelve a verse por sí sola.
+  window.esperaEntradaPortada = setTimeout(() => document.documentElement.classList.remove('entrada-preparando'), 1600);
+</script>
+<script src="<?= jsUrl('portada_entrada.js') ?>" defer></script>
 <script src="assets/js/lucide.min.js" defer></script>
 <script type="text/javascript">
 (function(g,i,v,e){

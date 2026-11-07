@@ -1,0 +1,65 @@
+/* Animaciones de entrada de la página principal. */
+.hero { overflow: hidden; }
+.entrada-mascara {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  perspective: 600px;
+  padding: 0 .06em .18em;
+  margin: 0 -.06em -.18em;
+}
+.entrada-palabra { display: inline-block; transform-origin: 50% 100%; }
+.entrada-preparando .hero h1,
+.entrada-preparando .hero-eyebrow,
+.entrada-preparando .hero .lede,
+.entrada-preparando .hero-cta,
+.entrada-preparando .hero-meta { opacity: 0; }
+.entrada-preparando .hero .bg img { transform: scale(1.06); opacity: .8; }
+
+.entrada-en-curso .entrada-palabra { animation: palabra-desplegar 650ms var(--ease-out) both; }
+.entrada-en-curso .hero .bg img { animation: foto-acomodar 1100ms var(--ease-out) both; }
+.entrada-en-curso .hero-eyebrow { animation: contenido-entrar 300ms var(--ease-out) 80ms both; }
+.entrada-en-curso .hero .lede { animation: contenido-entrar 400ms var(--ease-out) 270ms both; }
+.entrada-en-curso .hero-cta { animation: contenido-entrar 350ms var(--ease-out) 360ms both; }
+.entrada-en-curso .hero-meta { animation: contenido-entrar 400ms var(--ease-out) 440ms both; }
+
+@keyframes palabra-desplegar {
+  from { opacity: 0; transform: translate3d(0,110%,0) rotateX(-55deg); filter: blur(4px); }
+  to { opacity: 1; transform: translate3d(0,0,0) rotateX(0); filter: blur(0); }
+}
+@keyframes foto-acomodar {
+  from { transform: scale(1.06); opacity: .8; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes contenido-entrar {
+  from { opacity: 0; transform: translate3d(0,12px,0); }
+  to { opacity: 1; transform: translate3d(0,0,0); }
+}
+@keyframes entrada-suave { from { opacity: 0; } to { opacity: 1; } }
+
+/* Solo las tarjetas y fotos elegidas: el resto del contenido permanece visible. */
+.sec .entrada-scroll[data-entrada-scroll="pendiente"] {
+  opacity: 0;
+  transform: translate3d(0,12px,0);
+  transition: none;
+}
+.sec .entrada-scroll[data-entrada-scroll="visible"] {
+  opacity: 1;
+  transform: translate3d(0,0,0);
+  transition: opacity 360ms var(--ease-out), transform 360ms var(--ease-out);
+  transition-delay: var(--entrada-retraso,0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sec .entrada-scroll[data-entrada-scroll="pendiente"] { transform: none; }
+  .sec .entrada-scroll[data-entrada-scroll="visible"] { transform: none; transition: opacity 180ms var(--ease-out); transition-delay: 0ms; }
+  .entrada-mascara { perspective: none; }
+  .entrada-preparando .hero .bg img { transform: none; opacity: 0; }
+  .entrada-en-curso .entrada-palabra { animation: none; }
+  .entrada-en-curso .hero h1,
+  .entrada-en-curso .hero .bg img,
+  .entrada-en-curso .hero-eyebrow,
+  .entrada-en-curso .hero .lede,
+  .entrada-en-curso .hero-cta,
+  .entrada-en-curso .hero-meta { animation: entrada-suave 180ms var(--ease-out) both; }
+}

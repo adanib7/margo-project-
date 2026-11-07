@@ -69,6 +69,7 @@ function setLang(lang){
   document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('on',b.dataset.lang===lang));
   const mc=document.getElementById('mlangCurrent');
   if(mc)mc.textContent=lang.toUpperCase();
+  document.dispatchEvent(new Event('portada:idioma'));
 }
 document.querySelectorAll('.lang-btn').forEach(b=>b.addEventListener('click',()=>{
   setLang(b.dataset.lang);
