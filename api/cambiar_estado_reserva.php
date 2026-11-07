@@ -63,7 +63,21 @@ if ($reserva['estado'] === $estado) {
 
 // Al cancelar se libera la mesa. Antes de reactivarla hay que comprobar
 // que otra reserva no la haya tomado durante ese tiempo.
+$mesaBloqueada = false;
 if ($reserva['estado'] === 'cancelada' && $estado !== 'cancelada' && !empty($reserva['mesa_id'])) {
+    ensureMesaTable($conn);
+    $conn->begin_transaction();
+    $mesaBloqueada = true;
+    $mesaActiva = $conn->prepare('SELECT id FROM mesas WHERE id = ? AND activa = 1 FOR UPDATE');
+    $mesaActiva->bind_param('i', $reserva['mesa_id']);
+    $mesaActiva->execute();
+    $disponible = $mesaActiva->get_result()->num_rows > 0;
+    $mesaActiva->close();
+    if (!$disponible) {
+        http_response_code(409);
+        echo json_encode(['ok' => false, 'mensaje' => 'La mesa fue retirada del plano. Asigná otra mesa antes de reactivar la reserva.']);
+        exit;
+    }
     $choque = reservaSolapada($conn, (int) $reserva['mesa_id'], $reserva['fecha'], $reserva['hora'], $id);
     if ($choque) {
         http_response_code(409);
@@ -77,6 +91,7 @@ $stmt->bind_param('si', $estado, $id);
 
 if ($stmt->execute()) {
     $stmt->close();
+    if ($mesaBloqueada) $conn->commit();
 
     // Aviso al cliente por correo (opcional, solo al anular).
     $emailEnviado = false;
@@ -143,6 +158,7 @@ if ($stmt->execute()) {
     ]);
 } else {
     $stmt->close();
+    if ($mesaBloqueada) $conn->rollback();
     http_response_code(500);
     echo json_encode(['ok' => false, 'mensaje' => 'Error interno al cambiar el estado.']);
 }

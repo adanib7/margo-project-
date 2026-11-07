@@ -38,7 +38,8 @@ if ($conn === null) {
 $totalMesas = 0;
 $resMesas = $conn->query("SHOW TABLES LIKE 'mesas'");
 if ($resMesas && $resMesas->num_rows > 0) {
-    $row = $conn->query("SELECT COUNT(*) AS total FROM mesas")->fetch_assoc();
+    ensureMesaTable($conn);
+    $row = $conn->query("SELECT COUNT(*) AS total FROM mesas WHERE activa = 1")->fetch_assoc();
     $totalMesas = (int) ($row['total'] ?? 0);
 }
 
@@ -49,7 +50,7 @@ if ($totalMesas > 0) {
     // por solapamiento y no por hora exacta: se revisa cada horario del turno.
     $stmt = $conn->prepare(
         "SELECT COUNT(DISTINCT mesa_id) AS reservadas
-         FROM reservas
+         FROM reservas INNER JOIN mesas m ON m.id = reservas.mesa_id AND m.activa = 1
          WHERE fecha = ? AND estado != 'cancelada' AND mesa_id IS NOT NULL
            AND hora < ? AND ADDTIME(hora, ?) > ?"
     );

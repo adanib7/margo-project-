@@ -136,7 +136,8 @@ if ($q) {
 // Mesas disponibles para el selector del modal de edición.
 $mesas = [];
 if ($conMesa) {
-    $res = $conn->query("SELECT id, numero, capacidad FROM mesas ORDER BY numero ASC");
+    ensureMesaTable($conn);
+    $res = $conn->query("SELECT id, numero, capacidad FROM mesas WHERE activa = 1 ORDER BY numero ASC");
     if ($res) {
         while ($row = $res->fetch_assoc()) {
             $mesas[] = [

@@ -3,30 +3,21 @@ if (window.lucide) lucide.createIcons();
 const ANCHO = 900, ALTO = 560, GRILLA = 10;
 const VERDE = '#2d5f3f', AMBAR = '#c9962e', CREMA = '#fafaf4';
 const editor = document.querySelector('.salon-editor');
-const contenedorPlano = document.getElementById('canvas-wrap');
 const panelMesa = document.getElementById('panel-mesa');
-const selectorMesa = document.getElementById('selector-mesa');
+const listaMesas = document.getElementById('listaMesas');
 const aviso = document.getElementById('aviso');
 const escenario = new Konva.Stage({ container: 'plano', width: ANCHO, height: ALTO });
 const capa = new Konva.Layer();
 escenario.add(capa);
-const controles = new Konva.Transformer({
-  enabledAnchors: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
-  rotationSnaps: [0, 45, 90, 135, 180, 225, 270, 315],
-  rotationSnapTolerance: 3, flipEnabled: false, ignoreStroke: true,
-  resizeEnabled: false, rotateEnabled: false, listening: false,
-  anchorSize: 16, anchorCornerRadius: 8, padding: 10, rotateAnchorOffset: 44,
-  anchorStroke: AMBAR, anchorFill: '#fff', borderStroke: AMBAR, borderStrokeWidth: 2,
-});
-capa.add(controles);
-let seleccionada = null, modo = 'seleccionar', zoom = 1, contadorMesas = 0;
+// El borde muestra los límites reales del salón, incluso al alejar o desplazar la vista.
+capa.add(new Konva.Rect({ width: ANCHO, height: ALTO, stroke: '#b8b097', strokeWidth: 2, listening: false }));
+let seleccionada = null, modo = 'seleccionar', contadorMesas = 0;
 let cargado = false, guardando = false, firmaGuardada = '';
 let eliminadas = [], historial = [];
 let fantasma = null, destinoFijado = false, destinoValido = false;
-let propuesta = null, antesDelGesto = null;
-let inicioPuntero = null, gestoMovido = false, tipoPuntero = 'mouse';
+let propuesta = null;
+let antesArrastre = null;
 
-function limitar(n, min, max) { return Math.min(Math.max(n, min), max); }
 function angulo(n) { return ((n % 360) + 360) % 360; }
 function mesasPlano() { return capa.find('.mesa'); }
 function mostrarAviso(texto, error = false) {
@@ -40,6 +31,7 @@ function datosMesa(mesa) {
     clave: mesa.getAttr('clave'), id: mesa.getAttr('mesaId') || null,
     numero: mesa.getAttr('numero'), capacidad: mesa.getAttr('capacidad'), forma: mesa.getAttr('forma'),
     pos_x: mesa.x(), pos_y: mesa.y(), ancho: mesa.getAttr('ancho'), alto: mesa.getAttr('alto'), rotacion: mesa.rotation(),
+    reservas_pendientes: mesa.getAttr('reservasPendientes'), tiene_historial: mesa.getAttr('tieneHistorial'),
   };
 }
 function estadoActual() {
@@ -56,7 +48,6 @@ function recordarCambio(antes) {
 }
 function instalarMesas(datos, claveSeleccionada = null) {
   seleccionada = null;
-  controles.nodes([]);
   for (const mesa of mesasPlano()) mesa.destroy();
   for (const dato of datos) crearMesa(dato);
   seleccionar(mesasPlano().find(m => m.getAttr('clave') === claveSeleccionada) || null);
@@ -94,6 +85,7 @@ function crearMesa(datos) {
     x: Number(datos.pos_x), y: Number(datos.pos_y), rotation: Number(datos.rotacion) || 0,
     clave: datos.clave || (datos.id ? 'db-' + datos.id : 'nueva-' + (++contadorMesas)),
     mesaId: datos.id || null, numero: Number(datos.numero), capacidad: Number(datos.capacidad), forma,
+    reservasPendientes: Number(datos.reservas_pendientes) || 0, tieneHistorial: !!datos.tiene_historial,
   });
   const estilo = { name: 'figura', fill: VERDE, stroke: AMBAR, strokeWidth: 3, hitStrokeWidth: 4, preventDefault: false };
   let figura;
@@ -102,37 +94,13 @@ function crearMesa(datos) {
   else figura = new Konva.Rect({ ...estilo, cornerRadius: 8 });
   mesa.add(figura, new Konva.Text({ name: 'numero', text: String(datos.numero), fontFamily: 'Montserrat, sans-serif', fontStyle: 'bold', fill: CREMA, align: 'center', verticalAlign: 'middle', listening: false }));
   actualizarTamano(mesa, Number(datos.ancho), Number(datos.alto));
-  // El mouse selecciona al presionar; el toque espera para distinguirlo de un desplazamiento.
-  mesa.on('mousedown', e => {
-    if (tipoPuntero === 'mouse' && e.evt.button === 0 && modo === 'seleccionar' && !guardando && !propuesta) seleccionar(mesa);
-  });
-  mesa.on('click tap', e => {
-    e.cancelBubble = true;
-    if (guardando || propuesta || (tipoPuntero !== 'mouse' && gestoMovido)) return;
-    if (e.type === 'click' && e.evt.button !== 0) return;
-    if (modo === 'mover') elegirDestino();
-    else if (modo === 'seleccionar' && tipoPuntero !== 'mouse') seleccionar(mesa);
-  });
-  mesa.on('dragstart transformstart', () => { antesDelGesto = estadoActual(); gestoMovido = true; });
-  mesa.on('dragend', e => {
-    if (e.evt?.shiftKey) mesa.position({ x: Math.round(mesa.x() / GRILLA) * GRILLA, y: Math.round(mesa.y() / GRILLA) * GRILLA });
-    terminarGesto(mesa);
-  });
-  mesa.on('transformend', () => {
-    const ancho = limitar(mesa.getAttr('ancho') * mesa.scaleX(), 30, 400);
-    const alto = limitar(mesa.getAttr('alto') * mesa.scaleY(), 30, 400);
-    mesa.scale({ x: 1, y: 1 }); actualizarTamano(mesa, ancho, alto); terminarGesto(mesa);
-  });
-  mesa.on('mouseenter', () => { escenario.container().style.cursor = modo === 'arrastrar' ? 'grab' : 'pointer'; });
-  mesa.on('mouseleave', () => { escenario.container().style.cursor = ''; });
-  capa.add(mesa); controles.moveToTop();
+  capa.add(mesa);
   return mesa;
 }
 function aplicarDatos(mesa, dato) {
   mesa.position({ x: dato.pos_x, y: dato.pos_y }); mesa.rotation(dato.rotacion); mesa.scale({ x: 1, y: 1 });
   mesa.setAttrs({ numero: dato.numero, capacidad: dato.capacidad });
   mesa.findOne('.numero').text(String(dato.numero)); actualizarTamano(mesa, dato.ancho, dato.alto);
-  controles.forceUpdate();
 }
 
 // Se comparan las cajas que ocupa cada figura, incluyendo su giro y borde.
@@ -145,9 +113,13 @@ function seCruzan(a, b, separacion = 12) {
     && a.y < b.y + b.height + separacion && a.y + a.height + separacion > b.y;
 }
 function posicionValida(mesa, posicion) {
+  return problemaPosicion(mesa, posicion) === '';
+}
+function problemaPosicion(mesa, posicion) {
   const caja = cajaEn(mesa, posicion);
-  if (caja.x < 6 || caja.y < 6 || caja.x + caja.width > ANCHO - 6 || caja.y + caja.height > ALTO - 6) return false;
-  return !mesasPlano().some(otra => otra !== mesa && seCruzan(caja, otra.getClientRect({ relativeTo: capa })));
+  if (caja.x < 6 || caja.y < 6 || caja.x + caja.width > ANCHO - 6 || caja.y + caja.height > ALTO - 6) return 'Se sale del salón.';
+  const otra = mesasPlano().find(otra => otra !== mesa && seCruzan(caja, otra.getClientRect({ relativeTo: capa })));
+  return otra ? 'Se cruza con la mesa ' + otra.getAttr('numero') + '.' : '';
 }
 function ajustarDentro(mesa) {
   const caja = mesa.getClientRect({ relativeTo: capa });
@@ -155,30 +127,27 @@ function ajustarDentro(mesa) {
   const dy = Math.max(6 - caja.y, 0) + Math.min(ALTO - 6 - caja.y - caja.height, 0);
   mesa.position({ x: mesa.x() + dx, y: mesa.y() + dy });
 }
-function terminarGesto(mesa) {
-  if (!antesDelGesto) return;
-  const anterior = antesDelGesto; antesDelGesto = null;
-  ajustarDentro(mesa);
-  if (!posicionValida(mesa, mesa.position())) {
-    aplicarDatos(mesa, anterior.mesas.find(m => m.clave === mesa.getAttr('clave')));
-    mostrarAviso('Ese ajuste se cruza con otra mesa. Probá otro lugar o tamaño.', true);
-  } else recordarCambio(anterior);
-  controles.forceUpdate(); actualizarInterfaz();
-}
-
 function seleccionar(mesa) {
+  if (modo !== 'seleccionar' || guardando) return;
   if (seleccionada) seleccionada.findOne('.figura').fill(VERDE);
   seleccionada = mesa;
   if (mesa) mesa.findOne('.figura').fill('#46774e');
-  controles.nodes(mesa ? [mesa] : []); controles.moveToTop();
   actualizarListaMesas(); actualizarInterfaz();
 }
 function actualizarListaMesas() {
-  selectorMesa.replaceChildren(new Option('Elegí una mesa', ''));
-  for (const mesa of mesasPlano()) {
-    const opcion = new Option('Mesa ' + mesa.getAttr('numero'), mesa.getAttr('clave'));
-    opcion.selected = mesa === seleccionada; selectorMesa.add(opcion);
+  const foco = listaMesas.contains(document.activeElement) ? document.activeElement.dataset.clave : null;
+  listaMesas.replaceChildren();
+  for (const mesa of [...mesasPlano()].sort((a, b) => a.getAttr('numero') - b.getAttr('numero'))) {
+    const boton = document.createElement('button');
+    boton.type = 'button'; boton.className = 'salon-mesa-numero';
+    boton.dataset.clave = mesa.getAttr('clave');
+    boton.textContent = 'Mesa ' + mesa.getAttr('numero');
+    boton.setAttribute('aria-pressed', String(mesa === seleccionada));
+    boton.disabled = modo !== 'seleccionar' || guardando;
+    boton.addEventListener('click', () => seleccionar(mesa));
+    listaMesas.append(boton);
   }
+  if (foco) [...listaMesas.children].find(boton => boton.dataset.clave === foco)?.focus({ preventScroll: true });
 }
 function actualizarInterfaz() {
   const mesas = mesasPlano(), normal = modo === 'seleccionar';
@@ -194,36 +163,40 @@ function actualizarInterfaz() {
   document.getElementById('btnDistribuir').disabled = !cargado || guardando || !normal || !mesas.length;
   document.getElementById('btnGuardarPlano').disabled = !cambios || guardando || !normal;
   document.getElementById('btnDeshacer').disabled = !historial.length || guardando || !normal;
-  selectorMesa.disabled = !cargado || guardando || !normal;
+  for (const boton of listaMesas.querySelectorAll('button')) boton.disabled = !cargado || guardando || !normal;
   for (const boton of panelMesa.querySelectorAll('button')) boton.disabled = guardando || (!normal && boton.id !== 'cerrarFicha');
   document.getElementById('accionPlano').hidden = normal;
   if (seleccionada) {
     document.getElementById('mesaActiva').textContent = 'Mesa ' + seleccionada.getAttr('numero');
     const formas = { cuadrada: 'Cuadrada', redonda: 'Redonda', triangular: 'Triangular' };
     document.getElementById('mesaDetalle').textContent = seleccionada.getAttr('capacidad') + ' personas · ' + formas[seleccionada.getAttr('forma')];
+    const pendientes = seleccionada.getAttr('reservasPendientes');
+    document.getElementById('mesaReservas').textContent = pendientes
+      ? pendientes + ' reservas por atender. Para retirar esta mesa, reasignalas primero en Reservas.'
+      : seleccionada.getAttr('tieneHistorial') ? 'Podés retirarla del plano conservando sus reservas anteriores.' : 'Sin reservas asociadas.';
   }
   const instrucciones = {
-    seleccionar: seleccionada ? 'Elegí qué querés hacer con esta mesa.' : 'Tocá una mesa para moverla, girarla o editarla.',
-    mover: 'Tocá un espacio vacío. Los puntos verdes sugieren lugares disponibles.',
+    seleccionar: seleccionada ? 'En PC podés arrastrarla. Con Mover elegís el lugar usando la mira.' : 'Elegí una mesa en el plano o por su número. Usá la rueda o dos dedos para acercar.',
+    mover: 'Desplazá el plano debajo de la mira y tocá Colocar aquí.',
     distribuir: 'Esta es una vista previa. Las mesas originales no cambiaron.',
-    arrastrar: 'Arrastrá la mesa seleccionada. Si no entra, vuelve a su lugar.',
-    transformar: 'Usá las esquinas para cambiar el tamaño y la manija superior para girar.',
+    arrastrar: 'Soltá para colocar. Si se cruza con otra mesa, conserva su lugar anterior.',
   };
   document.getElementById('planoInstruccion').textContent = instrucciones[modo];
 }
 
 function salirAccion() {
+  antesArrastre = null;
   if (propuesta) {
     for (const mesa of mesasPlano()) mesa.opacity(1);
     for (const copia of capa.find('.pre-distribucion')) copia.destroy();
     propuesta = null;
   }
   if (fantasma) { fantasma.destroy(); fantasma = null; }
+  for (const mesa of mesasPlano()) mesa.opacity(1);
+  document.getElementById('planoMira').hidden = true;
   for (const punto of capa.find('.lugar-libre')) punto.destroy();
   modo = 'seleccionar'; destinoFijado = false; destinoValido = false;
-  for (const mesa of mesasPlano()) { mesa.draggable(false); mesa.findOne('.figura').preventDefault(false); }
-  escenario.container().classList.remove('captura-gestos');
-  controles.resizeEnabled(false); controles.rotateEnabled(false); controles.listening(false);
+  actualizarListaMesas();
   actualizarInterfaz();
 }
 function dibujarLugares() {
@@ -240,27 +213,28 @@ function iniciarMovimiento() {
   if (!seleccionada) return;
   salirAccion(); modo = 'mover';
   fantasma = seleccionada.clone({ name: 'vista-previa', listening: false, opacity: 0.6, draggable: false });
-  capa.add(fantasma); dibujarLugares();
-  document.getElementById('accionTexto').textContent = 'Elegí el nuevo lugar para la mesa ' + seleccionada.getAttr('numero') + '.';
+  capa.add(fantasma); dibujarLugares(); seleccionada.opacity(0.25);
+  document.getElementById('planoMira').hidden = false;
   document.getElementById('btnAplicarAccion').textContent = 'Colocar aquí';
   document.getElementById('btnAplicarAccion').hidden = false;
   document.getElementById('btnAplicarAccion').disabled = true;
   document.getElementById('btnCancelarAccion').textContent = 'Cancelar';
-  actualizarInterfaz();
+  actualizarInterfaz(); vista.centrar(seleccionada.position());
+  escenario.container().scrollIntoView({ block: 'center' });
 }
-function mostrarDestino(posicion, fijar = false) {
+function mostrarDestino(posicion) {
   if (!fantasma || !seleccionada) return;
   const destino = { x: Math.round(posicion.x / GRILLA) * GRILLA, y: Math.round(posicion.y / GRILLA) * GRILLA };
   fantasma.position(destino);
-  destinoValido = posicionValida(seleccionada, destino);
+  const problema = problemaPosicion(seleccionada, destino);
+  destinoValido = problema === '';
   fantasma.findOne('.figura').setAttrs({ fill: destinoValido ? '#5b8c61' : '#b87276', stroke: destinoValido ? VERDE : '#9a3540' });
-  if (fijar) {
-    destinoFijado = true;
-    document.getElementById('accionTexto').textContent = destinoValido ? 'La mesa entra aquí. ¿La colocamos?' : 'Este lugar no tiene espacio. Tocá otro punto del salón.';
-    document.getElementById('btnAplicarAccion').disabled = !destinoValido;
-  }
+  destinoFijado = true;
+  document.getElementById('accionTexto').textContent = 'Moviendo mesa ' + seleccionada.getAttr('numero') + ' · ' + (problema || 'La mesa entra aquí.');
+  document.getElementById('btnAplicarAccion').disabled = !destinoValido;
+  document.getElementById('planoMira').classList.toggle('invalida', !destinoValido);
+  capa.batchDraw();
 }
-function elegirDestino() { mostrarDestino(escenario.getRelativePointerPosition(), true); }
 function aplicarAccion() {
   if (modo === 'mover' && seleccionada && destinoFijado && destinoValido) {
     const antes = estadoActual(); seleccionada.position(fantasma.position()); salirAccion(); recordarCambio(antes);
@@ -271,17 +245,23 @@ function aplicarAccion() {
     recordarCambio(antes); mostrarAviso('Distribución aplicada. Podés deshacerla o guardar el plano.');
   }
 }
-function iniciarAjuste(tipo) {
-  if (!seleccionada) return;
-  salirAccion(); modo = tipo;
-  seleccionada.draggable(tipo === 'arrastrar'); seleccionada.findOne('.figura').preventDefault(true);
-  escenario.container().classList.add('captura-gestos');
-  controles.resizeEnabled(tipo === 'transformar'); controles.rotateEnabled(tipo === 'transformar'); controles.listening(tipo === 'transformar');
-  controles.keepRatio(seleccionada.getAttr('forma') === 'redonda');
+function empezarArrastre(mesa) {
+  seleccionar(mesa); antesArrastre = estadoActual(); modo = 'arrastrar';
+  fantasma = mesa.clone({ name: 'vista-previa', listening: false, opacity: 0.8, draggable: false });
+  capa.add(fantasma); mesa.opacity(0.25);
   document.getElementById('btnAplicarAccion').hidden = true;
-  document.getElementById('btnCancelarAccion').textContent = 'Listo';
-  document.getElementById('accionTexto').textContent = tipo === 'arrastrar' ? 'Mové la mesa y tocá Listo al terminar.' : 'Ajustá la mesa y tocá Listo al terminar.';
-  actualizarInterfaz();
+  document.getElementById('btnCancelarAccion').textContent = 'Cancelar';
+  actualizarInterfaz(); mostrarDestino(mesa.position());
+}
+function terminarArrastre(confirmar) {
+  if (!antesArrastre) return;
+  const antes = antesArrastre; antesArrastre = null;
+  const valido = destinoValido;
+  const problema = fantasma && seleccionada ? problemaPosicion(seleccionada, fantasma.position()) : '';
+  if (confirmar && valido && fantasma) seleccionada.position(fantasma.position());
+  salirAccion();
+  if (confirmar && valido && antes) recordarCambio(antes);
+  else if (confirmar) mostrarAviso(problema + ' La mesa conserva su lugar anterior.', true);
 }
 function girarMesa() {
   if (!seleccionada) return;
@@ -290,7 +270,7 @@ function girarMesa() {
   if (!posicionValida(seleccionada, seleccionada.position())) {
     aplicarDatos(seleccionada, dato); mostrarAviso('No hay espacio para ese giro. Mové la mesa un poco y volvé a probar.', true); return;
   }
-  controles.forceUpdate(); recordarCambio(antes);
+  recordarCambio(antes);
 }
 function moverUnPaso(dx, dy, paso) {
   if (!seleccionada || modo !== 'seleccionar') return;
@@ -322,7 +302,7 @@ document.getElementById('formAgregarMesa').addEventListener('submit', e => {
   const posicion = buscarEspacio(tamano + 3, tamano + 3);
   if (!posicion) { document.getElementById('errorAgregar').textContent = 'No encontramos un espacio libre. Probá distribuir el salón o usar una mesa más pequeña.'; return; }
   const antes = estadoActual();
-  const numero = Math.max(0, ...mesasPlano().map(m => m.getAttr('numero'))) + 1;
+  const numero = Math.max(window.planoSiguienteNumero || 1, Math.max(0, ...mesasPlano().map(m => m.getAttr('numero'))) + 1);
   const mesa = crearMesa({ numero, capacidad, forma, pos_x: posicion.x, pos_y: posicion.y, ancho: tamano, alto: tamano, rotacion: 0 });
   document.getElementById('dialogoAgregar').close(); seleccionar(mesa); recordarCambio(antes);
 });
@@ -348,7 +328,7 @@ document.getElementById('formDistribuir').addEventListener('submit', e => {
   document.getElementById('btnAplicarAccion').hidden = false; document.getElementById('btnAplicarAccion').disabled = false;
   document.getElementById('btnAplicarAccion').textContent = 'Aplicar distribución';
   document.getElementById('btnCancelarAccion').textContent = 'Volver';
-  cambiarZoom(1); actualizarInterfaz();
+  vista.verTodo(); actualizarInterfaz();
 });
 document.getElementById('btnEditarMesa').addEventListener('click', () => {
   const dato = datosMesa(seleccionada);
@@ -356,6 +336,12 @@ document.getElementById('btnEditarMesa').addEventListener('click', () => {
     document.getElementById(id).value = campo === 'rotacion' ? angulo(dato[campo]) : dato[campo];
   }
   document.getElementById('tituloEditar').textContent = 'Editar mesa ' + dato.numero;
+  const pendientes = dato.reservas_pendientes;
+  document.getElementById('btnEliminarMesa').disabled = pendientes > 0;
+  document.getElementById('btnEliminarMesa').textContent = dato.tiene_historial ? 'Retirar del plano' : 'Eliminar mesa';
+  document.getElementById('ayudaRetirar').textContent = pendientes
+    ? 'Tiene ' + pendientes + ' reservas por atender. Reasignalas en Reservas antes de retirarla.'
+    : dato.tiene_historial ? 'Se retirará al guardar. Su historial de reservas se conserva.' : 'Se eliminará al guardar el plano. Podés deshacer antes de guardar.';
   document.getElementById('errorEditar').textContent = ''; abrirDialogo('dialogoEditar');
 });
 document.getElementById('formEditarMesa').addEventListener('invalid', e => {
@@ -376,69 +362,55 @@ document.getElementById('formEditarMesa').addEventListener('submit', e => {
   document.getElementById('dialogoEditar').close(); actualizarListaMesas(); recordarCambio(antes); actualizarInterfaz();
 });
 function eliminarSeleccionada() {
-  if (!seleccionada) return;
+  if (!seleccionada || modo !== 'seleccionar') return;
+  if (seleccionada.getAttr('reservasPendientes') > 0) {
+    mostrarAviso('Esta mesa tiene reservas por atender. Reasignalas en Reservas antes de retirarla.', true); return;
+  }
   const antes = estadoActual(), id = seleccionada.getAttr('mesaId');
   if (id) eliminadas.push(id);
   const mesa = seleccionada; seleccionar(null); mesa.destroy(); actualizarListaMesas(); recordarCambio(antes);
 }
 document.getElementById('btnEliminarMesa').addEventListener('click', () => { document.getElementById('dialogoEditar').close(); eliminarSeleccionada(); });
 
-// La vista se escala; las posiciones guardadas siempre son de 900 x 560 unidades.
-function ajustarVista() {
-  const escala = Math.min(1, contenedorPlano.clientWidth / ANCHO, window.innerHeight * 0.65 / ALTO) * zoom;
-  if (!escala) return;
-  escenario.size({ width: ANCHO * escala, height: ALTO * escala }); escenario.scale({ x: escala, y: escala });
-  escenario.container().style.width = escenario.width() + 'px';
-  escenario.container().style.backgroundSize = 40 * escala + 'px ' + 40 * escala + 'px';
-  const tactil = window.matchMedia('(pointer: coarse)').matches;
-  controles.anchorSize(tactil ? 24 : 16); controles.anchorStyleFunc(ancla => ancla.hitStrokeWidth(tactil ? 20 : 6));
-  document.getElementById('zoomValor').textContent = Math.round(escala * 100) + '%';
-  document.getElementById('zoomMenos').disabled = zoom <= 1;
-  document.getElementById('zoomMas').disabled = zoom >= 4;
+// Primero se prueba la figura real. La tolerancia pequeña solo se usa en el fondo;
+// así no hay áreas invisibles que le roben el click a una mesa vecina.
+function mesaEnPantalla(punto) {
+  const figura = escenario.getIntersection(punto);
+  const mesa = figura?.findAncestor('.mesa');
+  if (mesa) return mesa;
+  const mundo = vista.aPlano(punto), margen = 7 / escenario.scaleX();
+  let cercana = null, distancia = Infinity;
+  for (const candidata of mesasPlano()) {
+    const caja = candidata.getClientRect({ relativeTo: capa });
+    const dx = Math.max(caja.x - mundo.x, 0, mundo.x - caja.x - caja.width);
+    const dy = Math.max(caja.y - mundo.y, 0, mundo.y - caja.y - caja.height);
+    const d = Math.hypot(dx, dy);
+    if (d <= margen && d < distancia) { cercana = candidata; distancia = d; }
+  }
+  return cercana;
 }
-function cambiarZoom(valor) {
-  const escala = escenario.scaleX();
-  const centro = seleccionada ? seleccionada.position() : { x: (contenedorPlano.scrollLeft + contenedorPlano.clientWidth / 2) / escala, y: (contenedorPlano.scrollTop + contenedorPlano.clientHeight / 2) / escala };
-  zoom = limitar(valor, 1, 4); ajustarVista();
-  contenedorPlano.scrollLeft = centro.x * escenario.scaleX() - contenedorPlano.clientWidth / 2;
-  contenedorPlano.scrollTop = centro.y * escenario.scaleY() - contenedorPlano.clientHeight / 2;
-}
-let anchoObservado = 0;
-new ResizeObserver(entradas => { const ancho = entradas[0].contentRect.width; if (Math.abs(ancho - anchoObservado) > 0.5) { anchoObservado = ancho; ajustarVista(); } }).observe(document.querySelector('.plano-area'));
-window.addEventListener('resize', ajustarVista);
-escenario.container().addEventListener('pointerdown', e => {
-  tipoPuntero = e.pointerType;
-  if (!e.isPrimary) { gestoMovido = true; return; }
-  inicioPuntero = tipoPuntero === 'mouse' ? null : { x: e.clientX, y: e.clientY };
-  gestoMovido = false;
+const vista = crearVistaPlano(escenario, ANCHO, ALTO, {
+  bloqueada: () => guardando || !cargado || modo === 'distribuir',
+  colocando: () => modo === 'mover',
+  mesaEn: mesaEnPantalla,
+  seleccionar,
+  inicioArrastre: empezarArrastre,
+  arrastrar: mostrarDestino,
+  finArrastre: terminarArrastre,
+  camara: centro => { if (modo === 'mover') mostrarDestino(centro); },
 });
-escenario.container().addEventListener('pointermove', e => { if (inicioPuntero && Math.hypot(e.clientX - inicioPuntero.x, e.clientY - inicioPuntero.y) > 8) gestoMovido = true; }, { passive: true });
-escenario.container().addEventListener('pointercancel', () => { inicioPuntero = null; gestoMovido = true; });
-window.addEventListener('pointerup', () => { inicioPuntero = null; });
-escenario.on('mousemove', () => { if (modo === 'mover' && !destinoFijado && !guardando) mostrarDestino(escenario.getRelativePointerPosition()); });
-escenario.on('mousedown', e => {
-  escenario.container().focus({ preventScroll: true });
-  if (e.target === escenario && tipoPuntero === 'mouse' && e.evt.button === 0 && modo === 'seleccionar' && !guardando) seleccionar(null);
-});
-escenario.on('click tap', e => {
-  if (e.target !== escenario || guardando || (tipoPuntero !== 'mouse' && gestoMovido)) return;
-  if (e.type === 'click' && e.evt.button !== 0) return;
-  if (modo === 'mover') elegirDestino();
-  else if (modo === 'seleccionar' && tipoPuntero !== 'mouse') seleccionar(null);
-});
-document.getElementById('zoomMas').addEventListener('click', () => cambiarZoom(zoom + 0.5));
-document.getElementById('zoomMenos').addEventListener('click', () => cambiarZoom(zoom - 0.5));
-document.getElementById('zoomAjustar').addEventListener('click', () => cambiarZoom(1));
 document.getElementById('btnMoverMesa').addEventListener('click', iniciarMovimiento);
 document.getElementById('btnGirarMesa').addEventListener('click', girarMesa);
 document.getElementById('btnAplicarAccion').addEventListener('click', aplicarAccion);
 document.getElementById('btnCancelarAccion').addEventListener('click', salirAccion);
 document.getElementById('btnDeshacer').addEventListener('click', deshacer);
 document.getElementById('cerrarFicha').addEventListener('click', () => { salirAccion(); seleccionar(null); });
-document.getElementById('btnArrastrar').addEventListener('click', () => iniciarAjuste('arrastrar'));
-document.getElementById('btnManijas').addEventListener('click', () => iniciarAjuste('transformar'));
+document.getElementById('btnAcercarMesa').addEventListener('click', () => {
+  if (!seleccionada) return;
+  vista.acercar(seleccionada);
+  escenario.container().scrollIntoView({ block: 'center' });
+});
 for (const boton of document.querySelectorAll('[data-mover]')) boton.addEventListener('click', () => { const [dx, dy] = boton.dataset.mover.split(',').map(Number); moverUnPaso(dx, dy, Number(document.getElementById('pasoMesa').value)); });
-selectorMesa.addEventListener('change', () => { seleccionar(mesasPlano().find(m => m.getAttr('clave') === selectorMesa.value) || null); escenario.container().focus({ preventScroll: true }); });
 document.addEventListener('keydown', e => {
   if (document.querySelector('dialog[open]') || guardando) return;
   if (e.key === 'Escape') { if (modo !== 'seleccionar') salirAccion(); else seleccionar(null); return; }
@@ -471,8 +443,9 @@ async function guardarPlano() {
     const respuesta = await fetch(window.location.pathname, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'guardar', mesas, eliminadas }) });
     const datos = await respuesta.json();
     if (!respuesta.ok || !datos.ok || !Array.isArray(datos.mesas)) throw new Error(datos.error || datos.mensaje || 'No se pudo guardar el plano. Volvé a intentarlo.');
+    window.planoSiguienteNumero = datos.siguiente_numero || window.planoSiguienteNumero;
     instalarMesas(datos.mesas); eliminadas = []; historial = []; firmaGuardada = firma(estadoActual());
-    mostrarAviso(datos.no_eliminadas?.length ? 'Plano guardado. Se conservaron las mesas que tienen reservas.' : 'Plano guardado. Tu salón ya está actualizado.');
+    mostrarAviso(datos.retiradas?.length ? 'Plano guardado. Las mesas retiradas conservan su historial de reservas.' : 'Plano guardado. Tu salón ya está actualizado.');
   } catch (error) {
     mostrarAviso(['TypeError', 'SyntaxError'].includes(error.name) ? 'No se pudo confirmar el guardado. Comprobá la conexión y volvé a intentarlo.' : error.message, true);
   }
@@ -480,4 +453,4 @@ async function guardarPlano() {
 }
 document.getElementById('btnGuardarPlano').addEventListener('click', guardarPlano);
 document.getElementById('btnReintentar').addEventListener('click', cargarPlano);
-actualizarInterfaz(); ajustarVista(); cargarPlano();
+actualizarInterfaz(); cargarPlano();

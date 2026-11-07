@@ -83,15 +83,16 @@ if ($personas < 1 || $personas > $maxPersonas) {
 }
 
 // La mesa es opcional: el admin puede dejarla sin asignar.
+$conn->begin_transaction();
 if ($conMesa && $mesaId > 0) {
-    $q = $conn->prepare("SELECT numero, capacidad FROM mesas WHERE id = ?");
+    $q = $conn->prepare("SELECT numero, capacidad FROM mesas WHERE id = ? AND activa = 1 FOR UPDATE");
     $q->bind_param('i', $mesaId);
     $q->execute();
     $mesa = $q->get_result()->fetch_assoc();
     $q->close();
 
     if (!$mesa) {
-        $errores['mesa'] = 'La mesa elegida ya no existe.';
+        $errores['mesa'] = 'La mesa elegida ya no está disponible en el plano.';
     } else {
         $mesaNumero = (int) $mesa['numero'];
         if ($personas > (int) $mesa['capacidad']) {
@@ -158,11 +159,13 @@ $stmt->bind_param('siisssiss', $codigo, $usuarioId, $mesaParam, $nombre, $fecha,
 
 if (!$stmt->execute()) {
     $stmt->close();
+    $conn->rollback();
     http_response_code(500);
     echo json_encode(['ok' => false, 'mensaje' => 'Error interno al crear la reserva.']);
     exit;
 }
 $stmt->close();
+$conn->commit();
 
 // Confirmación por correo, si el admin la pidió y hay a dónde mandarla.
 $emailEnviado = false;

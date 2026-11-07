@@ -2305,12 +2305,21 @@ body {
 .salon-guardado { font-size: 0.8rem; color: #73796f; flex-wrap: wrap; }
 .salon-guardado .sin-guardar { color: #775a19; }
 .salon-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 1.25rem; align-items: start; }
-.plano-area { min-width: 0; background: #fff; border: 1px solid #dce0d6; border-radius: 0.9rem; padding: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+.plano-area { position: relative; min-width: 0; background: #fff; border: 1px solid #dce0d6; border-radius: 0.9rem; padding: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
 .salon-lienzo-cabecera { justify-content: space-between; flex-wrap: wrap; font-size: 0.8rem; color: #73796f; }
 .salon-instruccion { min-height: 3em; font-size: 0.85rem; line-height: 1.5; margin: 0.7rem 0; color: #52604b; }
-#canvas-wrap { width: 100%; min-width: 0; max-height: 65svh; overflow: auto; overscroll-behavior: contain; background: #faf8ee; border: 1px solid #e5ddc6; border-radius: 0.6rem; line-height: 0; }
-#plano { position: relative; margin: 0 auto; background-color: #faf8ee; background-image: linear-gradient(#e9e2cc 1px,transparent 1px),linear-gradient(90deg,#e9e2cc 1px,transparent 1px); background-size: 40px 40px; touch-action: pan-x pan-y pinch-zoom; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-#plano.captura-gestos { touch-action: none; }
+#canvas-wrap { position: relative; width: 100%; min-width: 0; height: clamp(280px,52svh,540px); box-sizing: border-box; overflow: hidden; overscroll-behavior: contain; background: #faf8ee; border: 1px solid #e5ddc6; border-radius: 0.6rem; line-height: 0; }
+#plano { position: relative; width: 100%; height: 100%; margin: 0; background-color: #faf8ee; background-image: linear-gradient(#e9e2cc 1px,transparent 1px),linear-gradient(90deg,#e9e2cc 1px,transparent 1px); background-size: 40px 40px; touch-action: none; cursor: grab; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+#plano:focus-visible { outline: 2px solid #775a19; outline-offset: -3px; }
+.salon-mesas { display: flex; gap: 0.4rem; flex-wrap: wrap; max-height: 110px; overflow-y: auto; overscroll-behavior: contain; padding: 2px; margin-bottom: 0.8rem; }
+.salon-mesa-numero { flex: 0 0 auto; min-height: 44px; padding: 0.5rem 0.8rem; border: 1px solid #dce0d6; border-radius: 0.5rem; font: inherit; font-size: 0.8rem; color: #264220; background: #fafaf4; cursor: pointer; }
+.salon-mesa-numero[aria-pressed="true"] { color: #fff; background: #2d5f3f; border-color: #2d5f3f; }
+.plano-mira { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 40px; height: 40px; display: grid; place-items: center; pointer-events: none; color: #264220; background: rgba(255,255,255,0.9); border: 2px solid currentColor; border-radius: 50%; }
+.plano-mira .lucide { width: 26px; height: 26px; }
+.plano-mira.invalida { color: #a5303d; }
+.plano-gesto-ayuda { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: max-content; max-width: 88%; pointer-events: none; padding: 0.4rem 0.65rem; border-radius: 0.4rem; line-height: 1.4; font-size: 0.7rem; text-align: center; background: rgba(250,250,244,0.94); color: #52604b; }
+.salon-acercar { margin-top: 0.5rem; }
+#mesaReservas { font-size: 0.75rem; line-height: 1.5; color: #52604b; }
 .salon-pie-plano { justify-content: space-between; flex-wrap: wrap; margin-top: 0.65rem; font-size: 0.75rem; color: #73796f; }
 .salon-leyenda { display: inline-flex; align-items: center; gap: 0.45rem; }
 .salon-leyenda i { width: 9px; height: 9px; border-radius: 3px; background: #2d5f3f; border: 1px solid #c9962e; }
@@ -2323,7 +2332,7 @@ body {
 .salon-enlace { font-size: 0.8rem; text-decoration: underline; text-underline-offset: 3px; }
 .salon-editor button:focus-visible, .salon-dialogo button:focus-visible, .salon-editor summary:focus-visible { outline: 2px solid #775a19; outline-offset: 3px; }
 .salon-inspector { min-width: 0; }
-.salon-bienvenida, .salon-ficha, .salon-buscar { padding: 1.15rem; background: #fff; border: 1px solid #dce0d6; border-radius: 0.9rem; }
+.salon-bienvenida, .salon-ficha { padding: 1.15rem; background: #fff; border: 1px solid #dce0d6; border-radius: 0.9rem; }
 .salon-bienvenida { background: #f4f3e9; border-color: #e5ddc6; }
 .salon-sello { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: #e5e9dd; color: #2d5f3f; margin-bottom: 0.8rem; }
 .salon-bienvenida h2, .salon-ficha h2, .salon-dialogo h2 { font-family: 'Montserrat',sans-serif; font-size: 1.15rem; font-weight: 600; color: #264220; line-height: 1.4; margin: 0; }
@@ -2335,28 +2344,10 @@ body {
 .salon-acciones-mesa { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 0.4rem; }
 .salon-acciones-mesa .boton-secundario { padding: 0.65rem 0.2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem; font-size: 0.75rem; line-height: 1.2; text-align: center; }
 .salon-acciones-mesa .material-symbols-outlined { font-size: 20px; }
-.salon-ajuste-fino, .salon-buscar, .salon-edicion-medidas { margin-top: 0.9rem; font-size: 0.8rem; color: #52604b; }
-.salon-ajuste-fino summary, .salon-buscar summary, .salon-edicion-medidas summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; gap: 0.5rem; }
-.salon-ajuste-fino summary::before, .salon-buscar summary::before, .salon-edicion-medidas summary::before { content: '+'; color: #775a19; font-size: 1.1rem; }
-.salon-ajuste-fino[open] summary::before, .salon-buscar[open] summary::before, .salon-edicion-medidas[open] summary::before { content: '−'; }
-.salon-buscar { padding: 0.35rem 1rem; }
-.salon-buscar .campo-etiqueta { display: block; margin: 0.5rem 0 0.4rem; }
-.salon-buscar select {
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  min-height: 44px;
-  padding-right: 2.75rem;
-  margin-bottom: 0.85rem;
-  border: 1px solid #c3c8bd;
-  border-radius: 0.5rem;
-  background-color: #fafaf4;
-  text-overflow: ellipsis;
-}
-.salon-buscar select:focus-visible { outline: 2px solid #264220; outline-offset: 2px; }
-.salon-selector { position: relative; margin-bottom: 0.85rem; }
-.salon-selector select { appearance: none; -webkit-appearance: none; background-image: none; margin-bottom: 0; }
-.salon-selector .salon-selector-flecha { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: #73796f; pointer-events: none; }
+.salon-ajuste-fino, .salon-edicion-medidas { margin-top: 0.9rem; font-size: 0.8rem; color: #52604b; }
+.salon-ajuste-fino summary, .salon-edicion-medidas summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; gap: 0.5rem; }
+.salon-ajuste-fino summary::before, .salon-edicion-medidas summary::before { content: '+'; color: #775a19; font-size: 1.1rem; }
+.salon-ajuste-fino[open] summary::before, .salon-edicion-medidas[open] summary::before { content: '−'; }
 .plano-flechas { flex-wrap: wrap; margin-top: 0.4rem; }
 .plano-flechas .salon-icono { border: 1px solid #dce0d6; }
 .plano-flechas select { min-height: 44px; border: 1px solid #dce0d6; border-radius: 0.4rem; background: #fafaf4; }
@@ -2394,7 +2385,12 @@ body {
 .salon-error { color: #a5303d; }
 .salon-error:empty { display: none; }
 .salon-editor [hidden], .salon-dialogo [hidden] { display: none !important; }
+@media (min-width: 1051px) {
+  /* El aviso no desplaza el lienzo mientras el mouse arrastra una mesa. */
+  .salon-editor[data-accion="arrastrar"] .salon-contexto { position: absolute; z-index: 5; bottom: 1rem; left: 1rem; right: 1rem; margin: 0; }
+}
 @media (hover: hover) and (pointer: fine) {
+  .salon-mesa-numero:not([aria-pressed="true"]):hover { background: #eaf0e5; border-color: #98a48d; }
   .salon-icono:hover, .salon-enlace:hover { background: #f0f2e9; }
   .salon-formas label:hover, .salon-distribuciones label:hover { border-color: #9c956f; }
 }
@@ -2406,7 +2402,7 @@ body {
   .salon-ficha h2 { font-size: 1rem; }
   .salon-acciones-mesa .boton-secundario { flex-direction: row; min-height: 44px; }
   .salon-ajuste-fino { margin-top: 0.25rem; }
-  .salon-con-ficha { padding-bottom: 210px; }
+  .salon-con-ficha { padding-bottom: 300px; }
   .salon-editor[data-accion]:not([data-accion="seleccionar"]) .salon-ficha { display: none; }
   .salon-contexto { position: fixed; z-index: 65; bottom: 0; left: 0; right: 0; margin: 0; border-radius: 1rem 1rem 0 0; padding: 1rem; padding-bottom: max(1rem,env(safe-area-inset-bottom)); box-shadow: 0 -6px 30px rgba(26,28,25,0.1); }
   .salon-contexto > div { width: 100%; }

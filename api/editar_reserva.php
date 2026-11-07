@@ -46,14 +46,16 @@ if ($id <= 0) {
 // En esta API, un fallo SQL debe llegar al catch y devolver JSON, no un error HTML.
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 try {
-    $stmt = $conn->prepare("SELECT id FROM reservas WHERE id = ?");
+    ensureMesaTable($conn);
+    ensureReservaMesaColumn($conn);
+    $conn->begin_transaction();
+    $stmt = $conn->prepare("SELECT id, mesa_id, fecha, hora, personas, estado FROM reservas WHERE id = ?");
     $stmt->bind_param('i', $id);
     $stmt->execute();
-    $stmt->store_result();
-    $existe = $stmt->num_rows > 0;
+    $original = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if (!$existe) {
+    if (!$original) {
         http_response_code(404);
         echo json_encode(['ok' => false, 'mensaje' => 'Reserva no encontrada.']);
         exit;
@@ -92,14 +94,23 @@ try {
 
     // Mesa: solo se valida si el plano existe. El admin puede dejarla sin asignar.
     if ($conMesa && $mesaId > 0) {
-        $q = $conn->prepare("SELECT numero, capacidad FROM mesas WHERE id = ?");
+        $q = $conn->prepare("SELECT numero, capacidad, activa FROM mesas WHERE id = ? FOR UPDATE");
         $q->bind_param('i', $mesaId);
         $q->execute();
         $mesa = $q->get_result()->fetch_assoc();
         $q->close();
 
         if (!$mesa) {
-            $errores['mesa'] = 'La mesa elegida ya no existe.';
+            $errores['mesa'] = 'La mesa ya no está disponible en el plano. Elegí otra mesa o dejala sin asignar.';
+        } elseif (!(int) $mesa['activa']) {
+            // Corregir datos de contacto no debe borrar la mesa del historial.
+            // Cambiar fecha, hora, personas o reactivar exige una mesa disponible.
+            $conservaHistorial = (int) $original['mesa_id'] === $mesaId
+                && $original['fecha'] === $fecha && substr($original['hora'], 0, 5) === $hora
+                && (int) $original['personas'] === $personas
+                && ($original['estado'] === $estado || $estado === 'cancelada');
+            if (!$conservaHistorial) $errores['mesa'] = 'La mesa fue retirada. Elegí una mesa disponible para cambiar los datos de la reserva o reactivarla.';
+            $mesaNumero = (int) $mesa['numero'];
         } else {
             $mesaNumero = (int) $mesa['numero'];
             if ($personas > (int) $mesa['capacidad']) {
@@ -145,8 +156,10 @@ try {
 
     $stmt->execute();
     $stmt->close();
+    $conn->commit();
     echo json_encode(['ok' => true, 'mensaje' => "Reserva de «{$nombre}» actualizada."]);
 } catch (Throwable $error) {
+    $conn->rollback();
     error_log('editar_reserva.php: ' . $error->getMessage());
     http_response_code(500);
     $mensaje = 'El servidor no pudo guardar los cambios de la reserva. Volvé a intentarlo.';

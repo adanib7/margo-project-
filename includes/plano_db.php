@@ -26,7 +26,8 @@ function ensureMesaTable(mysqli $conn): void
             pos_y DOUBLE NOT NULL DEFAULT 100,
             ancho DOUBLE NOT NULL DEFAULT 70,
             alto DOUBLE NOT NULL DEFAULT 70,
-            rotacion DOUBLE NOT NULL DEFAULT 0
+            rotacion DOUBLE NOT NULL DEFAULT 0,
+            activa TINYINT(1) NOT NULL DEFAULT 1
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     ");
 
@@ -39,6 +40,7 @@ function ensureMesaTable(mysqli $conn): void
         ['ancho', 'DOUBLE NOT NULL DEFAULT 70'],
         ['alto', 'DOUBLE NOT NULL DEFAULT 70'],
         ['rotacion', 'DOUBLE NOT NULL DEFAULT 0'],
+        ['activa', 'TINYINT(1) NOT NULL DEFAULT 1'],
     ];
 
     // MariaDB no acepta `SHOW COLUMNS ... LIKE ?` preparado; $col es literal del
@@ -123,14 +125,30 @@ function mesaTieneReservas(mysqli $conn, int $mesaId): bool
 {
     $stmt = $conn->prepare("SELECT 1 FROM reservas WHERE mesa_id = ? LIMIT 1");
     if (!$stmt) {
-        return false;
+        throw new RuntimeException('No se pudo comprobar el historial de la mesa.');
     }
     $stmt->bind_param('i', $mesaId);
-    $stmt->execute();
+    if (!$stmt->execute()) throw new RuntimeException('No se pudo comprobar el historial de la mesa.');
     $stmt->store_result();
     $tiene = $stmt->num_rows > 0;
     $stmt->close();
     return $tiene;
+}
+
+/** Incluye reservas en curso, aunque hayan empezado antes de medianoche. */
+function mesaReservasPendientes(mysqli $conn, int $mesaId): int
+{
+    $duracion = (function_exists('cfgInt') ? max(1, cfgInt('reservas.duracion_horas')) : 2) * 60;
+    $ahora = date('Y-m-d H:i:s');
+    $stmt = $conn->prepare("SELECT COUNT(*) AS n FROM reservas
+        WHERE mesa_id = ? AND estado IN ('pendiente', 'confirmada')
+        AND DATE_ADD(TIMESTAMP(fecha, hora), INTERVAL ? MINUTE) > ?");
+    if (!$stmt) throw new RuntimeException('No se pudieron comprobar las reservas de la mesa.');
+    $stmt->bind_param('iis', $mesaId, $duracion, $ahora);
+    $stmt->execute();
+    $cantidad = (int) $stmt->get_result()->fetch_assoc()['n'];
+    $stmt->close();
+    return $cantidad;
 }
 
 /**
@@ -231,7 +249,7 @@ function planoMesasConOcupacion(mysqli $conn, string $fecha = '', string $hora =
     $mesas  = [];
     $result = $conn->query(
         "SELECT id, numero, capacidad, forma, pos_x, pos_y, ancho, alto, rotacion
-         FROM mesas ORDER BY numero ASC, id ASC"
+         FROM mesas WHERE activa = 1 ORDER BY numero ASC, id ASC"
     );
     if ($result) {
         while ($row = $result->fetch_assoc()) {

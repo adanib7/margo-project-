@@ -272,8 +272,11 @@ Tambien se corrigieron dos validaciones puntuales:
   HTTP 409 y conserva el estado cancelado. Se comprueba tanto al confirmar como al
   pasar a pendiente, porque ambos estados ocupan mesa.
 
-Estos controles no resuelven la carrera entre peticiones simultaneas: comprobar
-disponibilidad y escribir siguen siendo pasos separados en reservas.
+Las altas, la edicion y la reactivacion ahora bloquean la mesa con
+`SELECT ... FOR UPDATE` dentro de una transaccion. El editor usa el mismo bloqueo:
+una asignacion y una retirada simultaneas deben esperar su turno. No es un control
+completo de ediciones concurrentes: dos administradores todavia pueden sobrescribir
+datos de una misma reserva, y los limites por usuario necesitan un control propio.
 
 Para exponer, empezar por `user.js` -> `crear_reserva.php` -> `plano_db.php` ->
 MySQL, explicando entrada, validacion y resultado. Despues mostrar una consulta
@@ -283,20 +286,20 @@ siendo una parte especializada que requiere una explicacion aparte.
 
 ## 15. Asistente del salon con Konva
 
-`dashboards/admin_plano.php` carga `konva.min.js`, `plano_distribucion.js` y
-`admin_plano.js`, en ese orden. Konva se ocupa del dibujo y las transformaciones.
+`dashboards/admin_plano.php` carga `konva.min.js`, `plano_distribucion.js`,
+`plano_vista.js` y `admin_plano.js`, en ese orden. Konva dibuja las figuras;
+`plano_vista.js` maneja la camara y los gestos.
 El codigo propio decide que accion hacer, propone posiciones y guarda los datos.
 El selector de reservas del cliente en `user.js` sigue usando botones HTML y SVG.
 
 | Objeto de Konva | Uso en el editor |
 | --- | --- |
-| `Stage` | El lienzo de 900 por 560 unidades. |
-| `Layer` | La capa que contiene mesas, controles y vistas previas. |
+| `Stage` | La ventana que muestra un salon de 900 por 560 unidades. |
+| `Layer` | La capa que contiene mesas y vistas previas. |
 | `Group` | Una mesa: figura, numero y datos. |
 | `Rect` / `Ellipse` | La figura cuadrada o redonda. |
 | `Line` con `closed: true` | Une tres vertices y cierra la mesa triangular. |
 | `Text` | El numero de la mesa. |
-| `Transformer` | Las manijas opcionales para cambiar tamano y giro. |
 
 La pantalla comienza con Mesa, Distribuir y Guardar plano. Elegir una mesa abre
 su ficha con Mover, Girar y Editar. En celular se muestra abajo y en computadora
@@ -304,9 +307,9 @@ al costado. El fondo crema, las tipografias, los botones verdes y los acentos
 dorados usan el estilo del resto del sitio. La lista por numero permite elegir
 mesas superpuestas o pequenas sin acertar en su dibujo.
 
-Con mouse, el boton izquierdo selecciona en `mousedown`, al presionarlo. Mover
+Con mouse, el boton izquierdo selecciona en `pointerdown`, al presionarlo. Mover
 un poco el puntero o soltar fuera de la figura no cancela esa seleccion. Con el
-dedo se espera a `tap` y se descartan los deslizamientos para poder recorrer el
+dedo se espera a `pointerup` y se descartan los deslizamientos para poder recorrer el
 plano. `pointerdown` informa el tipo de puntero: esta diferencia no depende del
 ancho de la pantalla y funciona tambien al alternar mouse y pantalla tactil.
 
@@ -319,10 +322,12 @@ encuentra, informa el problema y no apila la mesa sobre otra. Numero y medidas
 se pueden modificar despues en Editar. Los dialogos mantienen el foco y cierran
 con Escape; no se agrega una biblioteca de ventanas.
 
-Mover crea una copia semitransparente con `clone()`. Los puntos verdes sugieren
-lugares libres. Tocar el plano mueve esa copia, no la mesa original. El boton
-Colocar aqui se habilita cuando el destino entra en el salon y deja espacio con
-las demas mesas. Confirmar cambia la posicion; Cancelar descarta la copia.
+Mover crea una copia semitransparente con `clone()` y una mira fija en el centro.
+Los puntos verdes sugieren lugares libres. Se desplaza el plano debajo de la mira;
+la copia ocupa ese lugar y la mesa original sigue intacta. Colocar aqui se habilita
+si el destino entra en el salon y deja espacio con las demas mesas. Si se cruza con
+otra, el mensaje indica su numero. Confirmar cambia la posicion; Cancelar descarta
+la copia. Con mouse tambien se puede arrastrar directamente y soltar para confirmar.
 
 Girar suma 45 grados. Editar permite cambiar numero, capacidad, ancho, alto y giro.
 Los cambios se aplican juntos al confirmar el dialogo. Se rechaza un numero ya
@@ -334,12 +339,14 @@ unidades. Es una comprobacion visual conservadora: no calcula el espacio real
 entre contornos curvos ni garantiza medidas fisicas de circulacion del local.
 Los numeros son unidades del dibujo, no centimetros del restaurante.
 
-En Ajuste fino siguen disponibles flechas, pasos de una o diez unidades, arrastre
-y manijas. Esos controles se muestran a pedido. El canvas captura los gestos solo
-en los ajustes de arrastre o transformacion; normalmente permite desplazar la
-vista con el dedo. Un deslizamiento o `pointercancel` no se interpreta como clic.
-Las flechas del teclado mueven una unidad; Mayus con flechas mueve diez. Mayus al
-soltar un arrastre ajusta a la grilla. Escape termina la accion o quita seleccion.
+En Ajuste fino siguen disponibles flechas y pasos de una o diez unidades. Los
+numeros de las mesas son botones siempre visibles, tambien utilizables con teclado.
+No hay manijas de transformacion: las medidas y el giro se editan en el formulario.
+Solo el area del plano captura los gestos con `touch-action: none`; el resto de la
+pagina conserva su desplazamiento normal. Un deslizamiento o `pointercancel` no se
+interpreta como clic. Las flechas del teclado mueven una unidad; Mayus con flechas
+mueve diez. La vista previa ajusta posiciones a una grilla de diez unidades.
+Escape termina la accion o quita seleccion.
 
 ### Proponer una distribucion
 
@@ -366,9 +373,11 @@ de hasta 30 pasos. Deshacer reconstruye las figuras desde el estado anterior y
 restaura tambien las eliminaciones pendientes. Ctrl+Z hace lo mismo fuera de los
 formularios. Seleccionar, recorrer el plano o cambiar el zoom no crea pasos.
 
-Se escala el Stage para adaptar la vista a la pantalla; el zoom no cambia las
-medidas guardadas. `getRelativePointerPosition()` transforma un toque a las
-coordenadas originales de 900 por 560 unidades. Los campos tienen fuente de
+Se escala y desplaza el Stage para adaptar la vista; el zoom no cambia los datos
+guardados. La conversion es `coordenadaPlano = (pixel - desplazamiento) / escala`.
+La rueda mantiene el punto bajo el cursor; dos dedos usan su distancia y punto
+medio para acercar y desplazar. Acercar mesa centra la seleccion; Ver todo vuelve
+a encuadrar el salon. Los campos tienen fuente de
 16 pixeles en punteros tactiles para evitar el zoom de foco de Safari. Se probaron
 gestos con emulacion tactil; el comportamiento debe comprobarse en un celular real.
 
@@ -382,8 +391,20 @@ falla una consulta. La respuesta contiene las mesas y sus ID reales. El navegado
 reconstruye el plano desde esa respuesta y limpia el historial; Deshacer no revierte
 cambios de una sesion anterior ni de un guardado ya confirmado.
 
-PHP sigue impidiendo borrar una mesa con reservas. La respuesta devuelve esas
-mesas y sus ID en `no_eliminadas`, y la pantalla explica que se conservaron.
+Sin reservas asociadas, Quitar elimina el registro. Con historial, Retirar conserva
+el registro y pone `mesas.activa = 0`; las reservas mantienen su `mesa_id` y los
+reportes y comprobantes siguen mostrando su numero. La respuesta incluye esos ID
+en `retiradas`. Los selectores y las nuevas asignaciones solo admiten mesas activas.
+Una reserva antigua permite corregir datos de contacto manteniendo su mesa retirada;
+cambiar fecha, hora, personas o reactivarla exige una mesa disponible.
+
+Si quedan reservas pendientes o confirmadas cuyo final aun no paso, se rechaza
+toda la operacion con HTTP 409. Se incluye una reserva en curso y el final pasado
+medianoche. Primero hay que reasignarlas manualmente en Reservas. PHP vuelve a
+comprobarlo al guardar, incluso si llegaron despues de abrir el editor. No se
+reubican reservas automaticamente. Los numeros de mesas retiradas no se reutilizan.
+`ensureMesaTable()` agrega `activa` con valor 1 a las instalaciones existentes;
+`base de datos/mesas_activas.sql` es la alternativa manual si el hosting no lo permite.
 Las tablas antiguas con `mesas.forma` como ENUM se adaptan a VARCHAR mediante
 `ensureMesaTable()` para admitir las tres formas, sin borrar los registros.
 
@@ -392,7 +413,7 @@ destino, girar y deshacer. Probar ambas distribuciones y volver sin aplicar. Gua
 una mesa nueva y comprobar en Red el ID devuelto. Explicar que es codigo de Konva,
 que es algoritmo propio y que queda en MySQL.
 
-Referencia: [Konva, Transformer](https://konvajs.org/docs/select_and_transform/Basic_demo.html).
+Referencia: [Konva, Stage](https://konvajs.org/api/Konva.Stage.html).
 
 ## 16. Monedas del inventario
 

@@ -284,7 +284,13 @@
     }
     selHora.value = r.hora || '';
 
-    document.getElementById('rMesa').value = r.mesa_id || 0;
+    llenarSelectMesas();
+    const selMesa = document.getElementById('rMesa');
+    if (r.mesa_id && r.mesa !== null && !mesas.some(m => m.id === r.mesa_id)) {
+      // Solo esta reserva conserva su mesa retirada; no se ofrece en las demás.
+      selMesa.add(new Option('Mesa ' + r.mesa + ' · retirada (historial)', String(r.mesa_id)));
+    }
+    selMesa.value = r.mesa_id || 0;
     document.getElementById('modalReservaSubtitulo').textContent =
       'Reserva ' + r.codigo + (r.email ? ' · ' + r.email : '');
 

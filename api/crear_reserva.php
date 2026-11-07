@@ -73,10 +73,12 @@ if ($personas < 1 || $personas > $maxPersonas) {
     $errores['personas'] = "Ingresá entre 1 y {$maxPersonas} personas.";
 }
 
+// El mismo bloqueo que usa el editor impide retirar la mesa durante el alta.
+$conn->begin_transaction();
 if ($mesaId <= 0) {
     $errores['mesa'] = 'Elegí una mesa del plano.';
 } else {
-    $stmt = $conn->prepare("SELECT numero, capacidad FROM mesas WHERE id = ?");
+    $stmt = $conn->prepare("SELECT numero, capacidad FROM mesas WHERE id = ? AND activa = 1 FOR UPDATE");
     $stmt->bind_param('i', $mesaId);
     $stmt->execute();
     $mesa = $stmt->get_result()->fetch_assoc();
@@ -185,6 +187,7 @@ if ($stmt === false) {
 
 if ($stmt->execute()) {
     $stmt->close();
+    $conn->commit();
 
     // Correo de confirmación al cliente. Si falla, la reserva ya está hecha:
     // no se corta ni se devuelve error, solo se informa en 'email_enviado'.
@@ -229,6 +232,7 @@ if ($stmt->execute()) {
     ]);
 } else {
     $stmt->close();
+    $conn->rollback();
     http_response_code(500);
     echo json_encode(['ok' => false, 'mensaje' => 'Error interno al crear la reserva. Intentá de nuevo.']);
 }

@@ -12,7 +12,8 @@ $showDashboardBottomNav = true;
 // Mesas disponibles para el alta rápida
 $mesasPlano = [];
 if ($conn !== null && planoLigadoAReservas($conn)) {
-    $res = $conn->query("SELECT id, numero, capacidad FROM mesas ORDER BY numero ASC");
+    ensureMesaTable($conn);
+    $res = $conn->query("SELECT id, numero, capacidad FROM mesas WHERE activa = 1 ORDER BY numero ASC");
     if ($res) {
         while ($m = $res->fetch_assoc()) {
             $mesasPlano[] = $m;

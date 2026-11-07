@@ -15,12 +15,14 @@ function sendJson(array $data): void
 
 function cargarMesasPlano(mysqli $conn): array
 {
-    $result = $conn->query("SELECT id, numero, capacidad, forma, pos_x, pos_y, ancho, alto, rotacion FROM mesas ORDER BY id ASC");
+    $result = $conn->query("SELECT id, numero, capacidad, forma, pos_x, pos_y, ancho, alto, rotacion FROM mesas WHERE activa = 1 ORDER BY numero ASC, id ASC");
     if (!$result) {
         throw new RuntimeException('No se pudieron cargar las mesas.');
     }
     $mesas = [];
     while ($row = $result->fetch_assoc()) {
+        $row['reservas_pendientes'] = mesaReservasPendientes($conn, (int) $row['id']);
+        $row['tiene_historial'] = mesaTieneReservas($conn, (int) $row['id']);
         $mesas[] = $row;
     }
     return $mesas;
@@ -60,6 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         try {
             $conn->begin_transaction();
+            // Mantener los ID existentes: una mesa retirada no se vuelve a activar al guardar.
+            $bloqueo = $conn->query('SELECT id FROM mesas WHERE activa = 1 FOR UPDATE');
+            if (!$bloqueo) throw new RuntimeException('No se pudieron comprobar las mesas.');
+            $idsActivos = array_column($bloqueo->fetch_all(MYSQLI_ASSOC), 'id');
             foreach ($mesas as $m) {
                 $id = isset($m['id']) && $m['id'] !== '' ? (int) $m['id'] : null;
                 $numero = (int) ($m['numero'] ?? 1);
@@ -71,7 +77,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $alto = (float) ($m['alto'] ?? 70);
                 $rotacion = (float) ($m['rotacion'] ?? 0);
 
+                $otroId = $id ?? 0;
+                $duplicada = $conn->prepare('SELECT id FROM mesas WHERE numero = ? AND id <> ? LIMIT 1');
+                $duplicada->bind_param('ii', $numero, $otroId);
+                $duplicada->execute();
+                $numeroOcupado = $duplicada->get_result()->num_rows > 0;
+                $duplicada->close();
+                if ($numeroOcupado) throw new DomainException("El número {$numero} ya pertenece a otra mesa, posiblemente retirada. Elegí otro número.");
+
                 if ($id) {
+                    if (!in_array($id, $idsActivos)) throw new DomainException('El plano cambió en otra sesión. Volvé a cargarlo antes de guardar.');
                     $stmt = $conn->prepare("
                         UPDATE mesas
                         SET numero = ?, capacidad = ?, forma = ?, pos_x = ?, pos_y = ?, ancho = ?, alto = ?, rotacion = ?
@@ -91,31 +106,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            $noEliminadas = [];
+            $retiradas = [];
             foreach ($eliminadas as $mesaId) {
                 $id = (int) $mesaId;
-                if ($id > 0 && mesaTieneReservas($conn, $id)) {
-                    $noEliminadas[] = $id;
-                } else {
-                    $stmt = $conn->prepare("DELETE FROM mesas WHERE id = ?");
-                    $stmt->bind_param('i', $id);
-                    if (!$stmt->execute()) throw new RuntimeException('No se pudo eliminar la mesa.');
-                    $stmt->close();
+                if ($id <= 0 || !in_array($id, $idsActivos)) continue;
+                $pendientes = mesaReservasPendientes($conn, $id);
+                if ($pendientes > 0) {
+                    throw new DomainException("Una mesa tiene {$pendientes} reservas por atender. Reasignalas en Reservas antes de retirarla. No se guardó ningún cambio.");
                 }
+                $conHistorial = mesaTieneReservas($conn, $id);
+                $stmt = $conn->prepare($conHistorial
+                    ? 'UPDATE mesas SET activa = 0 WHERE id = ?'
+                    : 'DELETE FROM mesas WHERE id = ?');
+                $stmt->bind_param('i', $id);
+                if (!$stmt->execute()) throw new RuntimeException('No se pudo quitar la mesa.');
+                $stmt->close();
+                if ($conHistorial) $retiradas[] = $id;
             }
 
             // Devolver los ID reales evita volver a crear mesas al seguir editando.
             $mesasGuardadas = cargarMesasPlano($conn);
+            $siguienteNumero = (int) $conn->query('SELECT COALESCE(MAX(numero), 0) + 1 AS n FROM mesas')->fetch_assoc()['n'];
             $conn->commit();
             sendJson([
                 'ok' => true,
-                'no_eliminadas' => $noEliminadas,
+                'retiradas' => $retiradas,
                 'mesas' => $mesasGuardadas,
+                'siguiente_numero' => $siguienteNumero,
             ]);
         } catch (Throwable $error) {
             $conn->rollback();
-            http_response_code(500);
-            sendJson(['error' => 'No se pudo guardar el plano. No se aplicaron los cambios.']);
+            http_response_code($error instanceof DomainException ? 409 : 500);
+            sendJson(['error' => $error instanceof DomainException ? $error->getMessage() : 'No se pudo guardar el plano. No se aplicaron los cambios.']);
         }
     }
 }
@@ -160,7 +182,12 @@ require_once '../includes/header.php';
             <button type="button" class="boton-secundario" id="btnCancelarAccion">Cancelar</button>
           </div>
         </div>
-        <div id="canvas-wrap"><div id="plano" tabindex="0" aria-label="Plano editable del salón" aria-describedby="planoInstruccion"></div></div>
+        <div class="salon-mesas" id="listaMesas" role="group" aria-label="Elegir mesa por número"></div>
+        <div id="canvas-wrap">
+          <div id="plano" tabindex="0" aria-label="Plano editable del salón" aria-describedby="planoInstruccion"></div>
+          <div class="plano-mira" id="planoMira" aria-hidden="true" hidden><i data-lucide="crosshair"></i></div>
+          <span class="plano-gesto-ayuda">Arrastrá el fondo para recorrer el plano</span>
+        </div>
         <div class="salon-pie-plano">
           <span class="salon-leyenda"><i></i> Mesas del restaurante</span>
           <div class="plano-zoom" role="group" aria-label="Zoom del plano">
@@ -191,6 +218,8 @@ require_once '../includes/header.php';
             <button type="button" class="boton-secundario" id="btnGirarMesa"><i data-lucide="rotate-cw" aria-hidden="true"></i> Girar</button>
             <button type="button" class="boton-secundario" id="btnEditarMesa"><span class="material-symbols-outlined" aria-hidden="true">edit</span> Editar</button>
           </div>
+          <button type="button" class="salon-enlace salon-acercar" id="btnAcercarMesa"><i data-lucide="scan-search" aria-hidden="true"></i> Acercar mesa</button>
+          <p class="salon-nota" id="mesaReservas"></p>
           <details class="salon-ajuste-fino" id="ajusteFino">
             <summary>Ajuste fino</summary>
             <div class="plano-flechas" role="group" aria-label="Ajustar posición de la mesa">
@@ -200,18 +229,8 @@ require_once '../includes/header.php';
               <button type="button" class="salon-icono" data-mover="1,0" aria-label="Mover mesa a la derecha"><i data-lucide="arrow-right" aria-hidden="true"></i></button>
               <select id="pasoMesa" aria-label="Distancia del ajuste"><option value="10">10</option><option value="1">1</option></select>
             </div>
-            <button type="button" class="salon-enlace" id="btnArrastrar">Arrastrar esta mesa</button>
-            <button type="button" class="salon-enlace" id="btnManijas">Usar manijas de tamaño y giro</button>
           </details>
         </section>
-        <details class="salon-buscar" id="buscarMesa">
-          <summary>Elegir una mesa por número</summary>
-          <label class="campo-etiqueta" for="selector-mesa">Mesa</label>
-          <div class="salon-selector">
-            <select id="selector-mesa" class="campo-input"><option value="">Elegí una mesa</option></select>
-            <i data-lucide="chevron-down" class="salon-selector-flecha" aria-hidden="true"></i>
-          </div>
-        </details>
       </aside>
     </div>
   </section>
@@ -259,13 +278,16 @@ require_once '../includes/header.php';
       <div><label class="campo-etiqueta" for="in-alto">Alto</label><input class="campo-input" type="number" id="in-alto" min="30" max="400" required step="any" inputmode="decimal"></div>
     </div><label class="campo-etiqueta" for="in-rotacion">Giro en grados</label><input class="campo-input" type="number" id="in-rotacion" min="0" max="359" required step="any" inputmode="decimal"></details>
     <p class="salon-error" id="errorEditar" role="alert"></p>
+    <p class="campo-ayuda" id="ayudaRetirar"></p>
     <button type="button" class="salon-quitar" id="btnEliminarMesa">Quitar esta mesa del plano</button>
     <div class="salon-dialogo-pie"><button type="button" class="boton-secundario" data-cerrar="dialogoEditar">Cancelar</button><button type="submit" class="boton-accion">Aplicar cambios</button></div>
   </form>
 </dialog>
 
 <script src="<?= jsUrl('lucide.min.js') ?>"></script>
+<script>window.planoSiguienteNumero = <?= (int) $conn->query('SELECT COALESCE(MAX(numero), 0) + 1 AS n FROM mesas')->fetch_assoc()['n'] ?>;</script>
 <script src="<?= jsUrl('konva.min.js') ?>"></script>
 <script src="<?= jsUrl('plano_distribucion.js') ?>"></script>
+<script src="<?= jsUrl('plano_vista.js') ?>"></script>
 <script src="<?= jsUrl('admin_plano.js') ?>"></script>
 <?php require_once '../includes/footer.php'; ?>
