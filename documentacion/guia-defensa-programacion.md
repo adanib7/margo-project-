@@ -297,12 +297,12 @@ El selector de reservas del cliente en `user.js` sigue usando botones HTML y SVG
 | `Stage` | La ventana que muestra un salon de 900 por 560 unidades. |
 | `Layer` | La capa que contiene mesas y vistas previas. |
 | `Group` | Una mesa: figura, numero y datos. |
-| `Rect` / `Ellipse` | La figura cuadrada o redonda. |
+| `Rect` / `Ellipse` | La figura cuadrada, rectangular o redonda. |
 | `Line` con `closed: true` | Une tres vertices y cierra la mesa triangular. |
 | `Text` | El numero de la mesa. |
 
 La pantalla comienza con Mesa, Distribuir y Guardar plano. Elegir una mesa abre
-su ficha con Mover, Girar y Editar. En celular se muestra abajo y en computadora
+su ficha con Mover, Girar y Forma y tamano. En celular se muestra abajo y en computadora
 al costado. El fondo crema, las tipografias, los botones verdes y los acentos
 dorados usan el estilo del resto del sitio. La lista por numero permite elegir
 mesas superpuestas o pequenas sin acertar en su dibujo.
@@ -315,11 +315,12 @@ ancho de la pantalla y funciona tambien al alternar mouse y pantalla tactil.
 
 ### Agregar y modificar
 
-Mesa abre un dialogo HTML nativo: se elige cuadrada, redonda o triangular y la
+Mesa abre un dialogo HTML nativo: se elige cuadrada, rectangular, redonda o triangular y la
 capacidad. El tamano inicial es una convencion visual: `40 + capacidad * 10`.
+La rectangular empieza con un ancho 1,6 veces mayor que su alto.
 `buscarEspacio()` recorre posiciones posibles y busca una caja libre. Si no la
 encuentra, informa el problema y no apila la mesa sobre otra. Numero y medidas
-se pueden modificar despues en Editar. Los dialogos mantienen el foco y cierran
+se pueden modificar despues en Forma y tamano. Los dialogos mantienen el foco y cierran
 con Escape; no se agrega una biblioteca de ventanas.
 
 Mover crea una copia semitransparente con `clone()` y una mira fija en el centro.
@@ -329,9 +330,17 @@ si el destino entra en el salon y deja espacio con las demas mesas. Si se cruza 
 otra, el mensaje indica su numero. Confirmar cambia la posicion; Cancelar descarta
 la copia. Con mouse tambien se puede arrastrar directamente y soltar para confirmar.
 
-Girar suma 45 grados. Editar permite cambiar numero, capacidad, ancho, alto y giro.
+Girar suma 45 grados. Forma y tamano permite cambiar forma, numero, capacidad,
+ancho, alto y giro; sus campos estan visibles y hay una vista previa SVG.
 Los cambios se aplican juntos al confirmar el dialogo. Se rechaza un numero ya
 usado. Quitar mesa es reversible con Deshacer hasta guardar el plano.
+
+Agrandar mesa y Achicar mesa cambian sus medidas un 10 % conservando la proporcion.
+Comprueban limites y colisiones, y cada cambio se puede deshacer. Acercar vista a
+esta mesa solo modifica la camara. El ID y las reservas asociadas se conservan
+al cambiar forma o tamano. `crearFigura()` reemplaza la figura de Konva al pasar
+entre rectangulo, elipse y triangulo; el grupo que identifica la mesa sigue siendo
+el mismo. El pie del dialogo permanece visible mientras sus campos se desplazan.
 
 `getClientRect({ relativeTo: capa })` obtiene la caja que ocupa una figura,
 incluyendo su giro y borde. Las cajas se comparan con una separacion de 12
@@ -406,7 +415,7 @@ reubican reservas automaticamente. Los numeros de mesas retiradas no se reutiliz
 `ensureMesaTable()` agrega `activa` con valor 1 a las instalaciones existentes;
 `base de datos/mesas_activas.sql` es la alternativa manual si el hosting no lo permite.
 Las tablas antiguas con `mesas.forma` como ENUM se adaptan a VARCHAR mediante
-`ensureMesaTable()` para admitir las tres formas, sin borrar los registros.
+`ensureMesaTable()` para admitir las cuatro formas, sin borrar los registros.
 
 Para practicar: agregar una triangular, mover su copia y cancelar, confirmar otro
 destino, girar y deshacer. Probar ambas distribuciones y volver sin aplicar. Guardar

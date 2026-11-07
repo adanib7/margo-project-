@@ -1812,7 +1812,7 @@ body {
   cursor: pointer;
   transition: filter 0.12s ease, box-shadow 0.12s ease;
 }
-.pr-mesa.cuadrada { border-radius: 8px; }
+.pr-mesa.cuadrada, .pr-mesa.rectangular { border-radius: 8px; }
 .pr-mesa.redonda  { border-radius: 50%; }
 .pr-mesa:not(.ocupada):hover { filter: brightness(1.12); }
 .pr-mesa.ocupada {
@@ -2299,7 +2299,8 @@ body {
 .salon-barra-acciones { flex-wrap: wrap; }
 .salon-barra button, .salon-ficha button, .salon-contexto button, .salon-dialogo button { min-height: 44px; }
 .salon-barra-acciones > button { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 46px; box-sizing: border-box; padding: 0.65rem 1rem; font-family: 'Montserrat',sans-serif; line-height: 1.2; white-space: nowrap; }
-.salon-editor button, .salon-dialogo button { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+.salon-editor button, .salon-dialogo button { touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+.salon-dialogo label { -webkit-tap-highlight-color: transparent; }
 .salon-editor button:active, .salon-dialogo button:active { transform: scale(0.98); }
 .salon-editor button:disabled, .salon-dialogo button:disabled { opacity: 0.45; cursor: default; transform: none; }
 .salon-guardado { font-size: 0.8rem; color: #73796f; flex-wrap: wrap; }
@@ -2344,6 +2345,10 @@ body {
 .salon-acciones-mesa { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 0.4rem; }
 .salon-acciones-mesa .boton-secundario { padding: 0.65rem 0.2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem; font-size: 0.75rem; line-height: 1.2; text-align: center; }
 .salon-acciones-mesa .material-symbols-outlined { font-size: 20px; }
+.salon-tamano-mesa { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0.4rem; margin-top: 0.6rem; }
+.salon-tamano-mesa button { display: flex; justify-content: center; align-items: center; gap: 0.25rem; padding: 0.55rem 0.2rem; font-size: 0.72rem; line-height: 1.3; }
+.salon-tamano-mesa .lucide { width: 16px; height: 16px; }
+.salon-medida-actual { margin: 0.45rem 0 0; font-size: 0.75rem; color: #52604b; }
 .salon-ajuste-fino, .salon-edicion-medidas { margin-top: 0.9rem; font-size: 0.8rem; color: #52604b; }
 .salon-ajuste-fino summary, .salon-edicion-medidas summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; gap: 0.5rem; }
 .salon-ajuste-fino summary::before, .salon-edicion-medidas summary::before { content: '+'; color: #775a19; font-size: 1.1rem; }
@@ -2363,16 +2368,25 @@ body {
 .salon-dialogo-pie { justify-content: flex-end; flex-wrap: wrap; border-top: 1px solid #edf0e8; padding-top: 1rem; margin-top: 1rem; }
 .salon-dialogo-pie button { padding: 0.7rem 1rem; }
 .salon-formas, .salon-distribuciones { border: 0; padding: 0; margin: 0 0 1.3rem; display: grid; gap: 0.65rem; }
-.salon-formas { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.salon-formas { grid-template-columns: repeat(2,minmax(0,1fr)); }
 .salon-formas legend, .salon-distribuciones legend { margin-bottom: 0.75rem; }
 .salon-formas label, .salon-distribuciones label { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; padding: 1rem 0.4rem; border: 1.5px solid #dce0d6; border-radius: 0.65rem; cursor: pointer; font-size: 0.8rem; background: #fafaf4; }
 .salon-formas label:has(input:checked), .salon-distribuciones label:has(input:checked) { border-color: #775a19; background: #f8f0db; box-shadow: 0 0 0 1px #775a19; }
 .salon-formas label:focus-within, .salon-distribuciones label:focus-within { outline: 2px solid #264220; outline-offset: 3px; }
 .salon-formas input, .salon-distribuciones input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.salon-formas label { padding: 0.65rem 0.4rem; gap: 0.35rem; }
 .salon-forma { width: 32px; height: 32px; background: #2d5f3f; border: 2px solid #c9962e; box-sizing: border-box; }
 .salon-forma.cuadrada { border-radius: 5px; }
+.salon-forma.rectangular { width: 44px; height: 26px; margin: 3px 0; border-radius: 5px; }
 .salon-forma.redonda { border-radius: 50%; }
 .salon-forma.triangular { clip-path: polygon(50% 0,100% 100%,0 100%); border: 0; }
+.salon-preview-mesa { margin: 0 0 1rem; padding: 0.5rem; background: #faf8ee; border: 1px solid #e5ddc6; border-radius: 0.6rem; text-align: center; }
+.salon-preview-mesa svg { display: block; width: 100%; height: 100px; }
+.salon-preview-mesa figcaption { margin-top: 0.25rem; color: #52604b; font-size: 0.75rem; }
+#dialogoEditar[open] { padding: 0; overflow: hidden; }
+#formEditarMesa { display: flex; flex-direction: column; max-height: min(85dvh,760px); }
+#formEditarMesa > .salon-dialogo-titulo, #formEditarMesa > .salon-dialogo-pie { flex: 0 0 auto; padding: 1rem 1.15rem; margin: 0; }
+.salon-editar-cuerpo { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 1.15rem 1rem; }
 .salon-distribuciones { grid-template-columns: 1fr 1fr; }
 .salon-distribuciones label { padding: 1rem 0.7rem; text-align: center; }
 .salon-distribuciones label > span:last-child { font-size: 0.75rem; line-height: 1.5; color: #73796f; }
@@ -2402,7 +2416,7 @@ body {
   .salon-ficha h2 { font-size: 1rem; }
   .salon-acciones-mesa .boton-secundario { flex-direction: row; min-height: 44px; }
   .salon-ajuste-fino { margin-top: 0.25rem; }
-  .salon-con-ficha { padding-bottom: 300px; }
+  .salon-con-ficha { padding-bottom: 390px; }
   .salon-editor[data-accion]:not([data-accion="seleccionar"]) .salon-ficha { display: none; }
   .salon-contexto { position: fixed; z-index: 65; bottom: 0; left: 0; right: 0; margin: 0; border-radius: 1rem 1rem 0 0; padding: 1rem; padding-bottom: max(1rem,env(safe-area-inset-bottom)); box-shadow: 0 -6px 30px rgba(26,28,25,0.1); }
   .salon-contexto > div { width: 100%; }

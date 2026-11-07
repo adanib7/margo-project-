@@ -216,9 +216,14 @@ require_once '../includes/header.php';
           <div class="salon-acciones-mesa">
             <button type="button" class="boton-secundario" id="btnMoverMesa"><i data-lucide="move" aria-hidden="true"></i> Mover</button>
             <button type="button" class="boton-secundario" id="btnGirarMesa"><i data-lucide="rotate-cw" aria-hidden="true"></i> Girar</button>
-            <button type="button" class="boton-secundario" id="btnEditarMesa"><span class="material-symbols-outlined" aria-hidden="true">edit</span> Editar</button>
+            <button type="button" class="boton-secundario" id="btnEditarMesa"><span class="material-symbols-outlined" aria-hidden="true">edit</span> Forma y tamaño</button>
           </div>
-          <button type="button" class="salon-enlace salon-acercar" id="btnAcercarMesa"><i data-lucide="scan-search" aria-hidden="true"></i> Acercar mesa</button>
+          <div class="salon-tamano-mesa" role="group" aria-label="Cambiar tamaño de la mesa">
+            <button type="button" class="boton-secundario" id="btnAchicarMesa"><i data-lucide="minus" aria-hidden="true"></i> Achicar mesa</button>
+            <button type="button" class="boton-secundario" id="btnAgrandarMesa"><i data-lucide="plus" aria-hidden="true"></i> Agrandar mesa</button>
+          </div>
+          <p class="salon-nota salon-medida-actual" id="mesaMedidas"></p>
+          <button type="button" class="salon-enlace salon-acercar" id="btnAcercarMesa"><i data-lucide="scan-search" aria-hidden="true"></i> Acercar vista a esta mesa</button>
           <p class="salon-nota" id="mesaReservas"></p>
           <details class="salon-ajuste-fino" id="ajusteFino">
             <summary>Ajuste fino</summary>
@@ -241,6 +246,7 @@ require_once '../includes/header.php';
     <div class="salon-dialogo-titulo"><div><p class="texto-etiqueta">Un lugar más</p><h2 id="tituloAgregar">Agregar mesa</h2></div><button type="button" class="salon-icono" data-cerrar="dialogoAgregar" aria-label="Cerrar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></div>
     <fieldset class="salon-formas"><legend class="campo-etiqueta">Elegí la forma</legend>
       <label><input type="radio" name="nuevaForma" value="cuadrada" checked><span class="salon-forma cuadrada"></span><span>Cuadrada</span></label>
+      <label><input type="radio" name="nuevaForma" value="rectangular"><span class="salon-forma rectangular"></span><span>Rectangular</span></label>
       <label><input type="radio" name="nuevaForma" value="redonda"><span class="salon-forma redonda"></span><span>Redonda</span></label>
       <label><input type="radio" name="nuevaForma" value="triangular"><span class="salon-forma triangular"></span><span>Triangular</span></label>
     </fieldset>
@@ -269,17 +275,30 @@ require_once '../includes/header.php';
 <dialog class="salon-dialogo" id="dialogoEditar" aria-labelledby="tituloEditar">
   <form id="formEditarMesa">
     <div class="salon-dialogo-titulo"><div><p class="texto-etiqueta">Detalles</p><h2 id="tituloEditar">Editar mesa</h2></div><button type="button" class="salon-icono" data-cerrar="dialogoEditar" aria-label="Cerrar"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></div>
+    <div class="salon-editar-cuerpo">
+    <fieldset class="salon-formas"><legend class="campo-etiqueta">Forma de la mesa</legend>
+      <label><input type="radio" name="editarForma" value="cuadrada"><span class="salon-forma cuadrada"></span><span>Cuadrada</span></label>
+      <label><input type="radio" name="editarForma" value="rectangular"><span class="salon-forma rectangular"></span><span>Rectangular</span></label>
+      <label><input type="radio" name="editarForma" value="redonda"><span class="salon-forma redonda"></span><span>Redonda</span></label>
+      <label><input type="radio" name="editarForma" value="triangular"><span class="salon-forma triangular"></span><span>Triangular</span></label>
+    </fieldset>
+    <figure class="salon-preview-mesa">
+      <svg id="previewMesa" role="img" aria-label="Vista previa de la mesa"></svg>
+      <figcaption id="previewMedidas"></figcaption>
+    </figure>
     <div class="plano-medidas">
       <div><label class="campo-etiqueta" for="in-numero">Número</label><input class="campo-input" type="number" id="in-numero" min="1" max="9999" required inputmode="numeric"></div>
       <div><label class="campo-etiqueta" for="in-capacidad">Personas</label><input class="campo-input" type="number" id="in-capacidad" min="1" max="20" required inputmode="numeric"></div>
     </div>
-    <details class="salon-edicion-medidas"><summary>Medidas y giro</summary><div class="plano-medidas">
+    <p class="campo-ayuda">Cambiá el ancho y el alto para darle el tamaño que necesitás. Son medidas del dibujo.</p>
+    <div class="plano-medidas">
       <div><label class="campo-etiqueta" for="in-ancho">Ancho</label><input class="campo-input" type="number" id="in-ancho" min="30" max="400" required step="any" inputmode="decimal"></div>
       <div><label class="campo-etiqueta" for="in-alto">Alto</label><input class="campo-input" type="number" id="in-alto" min="30" max="400" required step="any" inputmode="decimal"></div>
-    </div><label class="campo-etiqueta" for="in-rotacion">Giro en grados</label><input class="campo-input" type="number" id="in-rotacion" min="0" max="359" required step="any" inputmode="decimal"></details>
+    </div><label class="campo-etiqueta" for="in-rotacion">Giro en grados</label><input class="campo-input" type="number" id="in-rotacion" min="0" max="359" required step="any" inputmode="decimal">
     <p class="salon-error" id="errorEditar" role="alert"></p>
     <p class="campo-ayuda" id="ayudaRetirar"></p>
     <button type="button" class="salon-quitar" id="btnEliminarMesa">Quitar esta mesa del plano</button>
+    </div>
     <div class="salon-dialogo-pie"><button type="button" class="boton-secundario" data-cerrar="dialogoEditar">Cancelar</button><button type="submit" class="boton-accion">Aplicar cambios</button></div>
   </form>
 </dialog>

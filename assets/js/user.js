@@ -125,7 +125,7 @@
     mesas.forEach(m => {
       const el = document.createElement('button');
       el.type = 'button';
-      const forma = ['cuadrada', 'redonda', 'triangular'].includes(m.forma) ? m.forma : 'cuadrada';
+      const forma = ['cuadrada', 'rectangular', 'redonda', 'triangular'].includes(m.forma) ? m.forma : 'cuadrada';
       el.className = 'pr-mesa ' + forma + (m.ocupada ? ' ocupada' : '');
       el.dataset.id = m.id;
       el.style.width  = m.ancho + 'px';

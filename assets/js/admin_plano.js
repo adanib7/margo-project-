@@ -78,8 +78,14 @@ function actualizarTamano(mesa, ancho, alto) {
     fontSize: forma === 'triangular' ? Math.min(20, ancho / 3, alto / 3) : 20,
   });
 }
+function crearFigura(forma) {
+  const estilo = { name: 'figura', fill: VERDE, stroke: AMBAR, strokeWidth: 3, hitStrokeWidth: 4, preventDefault: false };
+  if (forma === 'redonda') return new Konva.Ellipse(estilo);
+  if (forma === 'triangular') return new Konva.Line({ ...estilo, closed: true, lineJoin: 'round' });
+  return new Konva.Rect({ ...estilo, cornerRadius: 8 });
+}
 function crearMesa(datos) {
-  const forma = ['cuadrada', 'redonda', 'triangular'].includes(datos.forma) ? datos.forma : 'cuadrada';
+  const forma = ['cuadrada', 'rectangular', 'redonda', 'triangular'].includes(datos.forma) ? datos.forma : 'cuadrada';
   const mesa = new Konva.Group({
     name: 'mesa', draggable: false, dragDistance: 5,
     x: Number(datos.pos_x), y: Number(datos.pos_y), rotation: Number(datos.rotacion) || 0,
@@ -87,17 +93,19 @@ function crearMesa(datos) {
     mesaId: datos.id || null, numero: Number(datos.numero), capacidad: Number(datos.capacidad), forma,
     reservasPendientes: Number(datos.reservas_pendientes) || 0, tieneHistorial: !!datos.tiene_historial,
   });
-  const estilo = { name: 'figura', fill: VERDE, stroke: AMBAR, strokeWidth: 3, hitStrokeWidth: 4, preventDefault: false };
-  let figura;
-  if (forma === 'redonda') figura = new Konva.Ellipse(estilo);
-  else if (forma === 'triangular') figura = new Konva.Line({ ...estilo, closed: true, lineJoin: 'round' });
-  else figura = new Konva.Rect({ ...estilo, cornerRadius: 8 });
-  mesa.add(figura, new Konva.Text({ name: 'numero', text: String(datos.numero), fontFamily: 'Montserrat, sans-serif', fontStyle: 'bold', fill: CREMA, align: 'center', verticalAlign: 'middle', listening: false }));
+  mesa.add(crearFigura(forma), new Konva.Text({ name: 'numero', text: String(datos.numero), fontFamily: 'Montserrat, sans-serif', fontStyle: 'bold', fill: CREMA, align: 'center', verticalAlign: 'middle', listening: false }));
   actualizarTamano(mesa, Number(datos.ancho), Number(datos.alto));
   capa.add(mesa);
   return mesa;
 }
 function aplicarDatos(mesa, dato) {
+  if (dato.forma !== mesa.getAttr('forma')) {
+    mesa.findOne('.figura').destroy();
+    mesa.setAttr('forma', dato.forma);
+    const figura = crearFigura(dato.forma);
+    mesa.add(figura); figura.moveToBottom();
+  }
+  mesa.findOne('.figura').fill(mesa === seleccionada ? '#46774e' : VERDE);
   mesa.position({ x: dato.pos_x, y: dato.pos_y }); mesa.rotation(dato.rotacion); mesa.scale({ x: 1, y: 1 });
   mesa.setAttrs({ numero: dato.numero, capacidad: dato.capacidad });
   mesa.findOne('.numero').text(String(dato.numero)); actualizarTamano(mesa, dato.ancho, dato.alto);
@@ -168,15 +176,20 @@ function actualizarInterfaz() {
   document.getElementById('accionPlano').hidden = normal;
   if (seleccionada) {
     document.getElementById('mesaActiva').textContent = 'Mesa ' + seleccionada.getAttr('numero');
-    const formas = { cuadrada: 'Cuadrada', redonda: 'Redonda', triangular: 'Triangular' };
-    document.getElementById('mesaDetalle').textContent = seleccionada.getAttr('capacidad') + ' personas · ' + formas[seleccionada.getAttr('forma')];
+    const formas = { cuadrada: 'Cuadrada', rectangular: 'Rectangular', redonda: 'Redonda', triangular: 'Triangular' };
+    const ancho = seleccionada.getAttr('ancho'), alto = seleccionada.getAttr('alto');
+    const forma = seleccionada.getAttr('forma') === 'cuadrada' && ancho !== alto ? 'rectangular' : seleccionada.getAttr('forma');
+    document.getElementById('mesaDetalle').textContent = seleccionada.getAttr('capacidad') + ' personas · ' + formas[forma];
+    document.getElementById('mesaMedidas').textContent = 'Tamaño de la mesa: ' + ancho + ' × ' + alto;
+    document.getElementById('btnAchicarMesa').disabled = guardando || !normal || Math.min(ancho, alto) <= 30;
+    document.getElementById('btnAgrandarMesa').disabled = guardando || !normal || Math.max(ancho, alto) >= 400;
     const pendientes = seleccionada.getAttr('reservasPendientes');
     document.getElementById('mesaReservas').textContent = pendientes
       ? pendientes + ' reservas por atender. Para retirar esta mesa, reasignalas primero en Reservas.'
       : seleccionada.getAttr('tieneHistorial') ? 'Podés retirarla del plano conservando sus reservas anteriores.' : 'Sin reservas asociadas.';
   }
   const instrucciones = {
-    seleccionar: seleccionada ? 'En PC podés arrastrarla. Con Mover elegís el lugar usando la mira.' : 'Elegí una mesa en el plano o por su número. Usá la rueda o dos dedos para acercar.',
+    seleccionar: seleccionada ? 'Agrandá o achicá la mesa con los botones. En Forma y tamaño podés hacerla rectangular.' : 'Elegí una mesa en el plano o por su número. Usá la rueda o dos dedos para acercar la vista.',
     mover: 'Desplazá el plano debajo de la mira y tocá Colocar aquí.',
     distribuir: 'Esta es una vista previa. Las mesas originales no cambiaron.',
     arrastrar: 'Soltá para colocar. Si se cruza con otra mesa, conserva su lugar anterior.',
@@ -278,6 +291,21 @@ function moverUnPaso(dx, dy, paso) {
   if (!posicionValida(seleccionada, posicion)) { mostrarAviso('Ese ajuste deja poco espacio o se sale del salón.', true); return; }
   const antes = estadoActual(); seleccionada.position(posicion); recordarCambio(antes);
 }
+function cambiarTamanoMesa(factor) {
+  if (!seleccionada || guardando || modo !== 'seleccionar') return;
+  const antes = estadoActual(), original = datosMesa(seleccionada);
+  // Se conserva la proporción, incluso al alcanzar el mínimo o el máximo.
+  const escala = Math.max(30 / original.ancho, 30 / original.alto,
+    Math.min(factor, 400 / original.ancho, 400 / original.alto));
+  const nuevo = { ...original, ancho: Math.round(original.ancho * escala * 10) / 10, alto: Math.round(original.alto * escala * 10) / 10 };
+  aplicarDatos(seleccionada, nuevo); ajustarDentro(seleccionada);
+  const problema = problemaPosicion(seleccionada, seleccionada.position());
+  if (problema) {
+    aplicarDatos(seleccionada, original);
+    mostrarAviso(problema + ' Mové la mesa o elegí otras medidas en Forma y tamaño.', true); return;
+  }
+  recordarCambio(antes);
+}
 
 // Los diálogos nativos conservan el foco y permiten cerrar con Escape.
 function abrirDialogo(id) { document.getElementById(id).showModal(); }
@@ -299,11 +327,12 @@ document.getElementById('formAgregarMesa').addEventListener('submit', e => {
   e.preventDefault();
   const forma = document.querySelector('input[name="nuevaForma"]:checked').value;
   const capacidad = Number(document.getElementById('nuevaCapacidad').value), tamano = 40 + capacidad * 10;
-  const posicion = buscarEspacio(tamano + 3, tamano + 3);
+  const ancho = forma === 'rectangular' ? Math.round(tamano * 1.6) : tamano, alto = tamano;
+  const posicion = buscarEspacio(ancho + 3, alto + 3);
   if (!posicion) { document.getElementById('errorAgregar').textContent = 'No encontramos un espacio libre. Probá distribuir el salón o usar una mesa más pequeña.'; return; }
   const antes = estadoActual();
   const numero = Math.max(window.planoSiguienteNumero || 1, Math.max(0, ...mesasPlano().map(m => m.getAttr('numero'))) + 1);
-  const mesa = crearMesa({ numero, capacidad, forma, pos_x: posicion.x, pos_y: posicion.y, ancho: tamano, alto: tamano, rotacion: 0 });
+  const mesa = crearMesa({ numero, capacidad, forma, pos_x: posicion.x, pos_y: posicion.y, ancho, alto, rotacion: 0 });
   document.getElementById('dialogoAgregar').close(); seleccionar(mesa); recordarCambio(antes);
 });
 document.getElementById('btnDistribuir').addEventListener('click', () => { document.getElementById('errorDistribuir').textContent = ''; abrirDialogo('dialogoDistribuir'); });
@@ -335,26 +364,62 @@ document.getElementById('btnEditarMesa').addEventListener('click', () => {
   for (const [id, campo] of Object.entries({ 'in-numero': 'numero', 'in-capacidad': 'capacidad', 'in-ancho': 'ancho', 'in-alto': 'alto', 'in-rotacion': 'rotacion' })) {
     document.getElementById(id).value = campo === 'rotacion' ? angulo(dato[campo]) : dato[campo];
   }
-  document.getElementById('tituloEditar').textContent = 'Editar mesa ' + dato.numero;
+  const forma = dato.forma === 'cuadrada' && dato.ancho !== dato.alto ? 'rectangular' : dato.forma;
+  document.querySelector('input[name="editarForma"][value="' + forma + '"]').checked = true;
+  document.getElementById('tituloEditar').textContent = 'Forma y tamaño · Mesa ' + dato.numero;
   const pendientes = dato.reservas_pendientes;
   document.getElementById('btnEliminarMesa').disabled = pendientes > 0;
   document.getElementById('btnEliminarMesa').textContent = dato.tiene_historial ? 'Retirar del plano' : 'Eliminar mesa';
   document.getElementById('ayudaRetirar').textContent = pendientes
     ? 'Tiene ' + pendientes + ' reservas por atender. Reasignalas en Reservas antes de retirarla.'
     : dato.tiene_historial ? 'Se retirará al guardar. Su historial de reservas se conserva.' : 'Se eliminará al guardar el plano. Podés deshacer antes de guardar.';
-  document.getElementById('errorEditar').textContent = ''; abrirDialogo('dialogoEditar');
+  document.getElementById('errorEditar').textContent = ''; actualizarPreviewMesa(); abrirDialogo('dialogoEditar');
 });
-document.getElementById('formEditarMesa').addEventListener('invalid', e => {
-  const detalles = e.target.closest('details');
-  if (detalles) detalles.open = true;
-}, true);
+function actualizarPreviewMesa() {
+  const forma = document.querySelector('input[name="editarForma"]:checked').value;
+  const numero = document.getElementById('in-numero').value;
+  const ancho = Math.min(400, Math.max(30, Number(document.getElementById('in-ancho').value) || 30));
+  const alto = Math.min(400, Math.max(30, Number(document.getElementById('in-alto').value) || 30));
+  const giro = Number(document.getElementById('in-rotacion').value) || 0;
+  const svg = document.getElementById('previewMesa'), lado = Math.hypot(ancho, alto) + 24;
+  svg.setAttribute('viewBox', `${-lado / 2} ${-lado / 2} ${lado} ${lado}`);
+  const crear = (etiqueta, atributos) => {
+    const nodo = document.createElementNS('http://www.w3.org/2000/svg', etiqueta);
+    for (const [clave, valor] of Object.entries(atributos)) nodo.setAttribute(clave, valor);
+    return nodo;
+  };
+  const grupo = crear('g', { transform: 'rotate(' + giro + ')' });
+  const figura = forma === 'redonda' ? crear('ellipse', { rx: ancho / 2, ry: alto / 2 })
+    : forma === 'triangular' ? crear('polygon', { points: `0,${-alto / 2} ${ancho / 2},${alto / 2} ${-ancho / 2},${alto / 2}` })
+      : crear('rect', { x: -ancho / 2, y: -alto / 2, width: ancho, height: alto, rx: 8 });
+  figura.setAttribute('fill', VERDE); figura.setAttribute('stroke', AMBAR); figura.setAttribute('stroke-width', 3);
+  const texto = crear('text', { x: 0, y: forma === 'triangular' ? alto / 6 : 0, 'text-anchor': 'middle', 'dominant-baseline': 'central', fill: CREMA, 'font-size': 20, 'font-family': 'Montserrat, sans-serif', 'font-weight': 700 });
+  texto.textContent = numero; grupo.append(figura, texto); svg.replaceChildren(grupo);
+  document.getElementById('previewMedidas').textContent = ancho + ' × ' + alto + ' · Giro ' + giro + '°';
+}
+for (const radio of document.querySelectorAll('input[name="editarForma"]')) radio.addEventListener('change', () => {
+  const ancho = document.getElementById('in-ancho'), alto = document.getElementById('in-alto');
+  const base = Math.min(Number(ancho.value) || 80, Number(alto.value) || 80);
+  if (radio.value === 'rectangular' && ancho.value === alto.value) ancho.value = Math.min(400, Math.round(base * 1.6));
+  else if (radio.value === 'cuadrada' || radio.value === 'redonda') { ancho.value = base; alto.value = base; }
+  actualizarPreviewMesa();
+});
+document.getElementById('formEditarMesa').addEventListener('input', e => {
+  if (['in-ancho', 'in-alto'].includes(e.target.id)
+      && document.querySelector('input[name="editarForma"]:checked').value === 'cuadrada'
+      && Number(document.getElementById('in-ancho').value) !== Number(document.getElementById('in-alto').value)) {
+    document.querySelector('input[name="editarForma"][value="rectangular"]').checked = true;
+  }
+  document.getElementById('errorEditar').textContent = '';
+  actualizarPreviewMesa();
+});
 document.getElementById('formEditarMesa').addEventListener('submit', e => {
   e.preventDefault();
   const antes = estadoActual(), original = datosMesa(seleccionada);
-  const nuevo = { ...original, numero: Number(document.getElementById('in-numero').value), capacidad: Number(document.getElementById('in-capacidad').value), ancho: Number(document.getElementById('in-ancho').value), alto: Number(document.getElementById('in-alto').value), rotacion: Number(document.getElementById('in-rotacion').value) };
+  const nuevo = { ...original, forma: document.querySelector('input[name="editarForma"]:checked').value, numero: Number(document.getElementById('in-numero').value), capacidad: Number(document.getElementById('in-capacidad').value), ancho: Number(document.getElementById('in-ancho').value), alto: Number(document.getElementById('in-alto').value), rotacion: Number(document.getElementById('in-rotacion').value) };
   if (mesasPlano().some(m => m !== seleccionada && m.getAttr('numero') === nuevo.numero)) { document.getElementById('errorEditar').textContent = 'Ya hay otra mesa con ese número.'; return; }
   aplicarDatos(seleccionada, nuevo);
-  const cambiaForma = nuevo.ancho !== original.ancho || nuevo.alto !== original.alto || nuevo.rotacion !== original.rotacion;
+  const cambiaForma = nuevo.forma !== original.forma || nuevo.ancho !== original.ancho || nuevo.alto !== original.alto || nuevo.rotacion !== original.rotacion;
   if (cambiaForma) ajustarDentro(seleccionada);
   if (cambiaForma && !posicionValida(seleccionada, seleccionada.position())) {
     aplicarDatos(seleccionada, original); document.getElementById('errorEditar').textContent = 'Con esas medidas la mesa se cruza con otra. Movela primero o elegí otras medidas.'; return;
@@ -401,6 +466,8 @@ const vista = crearVistaPlano(escenario, ANCHO, ALTO, {
 });
 document.getElementById('btnMoverMesa').addEventListener('click', iniciarMovimiento);
 document.getElementById('btnGirarMesa').addEventListener('click', girarMesa);
+document.getElementById('btnAchicarMesa').addEventListener('click', () => cambiarTamanoMesa(0.9));
+document.getElementById('btnAgrandarMesa').addEventListener('click', () => cambiarTamanoMesa(1.1));
 document.getElementById('btnAplicarAccion').addEventListener('click', aplicarAccion);
 document.getElementById('btnCancelarAccion').addEventListener('click', salirAccion);
 document.getElementById('btnDeshacer').addEventListener('click', deshacer);
@@ -409,6 +476,11 @@ document.getElementById('btnAcercarMesa').addEventListener('click', () => {
   if (!seleccionada) return;
   vista.acercar(seleccionada);
   escenario.container().scrollIntoView({ block: 'center' });
+  if (getComputedStyle(panelMesa).position === 'fixed') {
+    const caja = escenario.container().getBoundingClientRect();
+    const zonaVisible = panelMesa.getBoundingClientRect().top;
+    window.scrollBy(0, caja.top + caja.height / 2 - zonaVisible / 2);
+  }
 });
 for (const boton of document.querySelectorAll('[data-mover]')) boton.addEventListener('click', () => { const [dx, dy] = boton.dataset.mover.split(',').map(Number); moverUnPaso(dx, dy, Number(document.getElementById('pasoMesa').value)); });
 document.addEventListener('keydown', e => {

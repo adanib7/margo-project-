@@ -9,7 +9,7 @@
 
 const PLANO_ANCHO = 900;
 const PLANO_ALTO  = 560;
-const PLANO_FORMAS = ['cuadrada', 'redonda', 'triangular'];
+const PLANO_FORMAS = ['cuadrada', 'rectangular', 'redonda', 'triangular'];
 
 /**
  * Crea la tabla `mesas` si no existe y agrega columnas que falten.
