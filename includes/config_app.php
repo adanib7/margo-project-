@@ -51,6 +51,12 @@ function cfgDefaults(): array
         // Límites por usuario contra el spam de reservas (0 = sin límite).
         'reservas.max_activas_usuario'  => '3',
         'reservas.max_por_dia_usuario'  => '1',
+
+        // ── Caja y facturación (Uruguay) ──
+        'facturacion.razon_social'     => '',
+        'facturacion.rut'              => '',
+        'facturacion.propina_sugerida' => '10',
+        'facturacion.fondo_sugerido'   => '3000',
     ];
 }
 

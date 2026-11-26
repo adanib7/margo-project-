@@ -81,7 +81,9 @@ if ($reserva['estado'] === 'cancelada' && $estado !== 'cancelada' && !empty($res
     $choque = reservaSolapada($conn, (int) $reserva['mesa_id'], $reserva['fecha'], $reserva['hora'], $id);
     if ($choque) {
         http_response_code(409);
-        echo json_encode(['ok' => false, 'mensaje' => 'No se puede reactivar: la mesa ya está ocupada en ese horario.']);
+        echo json_encode(['ok' => false, 'mensaje' => !empty($choque['salon'])
+            ? 'No se puede reactivar: la mesa está ocupada en el salón y no se libera a tiempo.'
+            : 'No se puede reactivar: la mesa ya está ocupada en ese horario.']);
         exit;
     }
 }

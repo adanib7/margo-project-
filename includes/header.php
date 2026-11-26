@@ -34,6 +34,10 @@
     ?>
     <link rel="stylesheet" href="<?= htmlspecialchars(buildUrl($cssPath), ENT_QUOTES, 'UTF-8') ?>?v=<?= $cssVersion ?>" />
   <?php endif; ?>
+  <?php foreach (($pageCSSExtra ?? []) as $cssExtra): ?>
+    <?php $cssExtraAbs = __DIR__ . '/../assets/css/' . basename($cssExtra); ?>
+    <link rel="stylesheet" href="<?= htmlspecialchars(buildUrl('/assets/css/' . basename($cssExtra)), ENT_QUOTES, 'UTF-8') ?>?v=<?= is_file($cssExtraAbs) ? filemtime($cssExtraAbs) : time() ?>" />
+  <?php endforeach; ?>
   <title><?= htmlspecialchars($pageTitle ?? 'Margo Project', ENT_QUOTES, 'UTF-8') ?></title>
 </head>
 <body class="fondo principal min-h-screen flex flex-col font-body-md">

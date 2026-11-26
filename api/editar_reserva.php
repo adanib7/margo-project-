@@ -130,10 +130,9 @@ try {
         $choque = reservaSolapada($conn, $mesaId, $fecha, $hora, $id);
 
         if ($choque) {
-            $desde = substr((string) $choque['hora'], 0, 5);
             http_response_code(409);
             echo json_encode(['ok' => false, 'errores' => [
-                'mesa' => "La mesa {$mesaNumero} ya está ocupada desde las {$desde} (reserva {$choque['codigo']}).",
+                'mesa' => textoChoqueMesa((int) $mesaNumero, $choque, true),
             ]]);
             exit;
         }

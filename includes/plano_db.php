@@ -213,7 +213,82 @@ function reservaSolapada(mysqli $conn, int $mesaId, string $fecha, string $hora,
     $row = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    return $row ?: null;
+    if ($row) {
+        return $row;
+    }
+
+    // Además de otras reservas, la mesa puede tener gente comiendo ahora mismo
+    // (cuenta abierta en la caja). Excluye la cuenta de esta misma reserva.
+    [$inicio, $fin] = intervaloReserva($fecha, $hora);
+    $salon = salonOcupaciones($conn, $inicio, $fin, $mesaId, $excluirId);
+    if (isset($salon[$mesaId])) {
+        return ['codigo' => 'salon', 'hora' => substr($salon[$mesaId], 11, 8), 'salon' => true];
+    }
+    return null;
+}
+
+/**
+ * Mesas con gente sentada (cuenta abierta en la caja) cuyo uso se superpone
+ * con el intervalo pedido. Se asume que una mesa ocupada sigue así hasta
+ * cumplir la duración de reserva, y al menos 30 minutos más desde ahora.
+ *
+ * @return array<int,string> mesa_id => abierta_en
+ */
+function salonOcupaciones(mysqli $conn, string $inicio, string $fin, ?int $mesaId = null, ?int $excluirReservaId = null): array
+{
+    static $hayCaja = null;
+    if ($hayCaja === null) {
+        $t = $conn->query("SHOW TABLES LIKE 'cuentas'");
+        $c = ($t && $t->num_rows) ? $conn->query("SHOW COLUMNS FROM cuentas LIKE 'reserva_id'") : null;
+        $hayCaja = $t && $t->num_rows > 0 ? ($c && $c->num_rows > 0 ? 'con_reserva' : 'sin_reserva') : 'no';
+    }
+    if ($hayCaja === 'no') {
+        return [];
+    }
+    $duracion = (function_exists('cfgInt') ? max(1, cfgInt('reservas.duracion_horas')) : 2) * 60;
+    // La hora "ahora" sale de PHP: así coincide con la zona horaria con la que se guardan las cuentas.
+    $minimo = date('Y-m-d H:i:s', time() + 30 * 60);
+    $sql = "SELECT mesa_id, abierta_en FROM cuentas
+            WHERE estado IN ('abierta', 'pide_cuenta') AND mesa_id IS NOT NULL
+              AND abierta_en < ? AND GREATEST(DATE_ADD(abierta_en, INTERVAL ? MINUTE), ?) > ?";
+    $tipos = 'siss';
+    $params = [$fin, $duracion, $minimo, $inicio];
+    if ($mesaId !== null) { $sql .= ' AND mesa_id = ?'; $tipos .= 'i'; $params[] = $mesaId; }
+    if ($excluirReservaId !== null && $hayCaja === 'con_reserva') {
+        $sql .= ' AND (reserva_id IS NULL OR reserva_id <> ?)'; $tipos .= 'i'; $params[] = $excluirReservaId;
+    }
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        return [];
+    }
+    $stmt->bind_param($tipos, ...$params);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $ocupadas = [];
+    while ($r = $res->fetch_assoc()) {
+        $ocupadas[(int) $r['mesa_id']] = $r['abierta_en'];
+    }
+    $stmt->close();
+    return $ocupadas;
+}
+
+/** Inicio y fin (DATETIME) que ocuparía una reserva en esa fecha y hora. */
+function intervaloReserva(string $fecha, string $hora): array
+{
+    $horas = function_exists('cfgInt') ? max(1, cfgInt('reservas.duracion_horas')) : 2;
+    $inicio = strtotime($fecha . ' ' . substr($hora, 0, 5) . ':00');
+    return [date('Y-m-d H:i:s', $inicio), date('Y-m-d H:i:s', $inicio + $horas * 3600)];
+}
+
+/** Texto del choque para los mensajes de reservas. */
+function textoChoqueMesa(int $mesaNumero, array $choque, bool $conCodigo = false): string
+{
+    if (!empty($choque['salon'])) {
+        return "La mesa {$mesaNumero} está ocupada en el salón desde las " . substr((string) $choque['hora'], 0, 5)
+            . " y no se libera a tiempo. Elegí otra mesa u otro horario.";
+    }
+    $desde = substr((string) $choque['hora'], 0, 5);
+    return "La mesa {$mesaNumero} ya está ocupada desde las {$desde}" . ($conCodigo ? " (reserva {$choque['codigo']})." : '. Elegí otra mesa u otro horario.');
 }
 
 /**
@@ -243,6 +318,11 @@ function planoMesasConOcupacion(mysqli $conn, string $fecha = '', string $hora =
                 $ocupadas[(int) $row['mesa_id']] = true;
             }
             $stmt->close();
+        }
+        // Mesas con gente comiendo ahora que no se liberan antes de esa franja.
+        [$inicio, $fin] = intervaloReserva($fecha, $hora);
+        foreach (salonOcupaciones($conn, $inicio, $fin) as $mesaId => $_) {
+            $ocupadas[$mesaId] = true;
         }
     }
 

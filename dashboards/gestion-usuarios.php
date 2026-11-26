@@ -21,7 +21,7 @@ require_once '../includes/header.php';
         Panel principal
       </a>
       <h1 class="titulo-pagina" style="margin-top:.5rem">Gestión de Usuarios</h1>
-      <p class="subtitulo-pagina">Creá, editá y revisá cuentas de usuarios, admins y superadmins.</p>
+      <p class="subtitulo-pagina">Creá, editá y revisá cuentas de usuarios, mozos, admins y superadmins.</p>
     </div>
     <button class="boton-accion" id="btnNuevoUsuario">
       <span class="material-symbols-outlined">person_add</span>
@@ -63,6 +63,7 @@ require_once '../includes/header.php';
     <div class="filtros-rol" role="group" aria-label="Filtrar por rol">
       <button class="filtro-btn filtro-activo" data-rol="">Todos</button>
       <button class="filtro-btn" data-rol="usuario">Usuario</button>
+      <button class="filtro-btn" data-rol="mozo">Mozo</button>
       <button class="filtro-btn" data-rol="admin">Admin</button>
       <button class="filtro-btn" data-rol="superadmin">Superadmin</button>
     </div>
@@ -123,6 +124,7 @@ require_once '../includes/header.php';
           <span class="campo-icono material-symbols-outlined">shield_person</span>
           <select class="campo-input campo-select" id="uRol" name="rol" required>
             <option value="usuario">Usuario</option>
+            <option value="mozo">Mozo (salón)</option>
             <option value="admin">Admin</option>
             <option value="superadmin">Superadmin</option>
           </select>

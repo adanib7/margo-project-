@@ -16,6 +16,11 @@ function rutasPantallas(): array
         '/dashboards/configuracion.php' => '/configuracion',
         '/dashboards/mi_perfil.php' => '/mi-perfil',
         '/dashboards/mis-reservas.php' => '/mis-reservas',
+        '/dashboards/caja.php' => '/caja',
+        '/dashboards/mozo.php' => '/mozo',
+        '/dashboards/cierre_caja.php' => '/cierre-caja',
+        '/dashboards/carta.php' => '/carta',
+        '/dashboards/ventas.php' => '/ventas',
     ];
 }
 

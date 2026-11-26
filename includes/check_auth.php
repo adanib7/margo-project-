@@ -18,6 +18,7 @@ function redirectToDashboard(): void {
     $map = [
         'superadmin' => buildUrl('/dashboards/superadmin.php', true),
         'admin'      => buildUrl('/dashboards/admin.php', true),
+        'mozo'       => buildUrl('/dashboards/mozo.php', true),
         'usuario'    => buildUrl('/dashboards/user.php', true),
     ];
     $rol = $_SESSION['rol'] ?? 'usuario';

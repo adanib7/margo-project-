@@ -32,6 +32,17 @@ require_once '../includes/header.php';
       <p class="tarjeta-texto">Crear, editar y revisar cuentas de usuarios, admins y superadmins.</p>
     </a>
 
+    <a class="tarjeta" href="<?= buildUrl('/dashboards/caja.php') ?>">
+      <div class="tarjeta-overlay"></div>
+      <div class="tarjeta-cabecera">
+        <div class="icono icono-primary">
+          <span class="material-symbols-outlined">point_of_sale</span>
+        </div>
+        <h2>Caja y facturación</h2>
+      </div>
+      <p class="tarjeta-texto">Cobrá desde el plano de mesas, dividí cuentas, emití e-Ticket o e-Factura y cerrá la caja.</p>
+    </a>
+
     <a class="tarjeta" href="<?= buildUrl('/dashboards/admin_plano.php') ?>">
       <div class="tarjeta-cabecera">
         <div class="icono">

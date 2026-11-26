@@ -1322,6 +1322,7 @@ body {
 .badge-usuario    { background-color: #eeeee8; color: #434840; }
 .badge-admin      { background-color: #caecbc; color: #264220; }
 .badge-superadmin { background-color: #ffdea5; color: #261900; }
+.badge-mozo       { background-color: #dbe7f3; color: #1f4a6e; }
 
 /* Badges de estado de reserva */
 .badge-estado-pendiente  { background-color: #ffdea5; color: #785a1a; }

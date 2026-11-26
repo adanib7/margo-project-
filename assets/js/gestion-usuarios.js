@@ -37,7 +37,7 @@
 
   // ── Stats ─────────────────────────────────────────────────────────────────
   function actualizarStats(totales) {
-    const total = (totales.usuario || 0) + (totales.admin || 0) + (totales.superadmin || 0);
+    const total = (totales.usuario || 0) + (totales.mozo || 0) + (totales.admin || 0) + (totales.superadmin || 0);
     document.getElementById('statUsuarios').textContent    = total;
     document.getElementById('statAdmins').textContent      = totales.admin     || 0;
     document.getElementById('statSuperadmins').textContent = totales.superadmin || 0;
@@ -107,7 +107,7 @@
   }
 
   function labelRol(rol) {
-    return { usuario: 'Usuario', admin: 'Admin', superadmin: 'Superadmin' }[rol] || rol;
+    return { usuario: 'Usuario', mozo: 'Mozo', admin: 'Admin', superadmin: 'Superadmin' }[rol] || rol;
   }
 
   function formatFecha(str) {

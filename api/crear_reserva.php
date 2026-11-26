@@ -140,8 +140,7 @@ if ($maxPorDia > 0 && (int) $cuenta['ese_dia'] >= $maxPorDia) {
 // no solo en la hora exacta de inicio.
 $choque = reservaSolapada($conn, $mesaId, $fecha, $hora);
 if ($choque) {
-    $desde = substr((string) $choque['hora'], 0, 5);
-    $errores['mesa'] = "La mesa {$mesaNumero} ya está ocupada desde las {$desde}. Elegí otra mesa u otro horario.";
+    $errores['mesa'] = textoChoqueMesa((int) $mesaNumero, $choque);
 }
 
 if (!empty($errores)) {

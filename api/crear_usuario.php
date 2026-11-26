@@ -34,7 +34,7 @@ if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $errores['email'] = 'Ingresá un correo válido.';
 }
 
-if (!in_array($rol, ['usuario', 'admin', 'superadmin'], true)) {
+if (!in_array($rol, ['usuario', 'mozo', 'admin', 'superadmin'], true)) {
     $errores['rol'] = 'Seleccioná un rol válido.';
 }
 
@@ -74,7 +74,7 @@ $stmt->bind_param("ssss", $nombre, $email, $hash, $rol);
 if ($stmt->execute()) {
     $nuevoId = $stmt->insert_id;
     $stmt->close();
-    $labelRol = ['usuario' => 'Usuario', 'admin' => 'Admin', 'superadmin' => 'Superadmin'][$rol] ?? $rol;
+    $labelRol = ['usuario' => 'Usuario', 'mozo' => 'Mozo', 'admin' => 'Admin', 'superadmin' => 'Superadmin'][$rol] ?? $rol;
     echo json_encode([
         'ok'      => true,
         'mensaje' => "{$labelRol} «{$nombre}» creado correctamente.",

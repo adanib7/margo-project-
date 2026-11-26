@@ -42,7 +42,7 @@ if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $errores['email'] = 'Ingresá un correo válido.';
 }
 
-if (!in_array($rol, ['usuario', 'admin', 'superadmin'], true)) {
+if (!in_array($rol, ['usuario', 'mozo', 'admin', 'superadmin'], true)) {
     $errores['rol'] = 'Seleccioná un rol válido.';
 }
 

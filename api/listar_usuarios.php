@@ -27,7 +27,7 @@ if ($search !== '') {
     $types   .= 'ss';
 }
 
-if (in_array($rol, ['usuario', 'admin', 'superadmin'], true)) {
+if (in_array($rol, ['usuario', 'mozo', 'admin', 'superadmin'], true)) {
     $where[]  = 'rol = ?';
     $params[] = $rol;
     $types   .= 's';
@@ -46,7 +46,7 @@ $usuarios = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
 // Totales por rol (siempre sobre toda la tabla, sin filtro)
-$totales = ['usuario' => 0, 'admin' => 0, 'superadmin' => 0];
+$totales = ['usuario' => 0, 'mozo' => 0, 'admin' => 0, 'superadmin' => 0];
 $res = $conn->query("SELECT rol, COUNT(*) AS total FROM usuarios GROUP BY rol");
 while ($row = $res->fetch_assoc()) {
     if (isset($totales[$row['rol']])) {
